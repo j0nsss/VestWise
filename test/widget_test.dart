@@ -6,6 +6,7 @@ import 'package:vestwise/core/theme/app_theme.dart';
 import 'package:vestwise/features/calendar/data/models/calendar_event_model.dart';
 import 'package:vestwise/features/calendar/presentation/providers/calendar_providers.dart';
 import 'package:vestwise/features/calendar/presentation/screens/calendar_screen.dart';
+import 'package:vestwise/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:vestwise/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
 import 'package:vestwise/features/tasks/presentation/providers/tasks_providers.dart';
@@ -23,6 +24,9 @@ void main() {
             (Ref ref) => Stream<List<CalendarEventModel>>.value(
               <CalendarEventModel>[],
             ),
+          ),
+          dashboardProvider.overrideWith(
+            (Ref ref) => const DashboardState.empty(),
           ),
         ],
         child: const VestWiseApp(),
