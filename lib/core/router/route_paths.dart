@@ -19,5 +19,5 @@ abstract final class RoutePaths {
   static String noteEditorFor(String id) => '/notes/$id/edit';
   static String documentViewerFor(String id) => '/notes/document/$id';
   static String taskDetailFor(Object id) => '/tasks/$id';
-  static String eventDetailFor(String id) => '/calendar/event/$id';
+  static String eventDetailFor(Object id) => '/calendar/event/$id';
 }
