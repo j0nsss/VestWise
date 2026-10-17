@@ -27,9 +27,13 @@ class VWEmptyState extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
+        // `maxHeight` is infinite inside an unbounded parent (e.g. a card in a
+        // ListView); only constrain to fill when a finite height is available.
+        final double minHeight =
+            constraints.maxHeight.isFinite ? constraints.maxHeight : 0;
         return SingleChildScrollView(
           child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            constraints: BoxConstraints(minHeight: minHeight),
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
