@@ -5,11 +5,24 @@ import 'package:vestwise/app.dart';
 import 'package:vestwise/core/theme/app_theme.dart';
 import 'package:vestwise/features/calendar/presentation/screens/calendar_screen.dart';
 import 'package:vestwise/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:vestwise/features/tasks/data/models/task_model.dart';
+import 'package:vestwise/features/tasks/presentation/providers/tasks_providers.dart';
 import 'package:vestwise/features/tasks/presentation/screens/tasks_list_screen.dart';
 
 void main() {
+  // Widget tests inject an already-resolved, empty task stream so the list
+  // settles without touching the native Isar core (which would hang the
+  // fake-async test clock and leave the loading spinner animating forever).
+  Widget app() => ProviderScope(
+        overrides: [
+          watchAllTasksProvider
+              .overrideWith((Ref ref) => Stream<List<TaskModel>>.value(<TaskModel>[])),
+        ],
+        child: const VestWiseApp(),
+      );
+
   testWidgets('app boots to the Dashboard tab', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: VestWiseApp()));
+    await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
     expect(find.byType(MaterialApp), findsOneWidget);
@@ -20,7 +33,7 @@ void main() {
   testWidgets('bottom navigation switches between tabs', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: VestWiseApp()));
+    await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Tasks'));
