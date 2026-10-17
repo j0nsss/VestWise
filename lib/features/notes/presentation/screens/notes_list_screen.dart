@@ -213,17 +213,25 @@ class _DocumentsTab extends ConsumerWidget {
             message: 'Import a PDF, DOCX or TXT file to keep it offline.',
           );
         }
-        return ListView.builder(
-          itemCount: documents.length,
-          itemBuilder: (BuildContext context, int index) {
-            final ImportedDocumentModel document = documents[index];
-            return DocumentListTile(
-              document: document,
-              onTap: () =>
-                  context.go(RoutePaths.documentViewerFor(document.id)),
-              onDelete: () => _delete(context, ref, document),
-            );
-          },
+        return Column(
+          children: <Widget>[
+            Expanded(
+              child: ListView.builder(
+                itemCount: documents.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final ImportedDocumentModel document = documents[index];
+                  return DocumentListTile(
+                    document: document,
+                    onTap: () =>
+                        context.go(RoutePaths.documentViewerFor(document.id)),
+                    onDelete: () => _delete(context, ref, document),
+                  );
+                },
+              ),
+            ),
+            const Divider(height: 1),
+            _StorageReadout(documentCount: documents.length),
+          ],
         );
       },
     );
@@ -259,5 +267,40 @@ class _DocumentsTab extends ConsumerWidget {
         .read(fileStorageServiceProvider)
         .deleteLocalFile(document.relativeFilePath);
     await ref.read(notesRepositoryProvider).deleteImportedDocument(document.id);
+    ref.invalidate(importedFilesSizeProvider);
+  }
+}
+
+/// Footer readout making the offline-local footprint visible (P4-T4).
+class _StorageReadout extends ConsumerWidget {
+  const _StorageReadout({required this.documentCount});
+
+  final int documentCount;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+    final AsyncValue<int> sizeAsync = ref.watch(importedFilesSizeProvider);
+    final int? bytes = sizeAsync.value;
+    final String label = bytes == null ? '…' : formatBytes(bytes);
+    final String files = documentCount == 1 ? 'file' : 'files';
+
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        children: <Widget>[
+          Icon(
+            Icons.sd_storage_outlined,
+            size: 18,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            '$label used · $documentCount $files',
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
   }
 }
