@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar_community/isar.dart';
 import 'package:vestwise/app.dart';
+import 'package:vestwise/core/database/isar_provider.dart';
+import 'package:vestwise/core/database/isar_service.dart';
+import 'package:vestwise/core/notifications/notification_provider.dart';
+import 'package:vestwise/core/notifications/notification_service.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: VestWiseApp()));
+
+  // Open the database before the first frame so screens never show a spinner
+  // for it (P1-T2). `openIsar` is idempotent.
+  final Isar isar = await openIsar();
+
+  // Prepare notifications up front; permission is requested later, at a
+  // sensible moment (P4-T2).
+  final NotificationService notificationService = NotificationService();
+  await notificationService.init();
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        isarProvider.overrideWithValue(AsyncValue<Isar>.data(isar)),
+        notificationServiceProvider.overrideWithValue(notificationService),
+      ],
+      child: const VestWiseApp(),
+    ),
+  );
 }

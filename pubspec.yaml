@@ -51,6 +51,7 @@ dependencies:
   permission_handler: ^13.0.2
   isar_community: ^3.4.1
   isar_community_flutter_libs: ^3.4.1
+  flutter_timezone: ^5.1.1
 
 dev_dependencies:
   flutter_test:
