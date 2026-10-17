@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/errors/failure.dart';
+import 'package:vestwise/core/notifications/inexact_alarm_notice.dart';
 import 'package:vestwise/core/notifications/notification_provider.dart';
 import 'package:vestwise/core/notifications/notification_service.dart';
 import 'package:vestwise/core/router/route_paths.dart';
@@ -294,11 +295,15 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     int? notificationId;
     final DateTime? due = _dueDate;
     if (due != null && due.isAfter(now)) {
-      notificationId = await _safeSchedule(
+      final ScheduledReminder? reminder = await _safeSchedule(
         notifications,
         title: _titleController.text.trim(),
         due: due,
       );
+      notificationId = reminder?.id;
+      if (reminder != null && !reminder.isExact && mounted) {
+        await maybeShowInexactAlarmNotice(context, notifications);
+      }
     }
 
     final String description = _descriptionController.text.trim();
@@ -381,14 +386,14 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     }
   }
 
-  Future<int?> _safeSchedule(
+  Future<ScheduledReminder?> _safeSchedule(
     NotificationService service, {
     required String title,
     required DateTime due,
   }) async {
     try {
       await service.requestPermissions();
-      return await service.scheduleNotification(
+      return await service.scheduleReminder(
         title: title.isEmpty ? 'Task reminder' : title,
         body: "It's due now.",
         scheduledDate: due,

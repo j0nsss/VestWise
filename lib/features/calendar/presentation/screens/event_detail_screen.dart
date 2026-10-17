@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/errors/failure.dart';
+import 'package:vestwise/core/notifications/inexact_alarm_notice.dart';
 import 'package:vestwise/core/notifications/notification_provider.dart';
 import 'package:vestwise/core/notifications/notification_service.dart';
 import 'package:vestwise/core/router/route_paths.dart';
@@ -265,11 +266,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       final DateTime fireAt =
           _start.subtract(Duration(minutes: minutesBefore));
       if (fireAt.isAfter(DateTime.now())) {
-        notificationId = await _safeSchedule(
+        final ScheduledReminder? reminder = await _safeSchedule(
           notifications,
           title: _titleController.text.trim(),
           fireAt: fireAt,
         );
+        notificationId = reminder?.id;
+        if (reminder != null && !reminder.isExact && mounted) {
+          await maybeShowInexactAlarmNotice(context, notifications);
+        }
       }
     }
 
@@ -346,14 +351,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     }
   }
 
-  Future<int?> _safeSchedule(
+  Future<ScheduledReminder?> _safeSchedule(
     NotificationService service, {
     required String title,
     required DateTime fireAt,
   }) async {
     try {
       await service.requestPermissions();
-      return await service.scheduleNotification(
+      return await service.scheduleReminder(
         title: title.isEmpty ? 'Event reminder' : title,
         body: 'Starting soon.',
         scheduledDate: fireAt,
