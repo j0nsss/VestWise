@@ -1,0 +1,28 @@
+# Static analysis configuration for VestWise.
+# See https://dart.dev/tools/analysis for details.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  errors:
+    # Treat missing awaits, unused imports etc. as build-breaking during CI.
+    missing_required_param: error
+    missing_return: error
+
+linter:
+  rules:
+    # Style / correctness rules mandated by the plan (P0-T3).
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    avoid_print: true
+    always_declare_return_types: true
+    # Import convention: enforce package imports only (one convention, enforced).
+    always_use_package_imports: true
+    # A few high-signal extras that support the "calm, consistent" quality bar.
+    prefer_single_quotes: true
+    require_trailing_commas: true
+    unawaited_futures: true
