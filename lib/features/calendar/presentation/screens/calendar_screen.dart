@@ -8,6 +8,7 @@ import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
+import 'package:vestwise/core/widgets/vw_notification_banner.dart';
 import 'package:vestwise/features/calendar/data/models/calendar_event_model.dart';
 import 'package:vestwise/features/calendar/presentation/providers/calendar_providers.dart';
 import 'package:vestwise/features/calendar/presentation/widgets/event_list_tile.dart';
@@ -40,6 +41,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       ),
       body: Column(
         children: <Widget>[
+          const VWNotificationBanner(),
           TableCalendar<CalendarEventModel>(
             firstDay: DateTime(2020),
             lastDay: DateTime(2035),
