@@ -11,17 +11,16 @@ import 'package:uuid/uuid.dart';
 /// The [baseDirectory] override exists for tests, where the `path_provider`
 /// plugin is unavailable.
 class FileStorageService {
-  FileStorageService({Directory? baseDirectory, Uuid? uuid})
-      : _baseDirectory = baseDirectory,
-        _uuid = uuid ?? const Uuid();
+  FileStorageService({this.baseDirectory, Uuid? uuid})
+      : _uuid = uuid ?? const Uuid();
 
   static const String importedDirName = 'imported_documents';
 
-  final Directory? _baseDirectory;
+  final Directory? baseDirectory;
   final Uuid _uuid;
 
   Future<Directory> getAppDocumentsDir() async =>
-      _baseDirectory ?? getApplicationDocumentsDirectory();
+      baseDirectory ?? getApplicationDocumentsDirectory();
 
   Future<Directory> getImportedFilesDir() async {
     final Directory docs = await getAppDocumentsDir();

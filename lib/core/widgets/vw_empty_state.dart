@@ -25,30 +25,43 @@ class VWEmptyState extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final Color muted = theme.colorScheme.onSurfaceVariant;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(icon, size: 48, color: muted),
-            const SizedBox(height: AppSpacing.lg),
-            if (title != null) ...<Widget>[
-              Text(title!, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
-              const SizedBox(height: AppSpacing.xs),
-            ],
-            Text(
-              message,
-              style: theme.textTheme.bodyMedium?.copyWith(color: muted),
-              textAlign: TextAlign.center,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Icon(icon, size: 48, color: muted),
+                    const SizedBox(height: AppSpacing.lg),
+                    if (title != null) ...<Widget>[
+                      Text(
+                        title!,
+                        style: theme.textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                    ],
+                    Text(
+                      message,
+                      style: theme.textTheme.bodyMedium?.copyWith(color: muted),
+                      textAlign: TextAlign.center,
+                    ),
+                    if (actionLabel != null && onAction != null) ...<Widget>[
+                      const SizedBox(height: AppSpacing.lg),
+                      VWButton(label: actionLabel!, onPressed: onAction),
+                    ],
+                  ],
+                ),
+              ),
             ),
-            if (actionLabel != null && onAction != null) ...<Widget>[
-              const SizedBox(height: AppSpacing.lg),
-              VWButton(label: actionLabel!, onPressed: onAction),
-            ],
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
