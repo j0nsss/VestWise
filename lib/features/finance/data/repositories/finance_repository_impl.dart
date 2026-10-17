@@ -20,7 +20,8 @@ class FinanceRepositoryImpl implements FinanceRepository {
       .where()
       .sortByDateDesc()
       .thenByIdDesc()
-      .watch(fireImmediately: true);
+      .watch(fireImmediately: true)
+      .asyncMap(_withLoadedCategories);
 
   @override
   Stream<List<TransactionModel>> watchTransactionsInRange(
@@ -31,7 +32,19 @@ class FinanceRepositoryImpl implements FinanceRepository {
           .where()
           .dateBetween(start, end)
           .sortByDateDesc()
-          .watch(fireImmediately: true);
+          .watch(fireImmediately: true)
+          .asyncMap(_withLoadedCategories);
+
+  /// Eagerly loads each transaction's category link so the UI can render the
+  /// category icon/color without an extra async hop per list row.
+  Future<List<TransactionModel>> _withLoadedCategories(
+    List<TransactionModel> transactions,
+  ) async {
+    await Future.wait(
+      transactions.map((TransactionModel t) => t.category.load()),
+    );
+    return transactions;
+  }
 
   @override
   Future<Result<TransactionModel>> getTransactionById(int id) => resultGuard(
@@ -51,6 +64,7 @@ class FinanceRepositoryImpl implements FinanceRepository {
         () async {
           await _isar.writeTxn(() async {
             transaction.id = await _transactions.put(transaction);
+            await transaction.category.save();
           });
           return transaction.id;
         },
@@ -61,7 +75,10 @@ class FinanceRepositoryImpl implements FinanceRepository {
   Future<Result<void>> updateTransaction(TransactionModel transaction) =>
       resultGuard(
         () async {
-          await _isar.writeTxn(() => _transactions.put(transaction));
+          await _isar.writeTxn(() async {
+            await _transactions.put(transaction);
+            await transaction.category.save();
+          });
         },
         operation: 'updateTransaction',
       );
