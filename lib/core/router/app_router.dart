@@ -50,7 +50,9 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                   GoRoute(
                     path: 'add',
                     builder: (BuildContext context, GoRouterState state) =>
-                        const AddTransactionScreen(),
+                        AddTransactionScreen(
+                      transactionId: state.uri.queryParameters['id'],
+                    ),
                   ),
                   GoRoute(
                     path: 'summary',

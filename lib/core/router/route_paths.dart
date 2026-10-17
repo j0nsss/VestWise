@@ -20,4 +20,6 @@ abstract final class RoutePaths {
   static String documentViewerFor(String id) => '/notes/document/$id';
   static String taskDetailFor(Object id) => '/tasks/$id';
   static String eventDetailFor(Object id) => '/calendar/event/$id';
+  static String financeAddFor(Object? id) =>
+      id == null ? financeAdd : '$financeAdd?id=$id';
 }
