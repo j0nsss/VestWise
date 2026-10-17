@@ -16,8 +16,8 @@ abstract final class RoutePaths {
   /// `:id == 'new'` opens the create flow.
   static const String newId = 'new';
 
-  static String noteEditorFor(String id) => '/notes/$id/edit';
-  static String documentViewerFor(String id) => '/notes/document/$id';
+  static String noteEditorFor(Object id) => '/notes/$id/edit';
+  static String documentViewerFor(Object id) => '/notes/document/$id';
   static String taskDetailFor(Object id) => '/tasks/$id';
   static String eventDetailFor(Object id) => '/calendar/event/$id';
   static String financeAddFor(Object? id) =>
