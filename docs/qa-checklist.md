@@ -163,6 +163,17 @@ delegates to it.)
 | A skeleton during the gate does not hang the test suite | PASS | No test uses `pumpAndSettle` while a skeleton is on screen (a shimmer repeats forever); the gate and the swaps are driven with bounded `pump()`s in `test/features/list_loading_test.dart` and `test/core/widgets/vw_delayed_test.dart`. |
 | Skeletons appear late enough to feel right on device | MANUAL — todo | Cold-start each of the four lists on the Redmi Note 8 and confirm the skeleton arrives only when the wait is noticeable, and that nothing shifts when data lands. |
 
+### Empty states (P11-T3)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| The two crash modes are still fixed | PASS | The restyle touched only the content. The `Center + SingleChildScrollView` structure and the `SliverFillRemaining(hasScrollBody: true)` call sites are unchanged, and both regressions are now pinned by tests instead of by memory: a `SliverList`, a `SliverFillRemaining(hasScrollBody: false)` and a plain `ListView` hosting the widget, plus the exact Finance-empty composition (card sliver above, empty state filling the rest) — `flutter test test/core/widgets/vw_empty_state_test.dart`. |
+| A long message scrolls rather than overflowing | PASS | Pumped in a 320×320 viewport with a 40× repeated message: no exception, one `SingleChildScrollView`, and still none after a drag. |
+| The glyph sits in a soft disc, from the theme | PASS | Muted icon (32px) centred in an 80px `AppColors.surfaceSoft` circle, asserted in light *and* dark. Code-drawn — no illustration assets, no generated imagery. |
+| The disc is decorative, the message is the announcement | PASS | The disc is inside `ExcludeSemantics`, so a screen reader reads the message once and not the glyph. Asserted with `ensureSemantics`. |
+| The CTA still appears only when there is an action | PASS | With no `actionLabel` no button is built; the same widget calls still pass `title`/`message`/`actionLabel` as before, so no call site changed. |
+| Empty states on device | MANUAL — todo | Open each empty list on the Redmi Note 8 and confirm the disc reads as intentional, the state feels centred, and a long message scrolls without clipping. |
+
 ## Re-running the automated part
 
 ```sh

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/widgets/vw_button.dart';
 
@@ -36,7 +37,20 @@ class VWEmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             // Decorative: announcing the glyph adds nothing over the message.
-            ExcludeSemantics(child: Icon(icon, size: 48, color: muted)),
+            // The soft disc gives the glyph a home on an otherwise empty
+            // screen, so the state reads as designed rather than as leftover
+            // space (P11-T3).
+            ExcludeSemantics(
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceSoft(context),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 32, color: muted),
+              ),
+            ),
             const SizedBox(height: AppSpacing.lg),
             if (title != null) ...<Widget>[
               Text(
