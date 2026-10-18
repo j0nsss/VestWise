@@ -60,6 +60,18 @@ delegates to it.)
 | 200-item list scroll | MANUAL — todo | Seed 200 transactions on the Redmi Note 8 and scroll the finance list with the performance overlay on. |
 | Cold start < ~2s | MANUAL — todo | `flutter run --profile --trace-startup` on the Redmi Note 8 (mid-range, Android 11). |
 
+## Phase 9 — Motion (P9-T1..T4)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| Every animation token obeys the 250ms ceiling | PASS | `flutter test test/core/constants/app_motion_test.dart` — every token but `signature` is ≤ `maxDuration`. |
+| The `signature` exception is bounded, not open-ended | PASS | Same test asserts `maxDuration` (250ms) < `signature` (320ms) ≤ 400ms, so the carve-out cannot be widened by accident. |
+| The staggered cascade fits inside `signature` | PASS | `listItemEnter + staggerMaxItems × staggerStep` = 180 + 120 = 300ms ≤ 320ms, asserted in the motion test and in `test/core/widgets/vw_motion_widgets_test.dart`. |
+| New motion primitives respect reduced motion | PASS | `motionDuration` collapses to `Duration.zero`; `VWFadeThrough`, `VWStaggeredList` and the shell settle all skip under `prefersReducedMotion` — `test/core/widgets/vw_motion_widgets_test.dart`, `test/widget_test.dart`. |
+| Tab switches do not hard-cut | PASS (host) | The shell dims to 92% and restores over `stateChange` when the branch index changes; asserted in `test/widget_test.dart` ("switching tabs settles in"). |
+| Tab switches and detail screens, on device | MANUAL — todo | Tap through all five tabs and into one detail screen per feature on the Redmi Note 8; confirm no pop/flash and that the Android back gesture is still smooth. |
+| Task-complete morph + haptic | MANUAL — todo | Toggle a task on the Redmi Note 8: expect the check to fill and the title to strike through over ~320ms with a light haptic tick, and the row to reclassify into active/completed afterwards. |
+
 ## Re-running the automated part
 
 ```sh

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vestwise/app.dart';
+import 'package:vestwise/core/router/app_shell.dart';
 import 'package:vestwise/core/theme/app_theme.dart';
 import 'package:vestwise/features/calendar/data/models/calendar_event_model.dart';
 import 'package:vestwise/features/calendar/presentation/providers/calendar_providers.dart';
@@ -61,5 +62,53 @@ void main() {
     expect(AppTheme.dark.useMaterial3, isTrue);
     expect(AppTheme.light.brightness, Brightness.light);
     expect(AppTheme.dark.brightness, Brightness.dark);
+  });
+
+  group('shell branch settle (P9-T3)', () {
+    double? settleOpacity(WidgetTester tester) {
+      final Finder fade = find.byKey(appShellSettleKey);
+      if (fade.evaluate().isEmpty) {
+        return null;
+      }
+
+      return tester.widget<FadeTransition>(fade).opacity.value;
+    }
+
+    testWidgets('switching tabs settles in rather than hard-cutting', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(settleOpacity(tester), 1);
+
+      await tester.tap(find.text('Tasks'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(settleOpacity(tester), lessThan(1));
+
+      await tester.pumpAndSettle();
+      expect(settleOpacity(tester), 1);
+      expect(find.byType(TasksListScreen), findsOneWidget);
+    });
+
+    testWidgets('reduced motion drops the settle altogether', (
+      WidgetTester tester,
+    ) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(settleOpacity(tester), isNull);
+
+      await tester.tap(find.text('Tasks'));
+      await tester.pump();
+
+      expect(settleOpacity(tester), isNull);
+      expect(find.byType(TasksListScreen), findsOneWidget);
+
+      await tester.pumpAndSettle();
+    });
   });
 }
