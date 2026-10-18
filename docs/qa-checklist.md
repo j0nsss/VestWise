@@ -152,6 +152,17 @@ delegates to it.)
 | One documented difference: a one-line transaction row | CHANGED | The real row drops its category line when the note and the category say the same thing, so that row is one `bodyMedium` line shorter than its skeleton. Bounded to a single line and noted in the widget. |
 | Skeletons on device | MANUAL — todo | Cold-start each list on the Redmi Note 8 and confirm the sweep reads as "working" rather than as flicker, and that no row shifts when data lands. |
 
+### Loading gates (P11-T2)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| A fast local read never flashes a skeleton | PASS | Every list waits out a ~100ms gate (`VWDelayed`) before showing a skeleton, so the ordinary Isar read (well under 100ms) shows nothing at all. Tested per screen: assert no skeleton at frame 0, a skeleton after the gate, then content and no skeleton once the stream emits — `flutter test test/features/list_loading_test.dart`. |
+| The gate is wired into all four named lists | PASS | Tasks, Finance transactions, Notes notes and the Calendar day list each wrap their loading branch in `VWDelayed(key: ValueKey('<name>-loading'), child: VWSkeletonList(...))`, and the same test file fails if any of them loses it. |
+| States swap instead of popping | PASS | Each list's loading/error/empty/data branches are wrapped in one `VWFadeThrough` cross-fade and keyed, so the swap is an animation rather than a hard cut. Verified per screen in the same test. |
+| The spinner survives exactly one list, and says why | CHANGED | The Documents tab keeps `VWLoadingIndicator`: a document row's shape depends on its file type and metadata, so there is no honest skeleton for it. The exemption is commented in the widget rather than left as an oversight. |
+| A skeleton during the gate does not hang the test suite | PASS | No test uses `pumpAndSettle` while a skeleton is on screen (a shimmer repeats forever); the gate and the swaps are driven with bounded `pump()`s in `test/features/list_loading_test.dart` and `test/core/widgets/vw_delayed_test.dart`. |
+| Skeletons appear late enough to feel right on device | MANUAL — todo | Cold-start each of the four lists on the Redmi Note 8 and confirm the skeleton arrives only when the wait is noticeable, and that nothing shifts when data lands. |
+
 ## Re-running the automated part
 
 ```sh

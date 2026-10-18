@@ -10,11 +10,14 @@ import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_button.dart';
 import 'package:vestwise/core/widgets/vw_card.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
-import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
+import 'package:vestwise/core/widgets/vw_delayed.dart';
+import 'package:vestwise/core/widgets/vw_fade_through.dart';
+import 'package:vestwise/core/widgets/vw_skeleton.dart';
 import 'package:vestwise/features/finance/data/models/transaction_model.dart';
 import 'package:vestwise/features/finance/presentation/providers/finance_providers.dart';
 import 'package:vestwise/features/finance/presentation/widgets/money.dart';
 import 'package:vestwise/features/finance/presentation/widgets/transaction_list_tile.dart';
+import 'package:vestwise/features/finance/presentation/widgets/transaction_row_skeleton.dart';
 
 /// Finance home: current balance card + reverse-chronological transactions
 /// grouped by day (plan P3-FIN-2).
@@ -52,18 +55,24 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
         onPressed: () => context.go(RoutePaths.financeAdd),
         child: const Icon(Icons.add),
       ),
-      body: transactionsAsync.when(
-        loading: () => const VWLoadingIndicator(),
-        error: (Object error, StackTrace stack) => VWEmptyState(
-          icon: Icons.error_outline,
-          title: 'Could not load your transactions',
-          message: 'Something went wrong reading your finance data.',
-          actionLabel: 'Retry',
-          onAction: () =>
-              ref.invalidate(watchRecentTransactionsProvider(_visibleCount)),
+      body: VWFadeThrough(
+        child: transactionsAsync.when(
+          loading: () => const VWDelayed(
+            key: ValueKey<String>('transactions-loading'),
+            child: VWSkeletonList(row: TransactionRowSkeleton()),
+          ),
+          error: (Object error, StackTrace stack) => VWEmptyState(
+            key: const ValueKey<String>('transactions-error'),
+            icon: Icons.error_outline,
+            title: 'Could not load your transactions',
+            message: 'Something went wrong reading your finance data.',
+            actionLabel: 'Retry',
+            onAction: () =>
+                ref.invalidate(watchRecentTransactionsProvider(_visibleCount)),
+          ),
+          data: (List<TransactionModel> transactions) =>
+              _buildBody(context, transactions),
         ),
-        data: (List<TransactionModel> transactions) =>
-            _buildBody(context, transactions),
       ),
     );
   }

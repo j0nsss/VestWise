@@ -11,9 +11,11 @@ import 'package:vestwise/core/notifications/notification_service.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
+import 'package:vestwise/core/widgets/vw_delayed.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
+import 'package:vestwise/core/widgets/vw_fade_through.dart';
 import 'package:vestwise/core/widgets/vw_section_disclosure.dart';
-import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
+import 'package:vestwise/core/widgets/vw_skeleton.dart';
 import 'package:vestwise/core/widgets/vw_notification_banner.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
 import 'package:vestwise/features/tasks/domain/repositories/tasks_repository.dart';
@@ -23,6 +25,7 @@ import 'package:vestwise/features/tasks/presentation/widgets/delete_task_dialog.
 import 'package:vestwise/features/tasks/presentation/widgets/swipeable_task_row.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_groups.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_list_tile.dart';
+import 'package:vestwise/features/tasks/presentation/widgets/task_row_skeleton.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_quick_add.dart';
 
 /// Task list (plan P3-TASK-1).
@@ -135,63 +138,75 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
           // would make the FAB the only way back to it.
           const TaskQuickAdd(),
           Expanded(
-            child: tasksAsync.when(
-              loading: () => const VWLoadingIndicator(),
-              error: (Object error, StackTrace stack) => VWEmptyState(
-                icon: Icons.error_outline,
-                title: 'Could not load your tasks',
-                message: 'Something went wrong reading your tasks.',
-                actionLabel: 'Retry',
-                onAction: () => ref.invalidate(watchAllTasksProvider),
-              ),
-              data: (List<TaskModel> tasks) {
-                if (tasks.isEmpty) {
-                  return VWEmptyState(
-                    icon: Icons.check_circle_outline,
-                    title: 'No tasks yet',
-                    message: 'No tasks yet — add your first one.',
-                    actionLabel: 'Add task',
-                    onAction: () =>
-                        context.go(RoutePaths.taskDetailFor(RoutePaths.newId)),
+            // Loading and content cross-fade instead of popping (P11-T2), and
+            // the skeleton is held back by VWDelayed so an instant Isar read
+            // never shows a placeholder at all.
+            child: VWFadeThrough(
+              child: tasksAsync.when(
+                loading: () => const VWDelayed(
+                  key: ValueKey<String>('tasks-loading'),
+                  child: VWSkeletonList(row: TaskRowSkeleton()),
+                ),
+                error: (Object error, StackTrace stack) => VWEmptyState(
+                  key: const ValueKey<String>('tasks-error'),
+                  icon: Icons.error_outline,
+                  title: 'Could not load your tasks',
+                  message: 'Something went wrong reading your tasks.',
+                  actionLabel: 'Retry',
+                  onAction: () => ref.invalidate(watchAllTasksProvider),
+                ),
+                data: (List<TaskModel> tasks) {
+                  if (tasks.isEmpty) {
+                    return VWEmptyState(
+                      key: const ValueKey<String>('tasks-empty'),
+                      icon: Icons.check_circle_outline,
+                      title: 'No tasks yet',
+                      message: 'No tasks yet — add your first one.',
+                      actionLabel: 'Add task',
+                      onAction: () => context.go(
+                        RoutePaths.taskDetailFor(RoutePaths.newId),
+                      ),
+                    );
+                  }
+
+                  final List<TaskRow> rows = buildTaskRows(
+                    tasks,
+                    collapsed: _collapsed,
+                    today: DateTime.now(),
                   );
-                }
 
-                final List<TaskRow> rows = buildTaskRows(
-                  tasks,
-                  collapsed: _collapsed,
-                  today: DateTime.now(),
-                );
-
-                return CustomScrollView(
-                  slivers: <Widget>[
-                    SliverList.builder(
-                      itemCount: rows.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final TaskRow row = rows[index];
-                        if (row is TaskGroupRow) {
-                          return VWSectionDisclosure(
-                            key: ValueKey<TaskGroup>(row.group),
-                            label: taskGroupLabel(row.group),
-                            count: row.count,
-                            unit: 'task',
-                            expanded: !_collapsed.contains(row.group),
-                            onToggle: () => _toggleGroup(row.group),
+                  return CustomScrollView(
+                    key: const ValueKey<String>('tasks-list'),
+                    slivers: <Widget>[
+                      SliverList.builder(
+                        itemCount: rows.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final TaskRow row = rows[index];
+                          if (row is TaskGroupRow) {
+                            return VWSectionDisclosure(
+                              key: ValueKey<TaskGroup>(row.group),
+                              label: taskGroupLabel(row.group),
+                              count: row.count,
+                              unit: 'task',
+                              expanded: !_collapsed.contains(row.group),
+                              onToggle: () => _toggleGroup(row.group),
+                            );
+                          }
+                          final TaskModel task = (row as TaskItemRow).task;
+                          return _TaskListTileRow(
+                            task: task,
+                            index: index,
+                            morphingId: _morphingId,
+                            onToggle: _toggleComplete,
+                            onDelete: _deleteTask,
                           );
-                        }
-                        final TaskModel task = (row as TaskItemRow).task;
-                        return _TaskListTileRow(
-                          task: task,
-                          index: index,
-                          morphingId: _morphingId,
-                          onToggle: _toggleComplete,
-                          onDelete: _deleteTask,
-                        );
-                      },
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 88)),
-                  ],
-                );
-              },
+                        },
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 88)),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ],

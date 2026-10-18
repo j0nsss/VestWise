@@ -9,7 +9,10 @@ import 'package:vestwise/core/storage/file_storage_service.dart';
 import 'package:vestwise/core/utils/byte_format.dart';
 import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
+import 'package:vestwise/core/widgets/vw_delayed.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
+import 'package:vestwise/core/widgets/vw_fade_through.dart';
+import 'package:vestwise/core/widgets/vw_skeleton.dart';
 import 'package:vestwise/core/widgets/vw_inline_spinner.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
 import 'package:vestwise/core/widgets/vw_text_field.dart';
@@ -17,6 +20,7 @@ import 'package:vestwise/features/notes/data/models/imported_document_model.dart
 import 'package:vestwise/features/notes/data/models/note_model.dart';
 import 'package:vestwise/features/notes/presentation/providers/notes_providers.dart';
 import 'package:vestwise/features/notes/presentation/widgets/document_list_tile.dart';
+import 'package:vestwise/features/notes/presentation/widgets/note_card_skeleton.dart';
 import 'package:vestwise/features/notes/presentation/widgets/note_list_tile.dart';
 import 'package:vestwise/features/notes/presentation/widgets/notes_sections.dart';
 
@@ -154,63 +158,71 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
           ),
         ),
         Expanded(
-          child: notesAsync.when(
-            loading: () => const VWLoadingIndicator(),
-            error: (Object error, StackTrace stack) => VWEmptyState(
-              icon: Icons.error_outline,
-              title: 'Could not load your notes',
-              message: 'Something went wrong reading your notes.',
-              actionLabel: 'Retry',
-              onAction: () =>
-                  ref.invalidate(watchNotesMatchingProvider(_query)),
-            ),
-            data: (List<NoteModel> notes) {
-              if (notes.isEmpty) {
-                return VWEmptyState(
-                  icon: Icons.sticky_note_2_outlined,
-                  title: _query.isEmpty ? 'No notes yet' : 'No matches',
-                  message: _query.isEmpty
-                      ? 'Write your first note to get started.'
-                      : 'No notes match “$_query”.',
-                  actionLabel: _query.isEmpty ? 'New note' : null,
-                  onAction: _query.isEmpty
-                      ? () => context.go(
-                          RoutePaths.noteEditorFor(RoutePaths.newId),
-                        )
-                      : null,
-                );
-              }
-              final List<NotesRow> rows = buildNoteRows(
-                notes,
-                collapsed: _collapsed,
-                searching: _query.isNotEmpty,
-              );
-              return ListView.builder(
-                itemCount: rows.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final NotesRow row = rows[index];
-                  if (row is SectionRow) {
-                    return NotesSectionHeader(
-                      key: ValueKey<NotesSection>(row.section),
-                      section: row.section,
-                      count: row.count,
-                      expanded: !_collapsed.contains(row.section),
-                      onToggle: () => _toggleSection(row.section),
-                    );
-                  }
-                  final NoteModel note = (row as NoteRow).note;
-                  final Widget tile = NoteListTile(
-                    note: note,
-                    onTap: () => context.go(RoutePaths.noteEditorFor(note.id)),
-                    onTogglePin: () => _togglePin(note),
+          child: VWFadeThrough(
+            child: notesAsync.when(
+              loading: () => const VWDelayed(
+                key: ValueKey<String>('notes-loading'),
+                child: VWSkeletonList(row: NoteCardSkeleton()),
+              ),
+              error: (Object error, StackTrace stack) => VWEmptyState(
+                key: const ValueKey<String>('notes-error'),
+                icon: Icons.error_outline,
+                title: 'Could not load your notes',
+                message: 'Something went wrong reading your notes.',
+                actionLabel: 'Retry',
+                onAction: () =>
+                    ref.invalidate(watchNotesMatchingProvider(_query)),
+              ),
+              data: (List<NoteModel> notes) {
+                if (notes.isEmpty) {
+                  return VWEmptyState(
+                    key: const ValueKey<String>('notes-empty'),
+                    icon: Icons.sticky_note_2_outlined,
+                    title: _query.isEmpty ? 'No notes yet' : 'No matches',
+                    message: _query.isEmpty
+                        ? 'Write your first note to get started.'
+                        : 'No notes match “$_query”.',
+                    actionLabel: _query.isEmpty ? 'New note' : null,
+                    onAction: _query.isEmpty
+                        ? () => context.go(
+                            RoutePaths.noteEditorFor(RoutePaths.newId),
+                          )
+                        : null,
                   );
-                  final Key key = ValueKey<int>(note.id);
-                  return VWAnimatedListItem.animates(index)
-                      ? VWAnimatedListItem(key: key, child: tile)
-                      : KeyedSubtree(key: key, child: tile);
-                },
-              );
-            },
+                }
+                final List<NotesRow> rows = buildNoteRows(
+                  notes,
+                  collapsed: _collapsed,
+                  searching: _query.isNotEmpty,
+                );
+                return ListView.builder(
+                  itemCount: rows.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final NotesRow row = rows[index];
+                    if (row is SectionRow) {
+                      return NotesSectionHeader(
+                        key: ValueKey<NotesSection>(row.section),
+                        section: row.section,
+                        count: row.count,
+                        expanded: !_collapsed.contains(row.section),
+                        onToggle: () => _toggleSection(row.section),
+                      );
+                    }
+                    final NoteModel note = (row as NoteRow).note;
+                    final Widget tile = NoteListTile(
+                      note: note,
+                      onTap: () =>
+                          context.go(RoutePaths.noteEditorFor(note.id)),
+                      onTogglePin: () => _togglePin(note),
+                    );
+                    final Key key = ValueKey<int>(note.id);
+                    return VWAnimatedListItem.animates(index)
+                        ? VWAnimatedListItem(key: key, child: tile)
+                        : KeyedSubtree(key: key, child: tile);
+                  },
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -242,6 +254,9 @@ class _DocumentsTab extends ConsumerWidget {
     );
 
     return documentsAsync.when(
+      // The one list that keeps the spinner: a document row's shape depends on
+      // its file type and metadata, so there is no honest skeleton to draw for
+      // it. Every other list in the app shows a shape placeholder instead.
       loading: () => const VWLoadingIndicator(),
       error: (Object error, StackTrace stack) => VWEmptyState(
         icon: Icons.error_outline,

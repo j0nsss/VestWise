@@ -143,3 +143,45 @@ class _VWShimmerState extends State<VWShimmer>
     );
   }
 }
+
+/// A list of identical skeleton rows, for a screen that is waiting on a list
+/// (plan2.md P11-T2).
+///
+/// Takes the row rather than a builder because skeletons are stateless: the
+/// same `const TaskRowSkeleton()` in every slot is the point, and the list is
+/// never scrolled (the real data replaces it, usually within a frame or two).
+class VWSkeletonList extends StatelessWidget {
+  const VWSkeletonList({
+    required this.row,
+    this.count = 5,
+    this.padding = EdgeInsets.zero,
+    this.gap = 0,
+    super.key,
+  });
+
+  final Widget row;
+  final int count;
+  final EdgeInsetsGeometry padding;
+
+  /// Space between rows, for lists whose real rows are separated cards.
+  final double gap;
+
+  @override
+  Widget build(BuildContext context) {
+    if (gap > 0) {
+      return ListView.separated(
+        padding: padding,
+        itemCount: count,
+        separatorBuilder: (BuildContext context, int index) =>
+            SizedBox(height: gap),
+        itemBuilder: (BuildContext context, int index) => row,
+      );
+    }
+
+    return ListView.builder(
+      padding: padding,
+      itemCount: count,
+      itemBuilder: (BuildContext context, int index) => row,
+    );
+  }
+}
