@@ -93,6 +93,8 @@ delegates to it.)
 | The title is announced as a header | PASS | The field is wrapped in `Semantics(header: true)`, asserted with `isSemantics(isHeader: true, isTextField: true)`. |
 | A chosen icon persists and defaults safely | PASS | `iconCodePoint` is nullable and additive, so notes written before the field existed load as "no icon" (document glyph) rather than failing; round-trip asserted in `test/features/notes/data/notes_repository_test.dart`. |
 | Every icon option is labelled | PASS | `NoteIconPicker` gives each option a tooltip, and the list is asserted to have no duplicate glyphs or labels — `test/features/notes/presentation/note_icon_picker_test.dart`. |
+| Pinned notes are separable at a glance | PASS | The list is flattened into a row script (`buildNoteRows`) so it stays a `ListView.builder`, headings appear only when there is something to separate, and search results drop the headings entirely — `flutter test test/features/notes/presentation/notes_sections_test.dart`. |
+| Collapse state is not persisted | PASS | `_collapsed` is a plain in-memory set on the tab's state; nothing is written to `shared_preferences` or the database. |
 | Editor screen on device | MANUAL — todo | `integration_test/app_flow_test.dart` ("writes a note and sees it persisted") was updated for the new header but has not been re-run since the device was disconnected. |
 
 ## Re-running the automated part

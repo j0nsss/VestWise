@@ -18,6 +18,7 @@ import 'package:vestwise/features/notes/data/models/note_model.dart';
 import 'package:vestwise/features/notes/presentation/providers/notes_providers.dart';
 import 'package:vestwise/features/notes/presentation/widgets/document_list_tile.dart';
 import 'package:vestwise/features/notes/presentation/widgets/note_list_tile.dart';
+import 'package:vestwise/features/notes/presentation/widgets/notes_sections.dart';
 
 /// Notes workspace: a searchable notes list and an imported-documents list,
 /// split into two tabs (plan P3-NOTES-1 / P3-NOTES-3).
@@ -122,6 +123,11 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
 
+  /// Which groups the user has collapsed. Deliberately in-memory and nowhere
+  /// else: collapsing a group is a glance-level preference, so it resets with
+  /// the screen rather than living in storage (plan2.md P10-NOTES-3).
+  final Set<NotesSection> _collapsed = <NotesSection>{};
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -169,10 +175,25 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
                       : null,
                 );
               }
+              final List<NotesRow> rows = buildNoteRows(
+                notes,
+                collapsed: _collapsed,
+                searching: _query.isNotEmpty,
+              );
               return ListView.builder(
-                itemCount: notes.length,
+                itemCount: rows.length,
                 itemBuilder: (BuildContext context, int index) {
-                  final NoteModel note = notes[index];
+                  final NotesRow row = rows[index];
+                  if (row is SectionRow) {
+                    return NotesSectionHeader(
+                      key: ValueKey<NotesSection>(row.section),
+                      section: row.section,
+                      count: row.count,
+                      expanded: !_collapsed.contains(row.section),
+                      onToggle: () => _toggleSection(row.section),
+                    );
+                  }
+                  final NoteModel note = (row as NoteRow).note;
                   final Widget tile = NoteListTile(
                     note: note,
                     onTap: () =>
@@ -190,6 +211,14 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
         ),
       ],
     );
+  }
+
+  void _toggleSection(NotesSection section) {
+    setState(() {
+      if (!_collapsed.remove(section)) {
+        _collapsed.add(section);
+      }
+    });
   }
 
   Future<void> _togglePin(NoteModel note) async {
