@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vestwise/core/constants/app_colors.dart';
+import 'package:vestwise/core/constants/app_motion.dart';
+import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/theme/app_theme.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_button.dart';
@@ -19,6 +22,159 @@ void main() {
     await tester.pumpWidget(_wrap(const VWCard(child: Text('inside'))));
     expect(find.text('inside'), findsOneWidget);
     expect(find.byType(Card), findsOneWidget);
+  });
+
+  group('VWCard variants (P8-T4)', () {
+    testWidgets('flat is the default and inherits the flat theme', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(_wrap(const VWCard(child: Text('flat'))));
+
+      final Card card = tester.widget<Card>(find.byType(Card));
+      expect(card.color, isNull);
+      expect(card.shape, isNull);
+      expect(card.elevation, isNull);
+
+      final CardThemeData theme = AppTheme.light.cardTheme;
+      expect(theme.elevation, AppElevation.flat);
+      expect(
+        (theme.shape! as RoundedRectangleBorder).side.width,
+        1,
+        reason: 'flat cards are separated by a hairline border',
+      );
+    });
+
+    testWidgets('soft drops the border and sits on the soft surface', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(const VWCard(variant: VWCardVariant.soft, child: Text('soft'))),
+      );
+
+      final Card card = tester.widget<Card>(find.byType(Card));
+      expect(card.color, AppColors.surfaceSoftFor(Brightness.light));
+      expect(card.elevation, AppElevation.flat);
+      expect(
+        (card.shape! as RoundedRectangleBorder).side,
+        BorderSide.none,
+      );
+    });
+
+    testWidgets('elevated is the one card allowed to float', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const VWCard(variant: VWCardVariant.elevated, child: Text('high')),
+        ),
+      );
+
+      final Card card = tester.widget<Card>(find.byType(Card));
+      expect(card.elevation, AppElevation.overlay);
+      expect(card.elevation, lessThanOrEqualTo(2));
+      expect((card.shape! as RoundedRectangleBorder).side, BorderSide.none);
+    });
+
+    testWidgets('every variant keeps the card radius and renders the child', (
+      WidgetTester tester,
+    ) async {
+      for (final VWCardVariant variant in VWCardVariant.values) {
+        await tester.pumpWidget(
+          _wrap(VWCard(variant: variant, child: Text(variant.name))),
+        );
+
+        expect(find.byType(Card), findsOneWidget);
+        expect(find.text(variant.name), findsOneWidget);
+
+        final Card card = tester.widget<Card>(find.byType(Card));
+        if (card.shape case final RoundedRectangleBorder shape) {
+          expect(shape.borderRadius, AppRadii.card);
+        }
+      }
+    });
+
+    testWidgets('an interactive card renders a single tappable Card', (
+      WidgetTester tester,
+    ) async {
+      int taps = 0;
+      await tester.pumpWidget(
+        _wrap(VWCard(onTap: () => taps++, child: const Text('tap me'))),
+      );
+
+      expect(find.byType(Card), findsOneWidget);
+      expect(find.byType(InkWell), findsOneWidget);
+
+      await tester.tap(find.text('tap me'));
+      expect(taps, 1);
+    });
+  });
+
+  group('VWCard press feedback (P8-T4)', () {
+    testWidgets('presses in on touch-down and springs back on release', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(VWCard(onTap: () {}, child: const Text('press'))),
+      );
+
+      double scale() =>
+          tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale;
+
+      expect(scale(), 1.0);
+
+      final TestGesture gesture =
+          await tester.startGesture(tester.getCenter(find.text('press')));
+      await tester.pump();
+      expect(scale(), lessThan(1.0));
+
+      await gesture.up();
+      await tester.pump();
+      expect(scale(), 1.0);
+
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('the press animation stays inside the motion budget', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(VWCard(onTap: () {}, child: const Text('press'))),
+      );
+
+      final AnimatedScale animated =
+          tester.widget<AnimatedScale>(find.byType(AnimatedScale));
+      expect(animated.duration, AppMotion.stateChange);
+      expect(animated.duration, lessThanOrEqualTo(AppMotion.maxDuration));
+    });
+
+    testWidgets('reduced motion skips the press animation', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: MediaQuery(
+            data: const MediaQueryData(disableAnimations: true),
+            child: Scaffold(
+              body: VWCard(onTap: () {}, child: const Text('press')),
+            ),
+          ),
+        ),
+      );
+
+      final AnimatedScale animated =
+          tester.widget<AnimatedScale>(find.byType(AnimatedScale));
+      expect(animated.duration, Duration.zero);
+    });
+
+    testWidgets('a non-interactive card has no press animation', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(_wrap(const VWCard(child: Text('static'))));
+
+      expect(find.byType(AnimatedScale), findsNothing);
+      expect(find.byType(InkWell), findsNothing);
+    });
   });
 
   testWidgets('VWButton renders its label and fires onPressed', (
