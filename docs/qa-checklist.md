@@ -132,6 +132,10 @@ delegates to it.)
 | Events with different colours are visually distinct | PASS | Two rows with different `colorValue`s are asserted to paint different bars. Note: nothing in the UI *sets* `colorValue` yet — the field exists on the model (plan P3-CAL) with a default, so today every event carries the same colour. This restyle surfaces the field; a picker is not part of Phase 10. |
 | The accent bar's contrast is exempt, and deliberately so | CHANGED | The bar is decorative: all the meaning lives in the text beside it, which is exactly why the colour was not put behind a label. The default brand indigo sits near 3:1 against the dark surface, so it is documented exempt like `borderSubtle` rather than being re-tinted per theme. |
 | Event cards on device | MANUAL — todo | Check the day list's card spacing and accent bars in light and dark mode, and confirm tapping still opens the event. |
+| The bottom bar is flat | PASS | `navigationBarTheme` sets `elevation: AppElevation.flat`, `surfaceTintColor: transparent`, the page surface as its background and a 64px height; the only separation is a `borderSubtle` hairline the shell draws — `flutter test test/widget_test.dart`. |
+| The selected tab is legible in both themes | PASS | Selection rides on the icon *and* label switching to `colorScheme.primary` (clears 3:1 against the bar in either theme), with the tonal pill as reinforcement at 12% alpha rather than the signal — same test file, asserted from the theme both ways. |
+| All five destinations still navigate | PASS | The walk taps each destination inside the bar and asserts `selectedIndex` plus which branch is actually hit-testable. It also builds the Finance and Notes branches for the first time in this suite (their list providers are now overridden with empty streams), so a broken branch would fail here rather than only on device. |
+| Bottom bar on device | MANUAL — todo | Check the hairline, the pill and label contrast in light and dark mode, including the selected icon on the pill, and confirm each tab's scroll position is still preserved. |
 
 ## Re-running the automated part
 

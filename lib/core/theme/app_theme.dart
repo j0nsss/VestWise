@@ -18,22 +18,24 @@ abstract final class AppTheme {
   static ThemeData get dark => _build(Brightness.dark);
 
   static ThemeData _build(Brightness brightness) {
-    final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.seed,
-      brightness: brightness,
-      // Overriding the neutral roles on top of the seeded scheme keeps the
-      // brand hue (primary) intact while warming every surface and text tone.
-    ).copyWith(
-      surface: AppColors.surfaceFor(brightness),
-      surfaceContainerHighest:
-          AppColors.surfaceContainerHighestFor(brightness),
-      onSurface: AppColors.textPrimaryFor(brightness),
-      onSurfaceVariant: AppColors.textSecondaryFor(brightness),
-      outlineVariant: AppColors.borderSubtleFor(brightness),
-      // No elevation tint: surfaces are already the warm tones we want, so the
-      // scheme must not re-tint them back towards the seed.
-      surfaceTint: Colors.transparent,
-    );
+    final ColorScheme scheme =
+        ColorScheme.fromSeed(
+          seedColor: AppColors.seed,
+          brightness: brightness,
+          // Overriding the neutral roles on top of the seeded scheme keeps the
+          // brand hue (primary) intact while warming every surface and text tone.
+        ).copyWith(
+          surface: AppColors.surfaceFor(brightness),
+          surfaceContainerHighest: AppColors.surfaceContainerHighestFor(
+            brightness,
+          ),
+          onSurface: AppColors.textPrimaryFor(brightness),
+          onSurfaceVariant: AppColors.textSecondaryFor(brightness),
+          outlineVariant: AppColors.borderSubtleFor(brightness),
+          // No elevation tint: surfaces are already the warm tones we want, so the
+          // scheme must not re-tint them back towards the seed.
+          surfaceTint: Colors.transparent,
+        );
 
     final ThemeData base = ThemeData(
       useMaterial3: true,
@@ -72,6 +74,40 @@ abstract final class AppTheme {
         color: scheme.outlineVariant,
         thickness: 1,
         space: 1,
+      ),
+      // Flat bottom bar (plan2.md P10-NAV-1): no Material elevation or surface
+      // tint, a lower height, and a quiet tonal pill behind the selected tab.
+      //
+      // The pill is reinforcement, not the signal: selection is carried by the
+      // icon and label switching to `primary`, which clears 3:1 against the bar
+      // in both themes on its own. The pill itself sits at low alpha on purpose
+      // — a stronger fill would be the loudest thing on an otherwise flat
+      // screen. The top hairline is drawn by the shell.
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: AppElevation.flat,
+        height: 64,
+        indicatorColor: scheme.primary.withValues(alpha: 0.12),
+        indicatorShape: const StadiumBorder(),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (Set<WidgetState> states) => IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? scheme.primary
+                : scheme.onSurfaceVariant,
+          ),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith((
+          Set<WidgetState> states,
+        ) {
+          final bool selected = states.contains(WidgetState.selected);
+          return AppTextStyles.textTheme.labelSmall!.copyWith(
+            fontFamily: AppTextStyles.fontFamily,
+            color: selected ? scheme.primary : scheme.onSurfaceVariant,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+          );
+        }),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(

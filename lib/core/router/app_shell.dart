@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_motion.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
 
@@ -27,36 +28,45 @@ class AppShell extends StatelessWidget {
         index: navigationShell.currentIndex,
         child: navigationShell,
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: _onDestinationSelected,
-        destinations: const <NavigationDestination>[
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: AppStrings.dashboard,
+      // The bar is flat by theme (P10-NAV-1); this hairline is the only thing
+      // separating it from the page, matching how every card is separated.
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: AppColors.borderSubtle(context)),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet),
-            label: AppStrings.finance,
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.sticky_note_2_outlined),
-            selectedIcon: Icon(Icons.sticky_note_2),
-            label: AppStrings.notes,
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.check_circle_outline),
-            selectedIcon: Icon(Icons.check_circle),
-            label: AppStrings.tasks,
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_today),
-            label: AppStrings.calendar,
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          selectedIndex: navigationShell.currentIndex,
+          onDestinationSelected: _onDestinationSelected,
+          destinations: const <NavigationDestination>[
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon: Icon(Icons.dashboard),
+              label: AppStrings.dashboard,
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              selectedIcon: Icon(Icons.account_balance_wallet),
+              label: AppStrings.finance,
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.sticky_note_2_outlined),
+              selectedIcon: Icon(Icons.sticky_note_2),
+              label: AppStrings.notes,
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.check_circle_outline),
+              selectedIcon: Icon(Icons.check_circle),
+              label: AppStrings.tasks,
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.calendar_today_outlined),
+              selectedIcon: Icon(Icons.calendar_today),
+              label: AppStrings.calendar,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -97,10 +107,10 @@ class _BranchSettleState extends State<_BranchSettle>
     duration: AppMotion.stateChange,
     value: 1,
   );
-  late final Animation<double> _opacity = Tween<double>(
-    begin: _floor,
-    end: 1,
-  ).animate(CurvedAnimation(parent: _controller, curve: AppMotion.standardCurve));
+  late final Animation<double> _opacity = Tween<double>(begin: _floor, end: 1)
+      .animate(
+        CurvedAnimation(parent: _controller, curve: AppMotion.standardCurve),
+      );
 
   @override
   void didUpdateWidget(covariant _BranchSettle oldWidget) {
