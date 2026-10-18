@@ -40,12 +40,17 @@ abstract final class AppMotion {
   /// under reduced motion, like everything else.
   static const Duration skeletonSweep = Duration(milliseconds: 1200);
 
-  /// Per-index delay for [VWStaggeredList]'s entrance, and the number of rows
-  /// that may be staggered. Together they keep the whole cascade inside
+  /// Per-index delay for [VWStaggeredList]'s entrance, and the number of rows  /// that may be staggered. Together they keep the whole cascade inside
   /// [signature]: `listItemEnter + staggerMaxItems × staggerStep` = 180 + 120 =
   /// 300ms ≤ 320ms. That is why the cap exists and why the delay is a token.
   static const Duration staggerStep = Duration(milliseconds: 24);
   static const int staggerMaxItems = 5;
+
+  /// How far an interactive surface scales down while it is held — a card, a
+  /// button. Small on purpose: enough to feel the touch, not enough to look
+  /// like a mistake. One number for both (P11-T4) so a tap on a button and a
+  /// tap on a card are visibly the same gesture, answered in [stateChange].
+  static const double pressedScale = 0.98;
 
   static const Curve enterCurve = Curves.easeOutCubic;
   static const Curve standardCurve = Curves.easeInOut;

@@ -174,6 +174,17 @@ delegates to it.)
 | The CTA still appears only when there is an action | PASS | With no `actionLabel` no button is built; the same widget calls still pass `title`/`message`/`actionLabel` as before, so no call site changed. |
 | Empty states on device | MANUAL — todo | Open each empty list on the Redmi Note 8 and confirm the disc reads as intentional, the state feels centred, and a long message scrolls without clipping. |
 
+### Buttons and press feedback (P11-T4)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| A button and a card press exactly the same way | PASS | Both use one token, `AppMotion.pressedScale` (0.98), answered in `AppMotion.stateChange` (150ms). A test presses a card and a button in the same tree and asserts the two scales are equal — `flutter test test/core/widgets/vw_button_test.dart`. |
+| The press animation stays inside the motion budget | PASS | Duration is `AppMotion.stateChange`, asserted `<= AppMotion.maxDuration`. The shared number lives in `app_motion.dart`, not in either widget. |
+| Reduced motion skips the press animation | PASS | Both widgets route through `motionDuration`, so the duration becomes zero rather than the feedback being merely shortened. Asserted for the button as well as the card. |
+| A button that cannot respond does not react | PASS | `onPressed == null` and the loading state build no press animation at all — no scale without an action behind it. |
+| The existing accessibility assertions are untouched | PASS | `test/core/widgets/vw_button_test.dart`'s original 48px tap-target, semantics-label and loading-spinner tests pass unchanged; only new cases were appended. |
+| Button and card feel identical on device | MANUAL — todo | On the Redmi Note 8, tap a card and a button side by side and confirm the feedback reads as one gesture, not two. |
+
 ## Re-running the automated part
 
 ```sh

@@ -23,9 +23,10 @@ enum VWCardVariant {
 /// P8-T4). Styling (radius, background, border) comes from the theme or from
 /// [variant], so features never define their own.
 ///
-/// When [onTap] is set the card presses in slightly on touch-down — a 2% scale
-/// over `AppMotion.stateChange`, skipped entirely when the platform asks for
-/// reduced motion.
+/// When [onTap] is set the card presses in slightly on touch-down — the shared
+/// [AppMotion.pressedScale] over [AppMotion.stateChange], skipped entirely when
+/// the platform asks for reduced motion. Pressing a card and pressing a
+/// `VWButton` answer with the same gesture on purpose (P11-T4).
 class VWCard extends StatefulWidget {
   const VWCard({
     required this.child,
@@ -45,10 +46,6 @@ class VWCard extends StatefulWidget {
 }
 
 class _VWCardState extends State<VWCard> {
-  /// How far the card scales down while held. Small on purpose: enough to feel
-  /// the touch, not enough to look like a mistake.
-  static const double _pressedScale = 0.98;
-
   bool _pressed = false;
 
   void _setPressed({required bool pressed}) {
@@ -104,7 +101,7 @@ class _VWCardState extends State<VWCard> {
 
     if (interactive) {
       card = AnimatedScale(
-        scale: _pressed ? _pressedScale : 1,
+        scale: _pressed ? AppMotion.pressedScale : 1,
         duration: motionDuration(context, AppMotion.stateChange),
         curve: AppMotion.standardCurve,
         child: card,
