@@ -127,6 +127,11 @@ delegates to it.)
 | Month navigation still works | PASS | The chevrons are stock `CustomIconButton`s that were only recoloured; the test taps next and back and asserts the header label follows — a restyle, not a rebuild. |
 | The header/today formats did not gain or lose a control | PASS | `formatButtonVisible` is false, but the format button only ever renders when more than one calendar format is offered and this app uses the month grid only, so no reachable control was removed. |
 | "Today" and "selected" markers on device | MANUAL — todo | Check the ring/today marker and the filled selected marker in both light and dark mode on the Redmi Note 8, including the day that is both. |
+| Event rows are cards, not bare list tiles | PASS | `EventListTile` is a `VWCard(variant: .flat)` with `padding: EdgeInsets.zero` so the accent bar reaches the rounded edge, and the day list became a `ListView.separated` that supplies the gutter and the gaps — `flutter test test/features/calendar/presentation/event_list_tile_test.dart`. |
+| An event's colour is shown without costing legibility | PASS | `colorValue` drives a 4px accent bar only. The title and time keep `onSurface` / `onSurfaceVariant`, and the test deliberately uses a loud colour (yellow) to prove the text does not follow it, in both themes. |
+| Events with different colours are visually distinct | PASS | Two rows with different `colorValue`s are asserted to paint different bars. Note: nothing in the UI *sets* `colorValue` yet — the field exists on the model (plan P3-CAL) with a default, so today every event carries the same colour. This restyle surfaces the field; a picker is not part of Phase 10. |
+| The accent bar's contrast is exempt, and deliberately so | CHANGED | The bar is decorative: all the meaning lives in the text beside it, which is exactly why the colour was not put behind a label. The default brand indigo sits near 3:1 against the dark surface, so it is documented exempt like `borderSubtle` rather than being re-tinted per theme. |
+| Event cards on device | MANUAL — todo | Check the day list's card spacing and accent bars in light and dark mode, and confirm tapping still opens the event. |
 
 ## Re-running the automated part
 

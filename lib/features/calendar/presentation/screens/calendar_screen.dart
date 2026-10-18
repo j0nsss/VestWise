@@ -181,8 +181,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         message: 'No events on this day.',
       );
     }
-    return ListView.builder(
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
       itemCount: events.length,
+      separatorBuilder: (BuildContext context, int index) =>
+          const SizedBox(height: AppSpacing.sm),
       itemBuilder: (BuildContext context, int index) {
         final CalendarEventModel event = events[index];
         return EventListTile(
