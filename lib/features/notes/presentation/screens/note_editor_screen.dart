@@ -14,6 +14,7 @@ import 'package:vestwise/features/notes/domain/repositories/notes_repository.dar
 import 'package:vestwise/features/notes/presentation/providers/notes_providers.dart';
 import 'package:vestwise/features/notes/presentation/widgets/document_title_field.dart';
 import 'package:vestwise/features/notes/presentation/widgets/last_edited_label.dart';
+import 'package:vestwise/features/notes/presentation/widgets/note_editor_toolbar.dart';
 import 'package:vestwise/features/notes/presentation/widgets/note_icon_picker.dart';
 
 /// Rich-text note editor backed by flutter_quill (plan P3-NOTES-2).
@@ -280,10 +281,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
                   ),
                 ),
                 const Divider(height: 1),
-                QuillSimpleToolbar(
-                  controller: _quillController,
-                  config: const QuillSimpleToolbarConfig(),
-                ),
+                NoteEditorToolbar(controller: _quillController),
               ],
             ),
     );

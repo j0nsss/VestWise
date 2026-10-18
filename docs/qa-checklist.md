@@ -95,6 +95,10 @@ delegates to it.)
 | Every icon option is labelled | PASS | `NoteIconPicker` gives each option a tooltip, and the list is asserted to have no duplicate glyphs or labels — `test/features/notes/presentation/note_icon_picker_test.dart`. |
 | Pinned notes are separable at a glance | PASS | The list is flattened into a row script (`buildNoteRows`) so it stays a `ListView.builder`, headings appear only when there is something to separate, and search results drop the headings entirely — `flutter test test/features/notes/presentation/notes_sections_test.dart`. |
 | Collapse state is not persisted | PASS | `_collapsed` is a plain in-memory set on the tab's state; nothing is written to `shared_preferences` or the database. |
+| The formatting toolbar is chrome-free | PASS | `NoteEditorToolbar` disables the dividers and sets no colour/decoration, so the page surface shows through; asserted in `test/features/notes/presentation/note_editor_toolbar_test.dart`. |
+| Formatting still works after the restyle | PASS | Same file taps bold/italic/underline/strikethrough and asserts the attribute landed on the selection — a restyle, not a rebuild. |
+| Toolbar buttons keep their touch targets | PASS | Button spacing is zeroed but icon size and padding are left at the stock values, so the ≥48px target survives; no `iconTheme` override. |
+| Font family/size dropdowns removed | CHANGED | Deliberate: they are the only controls in the stock toolbar that render words rather than glyphs, and P10-NOTES-4 asks for icon-only. Every other action (bold, italic, underline, strikethrough, inline code, colours, clear format, headings, lists, quote, code block, indent, link, undo/redo, search) is unchanged. Restore in one line each if the trade-off is wrong. |
 | Editor screen on device | MANUAL — todo | `integration_test/app_flow_test.dart` ("writes a note and sees it persisted") was updated for the new header but has not been re-run since the device was disconnected. |
 
 ## Re-running the automated part
