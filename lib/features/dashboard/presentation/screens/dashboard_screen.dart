@@ -7,12 +7,15 @@ import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_card.dart';
+import 'package:vestwise/core/widgets/vw_category_chip.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
 import 'package:vestwise/core/widgets/vw_section_header.dart';
+import 'package:vestwise/core/widgets/vw_sparkline.dart';
 import 'package:vestwise/features/calendar/data/models/calendar_event_model.dart';
 import 'package:vestwise/features/calendar/presentation/providers/calendar_providers.dart';
 import 'package:vestwise/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:vestwise/features/finance/domain/models/daily_net.dart';
 import 'package:vestwise/features/finance/presentation/providers/finance_providers.dart';
 import 'package:vestwise/features/finance/presentation/widgets/money.dart';
 import 'package:vestwise/features/notes/data/models/note_model.dart';
@@ -54,6 +57,8 @@ class DashboardScreen extends ConsumerWidget {
                 _BalanceSummaryCard(
                   balance: state.balance,
                   weeklyNetChange: state.weeklyNetChange,
+                  last7DaysNet: state.last7DaysNet,
+                  hasData: state.hasFinanceData,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 _UpcomingDeadlinesCard(events: state.upcomingEvents),
@@ -184,10 +189,14 @@ class _BalanceSummaryCard extends StatelessWidget {
   const _BalanceSummaryCard({
     required this.balance,
     required this.weeklyNetChange,
+    required this.last7DaysNet,
+    required this.hasData,
   });
 
   final double balance;
   final double weeklyNetChange;
+  final List<DailyNet> last7DaysNet;
+  final bool hasData;
 
   @override
   Widget build(BuildContext context) {
@@ -196,8 +205,13 @@ class _BalanceSummaryCard extends StatelessWidget {
     final Color changeColor = positive
         ? AppColors.incomeFor(theme.brightness)
         : AppColors.expenseFor(theme.brightness);
+    final String sign = positive ? '+' : '-';
 
     return VWCard(
+      // The one card on the dashboard that is a summary rather than a list, so
+      // it sits on the grouped surface instead of carrying a border
+      // (plan2.md P10-FIN-4).
+      variant: VWCardVariant.soft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -207,17 +221,53 @@ class _BalanceSummaryCard extends StatelessWidget {
             onAction: () => context.go(RoutePaths.finance),
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text('Balance', style: theme.textTheme.bodyMedium),
-          Text(
-            formatMoney(balance),
-            style: theme.textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'This week: ${positive ? '+' : '-'}${formatMoney(weeklyNetChange.abs())}',
-            style: theme.textTheme.bodySmall?.copyWith(color: changeColor),
-          ),
+          if (!hasData)
+            const VWEmptyState(
+              icon: Icons.receipt_long_outlined,
+              message: 'No transactions yet.',
+            )
+          else ...<Widget>[
+            Text(
+              'Balance',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            Text(
+              formatMoney(balance),
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: <Widget>[
+                Text(
+                  'This week',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                // The delta as a chip: green/red from the tag palette, which is
+                // contrast-checked, rather than a hand-picked tint.
+                VWCategoryChip(
+                  icon: positive ? Icons.trending_up : Icons.trending_down,
+                  label: '$sign${formatMoney(weeklyNetChange.abs())}',
+                  tag: positive ? AppTag.green : AppTag.red,
+                  dense: true,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            // Seven days of daily net. On a week with no activity this draws a
+            // flat baseline rather than nothing (P10-FIN-2).
+            VWSparkline(
+              values: <double>[
+                for (final DailyNet day in last7DaysNet) day.net,
+              ],
+              color: changeColor,
+            ),
+          ],
         ],
       ),
     );

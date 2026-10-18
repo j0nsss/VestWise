@@ -3,6 +3,7 @@ import 'package:vestwise/features/calendar/data/models/calendar_event_model.dart
 import 'package:vestwise/features/calendar/presentation/providers/calendar_providers.dart';
 import 'package:vestwise/features/finance/data/models/category_model.dart';
 import 'package:vestwise/features/finance/data/models/transaction_model.dart';
+import 'package:vestwise/features/finance/domain/models/daily_net.dart';
 import 'package:vestwise/features/finance/presentation/providers/finance_providers.dart';
 import 'package:vestwise/features/notes/data/models/note_model.dart';
 import 'package:vestwise/features/notes/presentation/providers/notes_providers.dart';
@@ -21,6 +22,8 @@ class DashboardState {
     required this.todayTasks,
     required this.balance,
     required this.weeklyNetChange,
+    required this.last7DaysNet,
+    required this.hasFinanceData,
     required this.upcomingEvents,
     required this.recentNotes,
     this.isLoading = false,
@@ -31,6 +34,8 @@ class DashboardState {
       : todayTasks = const <TaskModel>[],
         balance = 0,
         weeklyNetChange = 0,
+        last7DaysNet = const <DailyNet>[],
+        hasFinanceData = false,
         upcomingEvents = const <CalendarEventModel>[],
         recentNotes = const <NoteModel>[],
         isLoading = false,
@@ -39,6 +44,16 @@ class DashboardState {
   final List<TaskModel> todayTasks;
   final double balance;
   final double weeklyNetChange;
+
+  /// Seven days of daily net, oldest first, for the balance card's sparkline.
+  final List<DailyNet> last7DaysNet;
+
+  /// Whether there is any finance data at all.
+  ///
+  /// A zero balance cannot answer this: income and expenses can cancel out.
+  /// This comes from a one-row query, not from a guess about the numbers.
+  final bool hasFinanceData;
+
   final List<CalendarEventModel> upcomingEvents;
   final List<NoteModel> recentNotes;
 
@@ -74,6 +89,12 @@ DashboardState dashboard(Ref ref) {
       ref.watch(watchUpcomingEventsProvider);
   final AsyncValue<List<NoteModel>> allNotesAsync =
       ref.watch(watchAllNotesProvider);
+  // The sparkline's week (P10-FIN-2) and an exact "is there anything at all?"
+  // signal (P10-FIN-4) — one bounded row, not a count query.
+  final AsyncValue<List<DailyNet>> week =
+      ref.watch(watchLast7DaysNetProvider);
+  final AsyncValue<List<TransactionModel>> anyTransaction =
+      ref.watch(watchRecentTransactionsProvider(1));
 
   final bool isLoading = tasks.isLoading &&
       balanceAsync.isLoading &&
@@ -83,7 +104,10 @@ DashboardState dashboard(Ref ref) {
 
   final Set<DashboardSection> failedSections = <DashboardSection>{
     if (tasks.hasError) DashboardSection.tasks,
-    if (balanceAsync.hasError || weekTransactions.hasError)
+    if (balanceAsync.hasError ||
+        weekTransactions.hasError ||
+        week.hasError ||
+        anyTransaction.hasError)
       DashboardSection.finance,
     if (upcomingEvents.hasError) DashboardSection.calendar,
     if (allNotesAsync.hasError) DashboardSection.notes,
@@ -107,6 +131,8 @@ DashboardState dashboard(Ref ref) {
     todayTasks: tasks.value ?? const <TaskModel>[],
     balance: balance,
     weeklyNetChange: weeklyNetChange,
+    last7DaysNet: week.value ?? const <DailyNet>[],
+    hasFinanceData: (anyTransaction.value ?? const <TransactionModel>[]).isNotEmpty,
     upcomingEvents: upcomingEvents.value ?? const <CalendarEventModel>[],
     recentNotes: recentNotes.take(2).toList(),
     isLoading: isLoading,
