@@ -13,6 +13,7 @@ import 'package:vestwise/core/theme/theme_store.dart';
 import 'package:vestwise/features/finance/data/repositories/finance_repository_impl.dart';
 import 'package:vestwise/features/finance/presentation/widgets/money.dart';
 import 'package:vestwise/features/notes/presentation/widgets/document_title_field.dart';
+import 'package:vestwise/features/tasks/presentation/widgets/task_quick_add.dart';
 
 /// On-device end-to-end smoke tests for the Phase 3 modules (plan P6-T3).
 ///
@@ -36,21 +37,20 @@ void main() {
   });
 
   Finder navDestination(String label) => find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.text(label),
-      );
+    of: find.byType(NavigationBar),
+    matching: find.text(label),
+  );
 
   /// Like `pumpAndSettle`, but fails after [timeout] instead of the 10-minute
   /// default, so a screen that never settles surfaces its own error quickly.
   Future<void> settle(
     WidgetTester tester, {
     Duration timeout = const Duration(seconds: 20),
-  }) =>
-      tester.pumpAndSettle(
-        const Duration(milliseconds: 100),
-        EnginePhase.sendSemanticsUpdate,
-        timeout,
-      );
+  }) => tester.pumpAndSettle(
+    const Duration(milliseconds: 100),
+    EnginePhase.sendSemanticsUpdate,
+    timeout,
+  );
 
   /// Pumps frames until [finder] matches or [timeout] elapses. Needed after
   /// writes because Isar `watch` streams (especially the finance one, which
@@ -73,6 +73,20 @@ void main() {
         .where((String s) => s.isNotEmpty)
         .toList();
     fail('Timed out waiting for: $finder\nVisible text: $visible');
+  }
+
+  /// The quick-add row's input, found through its own widget so the test does
+  /// not depend on the hint text.
+  Finder quickAddField() => find.descendant(
+    of: find.byType(TaskQuickAdd),
+    matching: find.byType(TextField),
+  );
+
+  /// Types a title into the quick-add row and submits it, the way a user does.
+  Future<void> quickAdd(WidgetTester tester, String title) async {
+    await tester.enterText(quickAddField(), title);
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await settle(tester);
   }
 
   Future<void> pumpApp(WidgetTester tester) async {
@@ -124,6 +138,70 @@ void main() {
     await settleUntilFound(tester, find.text('Integration Task'));
   });
 
+  testWidgets('adds a task from the quick-add row (P11)', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    await tester.tap(navDestination('Tasks'));
+    await settle(tester);
+
+    // No dialog, no sheet: the row is pinned above the list (P10-TASKS-2), so
+    // the primary action is reachable without the FAB.
+    await quickAdd(tester, 'Quick-added task');
+
+    await settleUntilFound(tester, find.text('Quick-added task'));
+    // The row clears itself and stays up for the next one.
+    expect(tester.widget<TextField>(quickAddField()).controller?.text, isEmpty);
+  });
+
+  testWidgets('completes a task by swiping it (P10-TASKS-3)', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    await tester.tap(navDestination('Tasks'));
+    await settle(tester);
+    await quickAdd(tester, 'Swipe me');
+    await settleUntilFound(tester, find.text('Swipe me'));
+
+    // Left-to-right completes. The row snaps back and the stream re-groups it,
+    // so the assertion is on the group it lands in rather than on the row.
+    await tester.drag(find.text('Swipe me'), const Offset(300, 0));
+    await settle(tester);
+
+    await settleUntilFound(tester, find.text('Completed · 1'));
+  });
+
+  testWidgets('collapses and expands a task group (P10-TASKS-1)', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    await tester.tap(navDestination('Tasks'));
+    await settle(tester);
+    await quickAdd(tester, 'Toggle me');
+    await settleUntilFound(tester, find.text('Toggle me'));
+
+    // A quick-added task has no due date, so it lands in its own group.
+    await tester.tap(find.text('No due date · 1'));
+    await settle(tester);
+    expect(
+      find.text('Toggle me'),
+      findsNothing,
+      reason: 'a collapsed group hides its rows',
+    );
+    expect(
+      find.text('No due date · 1'),
+      findsOneWidget,
+      reason: 'the heading itself stays, so the group can be reopened',
+    );
+
+    await tester.tap(find.text('No due date · 1'));
+    await settle(tester);
+    expect(find.text('Toggle me'), findsOneWidget);
+  });
+
   testWidgets('logs an expense and updates the balance', (
     WidgetTester tester,
   ) async {
@@ -136,10 +214,7 @@ void main() {
     await settle(tester);
     expect(find.text('Add transaction'), findsWidgets);
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Amount'),
-      '100',
-    );
+    await tester.enterText(find.widgetWithText(TextFormField, 'Amount'), '100');
     await tester.tap(find.byType(DropdownButtonFormField<int>));
     await settle(tester);
     await tester.tap(find.text('Food').last);
@@ -225,6 +300,12 @@ void main() {
     await settle(tester);
     await tester.tap(find.widgetWithText(TextButton, 'Clear all data'));
     await settleUntilFound(tester, find.text('All local data cleared.'));
+
+    // Settings is a pushed route, so it has to be popped before the shell's
+    // bar is reachable again. The screen deliberately stays put behind its
+    // confirmation banner rather than bouncing the user out mid-read.
+    await tester.pageBack();
+    await settle(tester);
 
     await tester.tap(navDestination('Tasks'));
     await settle(tester);

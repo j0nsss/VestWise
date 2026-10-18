@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vestwise/app.dart';
 import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
+import 'package:vestwise/core/notifications/notification_provider.dart';
 import 'package:vestwise/core/router/app_shell.dart';
 import 'package:vestwise/core/theme/app_theme.dart';
 import 'package:vestwise/features/calendar/data/models/calendar_event_model.dart';
@@ -52,6 +53,16 @@ void main() {
         ),
       ),
       importedFilesSizeProvider.overrideWith((Ref ref) => 0),
+      // The Settings screen reports on reminders; without these two it would
+      // call the notification plugin from a widget test.
+      notificationsBlockedProvider.overrideWith((Ref ref) => false),
+      notificationStatusProvider.overrideWith(
+        (Ref ref) => const NotificationStatus(
+          permissionRequested: false,
+          enabled: false,
+          exactAlarmsAllowed: false,
+        ),
+      ),
     ],
     child: const VestWiseApp(),
   );
@@ -190,6 +201,30 @@ void main() {
     expect(AppTheme.dark.useMaterial3, isTrue);
     expect(AppTheme.light.brightness, Brightness.light);
     expect(AppTheme.dark.brightness, Brightness.dark);
+  });
+
+  group('settings route (P12-T4)', () {
+    testWidgets('is pushed on top of the shell, not swapped for it', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Settings'));
+      await tester.pumpAndSettle();
+      expect(find.text('Appearance'), findsOneWidget);
+
+      // A pushed route has a route beneath it, which is where the implied back
+      // button comes from — without it there is no way off the page, and the
+      // system back button exits the app.
+      expect(find.byType(BackButton), findsOneWidget);
+
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DashboardScreen), findsOneWidget);
+      expect(find.byType(NavigationBar), findsOneWidget);
+    });
   });
 
   group('shell branch settle (P9-T3)', () {

@@ -39,7 +39,10 @@ class DashboardScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: 'Settings',
-            onPressed: () => context.go(RoutePaths.settings),
+            // Pushed, not `go`: Settings is a sibling of the shell, so replacing
+            // the stack would leave the page with no route beneath it — no
+            // implied back button, and a system back that exits the app.
+            onPressed: () => context.push(RoutePaths.settings),
           ),
         ],
       ),
