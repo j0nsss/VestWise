@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vestwise/core/constants/app_motion.dart';
-import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/notifications/notification_provider.dart';
 import 'package:vestwise/core/notifications/notification_service.dart';
@@ -13,12 +12,13 @@ import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
+import 'package:vestwise/core/widgets/vw_section_disclosure.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
 import 'package:vestwise/core/widgets/vw_notification_banner.dart';
-import 'package:vestwise/core/widgets/vw_section_header.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
 import 'package:vestwise/features/tasks/domain/repositories/tasks_repository.dart';
 import 'package:vestwise/features/tasks/presentation/providers/tasks_providers.dart';
+import 'package:vestwise/features/tasks/presentation/widgets/task_groups.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_list_tile.dart';
 
 /// Task list (plan P3-TASK-1).
@@ -41,6 +41,11 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
   /// state changed immediately the morph would play on a widget the user never
   /// touched — or not at all.
   int? _morphingId;
+
+  /// Which groups the user has collapsed. In-memory only, like the notes list
+  /// (plan2.md P10-TASKS-1 / P10-NOTES-3): which groups you folded away is a
+  /// glance-level preference, not something to persist.
+  final Set<TaskGroup> _collapsed = <TaskGroup>{};
 
   Future<void> _toggleComplete(TaskModel task) async {
     if (_morphingId == task.id) {
@@ -125,49 +130,36 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
                   );
                 }
 
-                final List<TaskModel> active =
-                    tasks.where((TaskModel t) => !t.isCompleted).toList();
-                final List<TaskModel> completed =
-                    tasks.where((TaskModel t) => t.isCompleted).toList();
+                final List<TaskRow> rows = buildTaskRows(
+                  tasks,
+                  collapsed: _collapsed,
+                  today: DateTime.now(),
+                );
 
                 return CustomScrollView(
                   slivers: <Widget>[
-                    if (active.isNotEmpty) ...<Widget>[
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            AppSpacing.lg,
-                            AppSpacing.lg,
-                            AppSpacing.lg,
-                            AppSpacing.sm,
-                          ),
-                          child: VWSectionHeader(title: 'Active'),
-                        ),
-                      ),
-                      _TaskSliverList(
-                        tasks: active,
-                        morphingId: _morphingId,
-                        onToggle: _toggleComplete,
-                      ),
-                    ],
-                    if (completed.isNotEmpty) ...<Widget>[
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            AppSpacing.lg,
-                            AppSpacing.lg,
-                            AppSpacing.lg,
-                            AppSpacing.sm,
-                          ),
-                          child: VWSectionHeader(title: 'Completed'),
-                        ),
-                      ),
-                      _TaskSliverList(
-                        tasks: completed,
-                        morphingId: _morphingId,
-                        onToggle: _toggleComplete,
-                      ),
-                    ],
+                    SliverList.builder(
+                      itemCount: rows.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final TaskRow row = rows[index];
+                        if (row is TaskGroupRow) {
+                          return VWSectionDisclosure(
+                            key: ValueKey<TaskGroup>(row.group),
+                            label: taskGroupLabel(row.group),
+                            count: row.count,
+                            unit: 'task',
+                            expanded: !_collapsed.contains(row.group),
+                            onToggle: () => _toggleGroup(row.group),
+                          );
+                        }
+                        return _TaskListTileRow(
+                          task: (row as TaskItemRow).task,
+                          index: index,
+                          morphingId: _morphingId,
+                          onToggle: _toggleComplete,
+                        );
+                      },
+                    ),
                     const SliverToBoxAdapter(child: SizedBox(height: 88)),
                   ],
                 );
@@ -178,38 +170,44 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
       ),
     );
   }
+
+  void _toggleGroup(TaskGroup group) {
+    setState(() {
+      if (!_collapsed.remove(group)) {
+        _collapsed.add(group);
+      }
+    });
+  }
 }
 
-class _TaskSliverList extends ConsumerWidget {
-  const _TaskSliverList({
-    required this.tasks,
+/// A single task row, wrapped in the one-shot entrance animation for the first
+/// few rows (plan P5-T1 / P9-T2) and keyed by task id so a new task mounts
+/// fresh while existing rows stay still.
+class _TaskListTileRow extends ConsumerWidget {
+  const _TaskListTileRow({
+    required this.task,
+    required this.index,
     required this.morphingId,
     required this.onToggle,
   });
 
-  final List<TaskModel> tasks;
+  final TaskModel task;
+  final int index;
   final int? morphingId;
   final Future<void> Function(TaskModel task) onToggle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SliverList.builder(
-      itemCount: tasks.length,
-      itemBuilder: (BuildContext context, int index) {
-        final TaskModel task = tasks[index];
-        final Widget tile = TaskListTile(
-          task: task,
-          morphing: morphingId == task.id,
-          onToggle: () => unawaited(onToggle(task)),
-          onTap: () => context.go(RoutePaths.taskDetailFor(task.id)),
-        );
-        // Keyed by id so a task added at the top mounts fresh (and therefore
-        // animates in) while existing rows keep their state and stay still.
-        final Key key = ValueKey<int>(task.id);
-        return VWAnimatedListItem.animates(index)
-            ? VWAnimatedListItem(key: key, child: tile)
-            : KeyedSubtree(key: key, child: tile);
-      },
+    final Widget tile = TaskListTile(
+      task: task,
+      morphing: morphingId == task.id,
+      onToggle: () => unawaited(onToggle(task)),
+      onTap: () => context.go(RoutePaths.taskDetailFor(task.id)),
     );
+
+    final Key key = ValueKey<int>(task.id);
+    return VWAnimatedListItem.animates(index)
+        ? VWAnimatedListItem(key: key, child: tile)
+        : KeyedSubtree(key: key, child: tile);
   }
 }

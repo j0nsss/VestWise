@@ -101,6 +101,15 @@ delegates to it.)
 | Font family/size dropdowns removed | CHANGED | Deliberate: they are the only controls in the stock toolbar that render words rather than glyphs, and P10-NOTES-4 asks for icon-only. Every other action (bold, italic, underline, strikethrough, inline code, colours, clear format, headings, lists, quote, code block, indent, link, undo/redo, search) is unchanged. Restore in one line each if the trade-off is wrong. |
 | Editor screen on device | MANUAL — todo | `integration_test/app_flow_test.dart` ("writes a note and sees it persisted") was updated for the new header but has not been re-run since the device was disconnected. |
 
+### Tasks (P10-TASKS-1..4)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| No task is hidden by the new grouping | PASS | `taskGroupOf` is total (completed → completed; no date → No due date; due today *or overdue* → Today; otherwise Upcoming), and the test asserts every input task comes back out exactly once — `flutter test test/features/tasks/presentation/task_groups_test.dart`. |
+| Grouping is deterministic, not clock-dependent in tests | PASS | `today` is injected into `buildTaskRows`, so the boundary cases (due at 23:59, due yesterday) are tested rather than hoped for. |
+| Group headings are collapsible and announced | PASS | `VWSectionDisclosure` (shared with the notes list) rotates its chevron over `stateChange` and reports `label`/`isExpanded` to screen readers — `test/features/tasks/presentation/task_list_tile_test.dart`, `test/features/notes/presentation/notes_sections_test.dart`. |
+| Collapse state is not persisted | PASS | In-memory `Set<TaskGroup>` on the screen's state only. |
+
 ## Re-running the automated part
 
 ```sh

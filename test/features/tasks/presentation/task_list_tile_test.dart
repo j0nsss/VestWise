@@ -5,6 +5,7 @@ import 'package:vestwise/core/constants/app_motion.dart';
 import 'package:vestwise/core/errors/failure.dart';
 import 'package:vestwise/core/errors/result.dart';
 import 'package:vestwise/core/theme/app_theme.dart';
+import 'package:vestwise/core/widgets/vw_section_disclosure.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
 import 'package:vestwise/features/tasks/domain/repositories/tasks_repository.dart';
 import 'package:vestwise/features/tasks/presentation/providers/tasks_providers.dart';
@@ -253,6 +254,107 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(repository.toggled, <int>[7]);
+    });
+  });
+
+  group('task list grouping (P10-TASKS-1)', () {
+    Future<void> pumpGroups(
+      WidgetTester tester,
+      List<TaskModel> tasks, {
+      bool reduce = false,
+    }) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            watchAllTasksProvider.overrideWith(
+              (Ref ref) => Stream<List<TaskModel>>.value(tasks),
+            ),
+            tasksRepositoryProvider.overrideWithValue(_FakeTasksRepository()),
+          ],
+          child: _wrap(const TasksListScreen(), reduce: reduce),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('every task lands in exactly one group', (
+      WidgetTester tester,
+    ) async {
+      await pumpGroups(tester, <TaskModel>[
+        _task(id: 1, title: 'Due today', dueDate: DateTime.now()),
+        _task(
+          id: 2,
+          title: 'Due later',
+          dueDate: DateTime.now().add(const Duration(days: 3)),
+        ),
+        _task(id: 3, title: 'No date'),
+        _task(id: 4, title: 'Done', completed: true),
+      ]);
+
+      expect(find.text('Today · 1'), findsOneWidget);
+      expect(find.text('Upcoming · 1'), findsOneWidget);
+      expect(find.text('No due date · 1'), findsOneWidget);
+      expect(find.text('Completed · 1'), findsOneWidget);
+      // Nothing is hidden behind a group heading.
+      for (final String title in <String>[
+        'Due today',
+        'Due later',
+        'No date',
+        'Done',
+      ]) {
+        expect(find.text(title), findsOneWidget);
+      }
+    });
+
+    testWidgets('groups collapse and re-open on tap, independently', (
+      WidgetTester tester,
+    ) async {
+      await pumpGroups(tester, <TaskModel>[
+        _task(id: 1, title: 'Due today', dueDate: DateTime.now()),
+        _task(id: 3, title: 'No date'),
+      ]);
+
+      await tester.tap(find.text('Today · 1'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Due today'), findsNothing);
+      expect(find.text('No date'), findsOneWidget);
+      expect(find.text('Today · 1'), findsOneWidget);
+
+      await tester.tap(find.text('No due date · 1'));
+      await tester.pumpAndSettle();
+      expect(find.text('No date'), findsNothing);
+
+      await tester.tap(find.text('Today · 1'));
+      await tester.pumpAndSettle();
+      expect(find.text('Due today'), findsOneWidget);
+    });
+
+    testWidgets('an empty group gets no heading', (
+      WidgetTester tester,
+    ) async {
+      await pumpGroups(tester, <TaskModel>[_task(id: 3, title: 'No date')]);
+
+      expect(find.byType(VWSectionDisclosure), findsOneWidget);
+      expect(find.text('No due date · 1'), findsOneWidget);
+      expect(find.text('Today · 0'), findsNothing);
+    });
+
+    testWidgets('the headings are announced with their state', (
+      WidgetTester tester,
+    ) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+
+      await pumpGroups(tester, <TaskModel>[
+        _task(id: 1, title: 'Due today', dueDate: DateTime.now()),
+        _task(id: 3, title: 'No date'),
+      ]);
+
+      expect(
+        tester.getSemantics(find.text('Today · 1')),
+        isSemantics(label: 'Today, 1 task', isButton: true, isExpanded: true),
+      );
+      handle.dispose();
     });
   });
 }

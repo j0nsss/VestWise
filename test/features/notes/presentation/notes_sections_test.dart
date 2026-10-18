@@ -9,6 +9,7 @@ import 'package:vestwise/features/notes/data/models/note_model.dart';
 import 'package:vestwise/features/notes/domain/repositories/notes_repository.dart';
 import 'package:vestwise/features/notes/presentation/providers/notes_providers.dart';
 import 'package:vestwise/features/notes/presentation/screens/notes_list_screen.dart';
+import 'package:vestwise/core/widgets/vw_section_disclosure.dart';
 import 'package:vestwise/features/notes/presentation/widgets/notes_sections.dart';
 
 class _FakeNotesRepository implements NotesRepository {
@@ -197,7 +198,7 @@ void main() {
         notes: <NoteModel>[_note(1, 'One'), _note(2, 'Two')],
       );
 
-      expect(find.byType(NotesSectionHeader), findsNothing);
+      expect(find.byType(VWSectionDisclosure), findsNothing);
       expect(find.text('One'), findsOneWidget);
       expect(find.text('Two'), findsOneWidget);
     });
@@ -239,7 +240,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, 'Other');
       await tester.pumpAndSettle();
 
-      expect(find.byType(NotesSectionHeader), findsNothing);
+      expect(find.byType(VWSectionDisclosure), findsNothing);
       expect(find.text('Other note'), findsOneWidget);
       expect(find.text('Pinned note'), findsNothing);
     });
