@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/storage/file_storage_service.dart';
+import 'package:vestwise/core/utils/byte_format.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_button.dart';
 import 'package:vestwise/core/widgets/vw_card.dart';
@@ -13,7 +14,6 @@ import 'package:vestwise/core/widgets/vw_empty_state.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
 import 'package:vestwise/features/notes/data/models/imported_document_model.dart';
 import 'package:vestwise/features/notes/presentation/providers/notes_providers.dart';
-import 'package:vestwise/features/notes/presentation/widgets/document_list_tile.dart';
 
 /// In-app document viewer (plan P3-NOTES-4).
 ///

@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vestwise/app.dart';
 import 'package:vestwise/core/database/isar_provider.dart';
 import 'package:vestwise/core/database/isar_service.dart';
 import 'package:vestwise/core/notifications/notification_provider.dart';
 import 'package:vestwise/core/notifications/notification_service.dart';
+import 'package:vestwise/core/theme/theme_store.dart';
 import 'package:vestwise/features/finance/data/repositories/finance_repository_impl.dart';
 import 'package:vestwise/features/finance/presentation/widgets/money.dart';
 
@@ -183,5 +185,56 @@ void main() {
     await settle(tester);
 
     await settleUntilFound(tester, find.text('Integration Note'));
+  });
+
+  testWidgets('changes the theme and clears all data from Settings', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    // Give the reset something to remove.
+    await tester.tap(navDestination('Tasks'));
+    await settle(tester);
+    await tester.tap(find.byIcon(Icons.add));
+    await settle(tester);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Title'),
+      'Doomed task',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Create task'));
+    await settle(tester);
+    await settleUntilFound(tester, find.text('Doomed task'));
+
+    // Settings lives behind the dashboard app bar.
+    await tester.tap(navDestination('Dashboard'));
+    await settle(tester);
+    await tester.tap(find.byTooltip('Settings'));
+    await settle(tester);
+    await settleUntilFound(tester, find.text('Appearance'));
+
+    // Choosing a theme writes it to disk, so the next launch paints the same
+    // theme instead of flashing the default.
+    await tester.tap(find.text('Dark'));
+    await settle(tester);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(ThemeStore.key), 'dark');
+
+    // Clear-all asks first, then empties the database.
+    await tester.tap(find.text('Clear all data'));
+    await settle(tester);
+    await tester.tap(find.widgetWithText(TextButton, 'Clear all data'));
+    await settleUntilFound(tester, find.text('All local data cleared.'));
+
+    await tester.tap(navDestination('Tasks'));
+    await settle(tester);
+    await settleUntilFound(tester, find.text('No tasks yet'));
+
+    // Leave the device on the default theme for the next run.
+    await tester.tap(navDestination('Dashboard'));
+    await settle(tester);
+    await tester.tap(find.byTooltip('Settings'));
+    await settle(tester);
+    await tester.tap(find.text('System'));
+    await settle(tester);
   });
 }

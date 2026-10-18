@@ -6,6 +6,8 @@ import 'package:vestwise/core/database/isar_provider.dart';
 import 'package:vestwise/core/database/isar_service.dart';
 import 'package:vestwise/core/notifications/notification_provider.dart';
 import 'package:vestwise/core/notifications/notification_service.dart';
+import 'package:vestwise/core/theme/theme_provider.dart';
+import 'package:vestwise/core/theme/theme_store.dart';
 import 'package:vestwise/features/finance/data/repositories/finance_repository_impl.dart';
 
 Future<void> main() async {
@@ -24,11 +26,18 @@ Future<void> main() async {
   final NotificationService notificationService = NotificationService();
   await notificationService.init();
 
+  // Read the persisted theme choice before the first frame, so launch never
+  // flashes the wrong theme (P5-T4).
+  final ThemeMode themeMode = await ThemeStore.load();
+
   runApp(
     ProviderScope(
       overrides: [
         isarProvider.overrideWithValue(AsyncValue<Isar>.data(isar)),
         notificationServiceProvider.overrideWithValue(notificationService),
+        themeModeProvider.overrideWith(
+          () => ThemeModeNotifier(themeMode),
+        ),
       ],
       child: const VestWiseApp(),
     ),

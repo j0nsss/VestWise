@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:vestwise/core/utils/byte_format.dart';
 import 'package:vestwise/features/notes/data/models/imported_document_model.dart';
 
 /// One row in the imported-documents list (plan P3-NOTES-1): file-type icon,
@@ -53,16 +54,4 @@ class DocumentListTile extends StatelessWidget {
         return Icons.insert_drive_file;
     }
   }
-}
-
-/// Human-readable file size, e.g. `1.4 MB`.
-String formatBytes(int bytes) {
-  if (bytes < 1024) {
-    return '$bytes B';
-  }
-  final double kb = bytes / 1024;
-  if (kb < 1024) {
-    return '${kb.toStringAsFixed(1)} KB';
-  }
-  return '${(kb / 1024).toStringAsFixed(1)} MB';
 }

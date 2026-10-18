@@ -1,24 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vestwise/core/theme/theme_store.dart';
 
-/// Owns the app's [ThemeMode]. Defaults to [ThemeMode.system].
+/// Owns the app's [ThemeMode].
 ///
-/// Persistence (via `shared_preferences`) is added in Phase 5 (P5-T4).
+/// `main()` reads the persisted choice and seeds the notifier with it via
+/// `themeModeProvider.overrideWith`, so the very first frame already uses the
+/// right theme (P5-T4). Every change is written back to [ThemeStore].
 final NotifierProvider<ThemeModeNotifier, ThemeMode> themeModeProvider =
     NotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
 
 class ThemeModeNotifier extends Notifier<ThemeMode> {
-  @override
-  ThemeMode build() => ThemeMode.system;
+  ThemeModeNotifier([this._initial = ThemeMode.system]);
 
-  void setThemeMode(ThemeMode mode) => state = mode;
+  final ThemeMode _initial;
+
+  @override
+  ThemeMode build() => _initial;
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    if (mode == state) {
+      return;
+    }
+    state = mode;
+    await ThemeStore.save(mode);
+  }
 
   /// Cycles System → Light → Dark → System. Convenient for a settings toggle.
-  void cycle() {
-    state = switch (state) {
-      ThemeMode.system => ThemeMode.light,
-      ThemeMode.light => ThemeMode.dark,
-      ThemeMode.dark => ThemeMode.system,
-    };
-  }
+  Future<void> cycle() => setThemeMode(switch (state) {
+        ThemeMode.system => ThemeMode.light,
+        ThemeMode.light => ThemeMode.dark,
+        ThemeMode.dark => ThemeMode.system,
+      });
 }

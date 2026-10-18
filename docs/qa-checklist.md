@@ -39,17 +39,29 @@ delegates to it.)
 | Text contrast ≥ 4.5:1 | PASS | Finance income/expense figures use brightness-aware tones (`AppColors.incomeFor` / `expenseFor`), asserted by a WCAG ratio test — `flutter test test/core/constants/app_colors_test.dart`. |
 | Priority colours | PASS | `priorityHigh`/`priorityMedium`/`priorityLow` are only ever used as small dots next to an equivalent text label ("High"/"Medium"/"Low"), never as sole information, so the 3:1 non-text threshold applies. |
 | Reduced motion honoured | PASS | `prefersReducedMotion` skips page transitions and row enter animations (Android "Remove animations"); `AppMotion` tokens all ≤ 250ms. |
-| Primary actions operable with TalkBack | MANUAL | On-device pass: add task, add transaction, save note. Verified on the Redmi Note 8 test device (Android 11). |
+| Primary actions operable with TalkBack | MANUAL — todo | On-device pass: add task, add transaction, save note. Not yet run; needs a physical TalkBack session. |
 
-## P5-T5 — Performance
+## P5-T4 — Settings
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| Theme choice persists across restart | PASS | The app reads the stored mode before the first frame (`ThemeStore.load()` in `main.dart`) so there is no flash of the wrong theme; round-trip and persistence asserted by `flutter test test/core/theme/theme_store_test.dart`. Device scenario: `integration_test/app_flow_test.dart` ("changes the theme and clears all data from Settings") checks the value lands in `shared_preferences`. |
+| Clear-all data is complete and non-destructive to settings | PASS | `resetAllData` clears the database, deletes every imported file and re-seeds default categories, while leaving the theme preference alone — `flutter test test/core/database/app_data_reset_test.dart`. |
+| Destructive action is confirmed first | PASS | "Clear all data" is a `danger` `VWButton` behind an `AlertDialog`; the confirm button repeats the wording. |
+
+## P5-T5 — Performance (not yet implemented)
+
+The two rows below describe the target design from plan §7. They are **not
+implemented yet** — finance history and the summary screen still load the full
+history — so treat them as work to do, not as verified results.
 
 | Check | Status | How to verify |
 |-------|--------|---------------|
 | Long lists are lazy | PASS | `SliverList.builder` / `ListView.builder` everywhere; no `Column(child: items.map(...))` for an unbounded collection. Dashboard cards iterate a bounded slice (`take(3)` / `take(2)`). |
-| Finance history is windowed | PASS | `watchRecentTransactionsProvider` reads at most `financeHistoryPageSize` rows and grows on demand ("Load older"), instead of holding the entire history in memory. |
-| Summary queries are range-bounded | PASS | The summary screen watches `watchTransactionsInRange` for the selected week/month rather than loading all history and filtering in Dart. |
-| 200-item list scroll | MANUAL | Seeded 200 transactions on the Redmi Note 8, scrolled the finance list with the performance overlay on — no dropped frames. |
-| Cold start < ~2s | MANUAL | `flutter run --profile --trace-startup` on the Redmi Note 8 (mid-range, Android 11). |
+| Finance history is windowed | PENDING | Add `watchRecentTransactionsProvider` (at most `financeHistoryPageSize` rows, grown on demand via "Load older") instead of holding the entire history in memory. |
+| Summary queries are range-bounded | PENDING | Have the summary screen watch `watchTransactionsInRange` for the selected week/month rather than loading all history and filtering in Dart. |
+| 200-item list scroll | MANUAL — todo | Seed 200 transactions on the Redmi Note 8 and scroll the finance list with the performance overlay on. |
+| Cold start < ~2s | MANUAL — todo | `flutter run --profile --trace-startup` on the Redmi Note 8 (mid-range, Android 11). |
 
 ## Re-running the automated part
 

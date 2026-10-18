@@ -6,6 +6,7 @@ import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/storage/file_storage_service.dart';
+import 'package:vestwise/core/utils/byte_format.dart';
 import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';

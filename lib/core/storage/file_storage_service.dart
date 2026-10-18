@@ -75,6 +75,14 @@ class FileStorageService {
     }
   }
 
+  /// Removes every imported file from disk. Used by "Clear all data" (P5-T4).
+  Future<void> deleteAllImportedFiles() async {
+    final Directory dir = await getImportedFilesDir();
+    if (await dir.exists()) {
+      await dir.delete(recursive: true);
+    }
+  }
+
   /// Total bytes currently used by imported files (P4-T4 storage readout).
   Future<int> getImportedFilesSizeBytes() async {
     final Directory dir = await getImportedFilesDir();

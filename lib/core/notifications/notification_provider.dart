@@ -21,3 +21,33 @@ final FutureProvider<bool> notificationsBlockedProvider =
   }
   return !await service.notificationsEnabled();
 });
+
+/// Everything the Settings screen needs to report about reminders (P5-T4).
+class NotificationStatus {
+  const NotificationStatus({
+    required this.permissionRequested,
+    required this.enabled,
+    required this.exactAlarmsAllowed,
+  });
+
+  /// Whether the OS permission dialog has ever been shown.
+  final bool permissionRequested;
+
+  /// Whether notifications can currently reach the user.
+  final bool enabled;
+
+  /// Whether the OS still grants exact (to-the-minute) alarms.
+  final bool exactAlarmsAllowed;
+}
+
+/// Live notification permission snapshot. Invalidate after returning from
+/// system settings, or after asking for permission, to re-read the OS state.
+final FutureProvider<NotificationStatus> notificationStatusProvider =
+    FutureProvider<NotificationStatus>((Ref ref) async {
+  final NotificationService service = ref.watch(notificationServiceProvider);
+  return NotificationStatus(
+    permissionRequested: await service.hasRequestedPermissions(),
+    enabled: await service.notificationsEnabled(),
+    exactAlarmsAllowed: await service.canScheduleExactNotifications(),
+  );
+});

@@ -30,7 +30,16 @@ class DashboardScreen extends ConsumerWidget {
     final DashboardState state = ref.watch(dashboardProvider);
 
     return Scaffold(
-      appBar: VWAppBar(title: _greeting(context)),
+      appBar: VWAppBar(
+        title: _greeting(context),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Settings',
+            onPressed: () => context.go(RoutePaths.settings),
+          ),
+        ],
+      ),
       body: state.isLoading
           ? const VWLoadingIndicator(message: 'Loading your dashboard')
           : ListView(
