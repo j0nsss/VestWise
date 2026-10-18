@@ -8,6 +8,7 @@ import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
+import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
 import 'package:vestwise/core/widgets/vw_notification_banner.dart';
 import 'package:vestwise/features/calendar/data/models/calendar_event_model.dart';
 import 'package:vestwise/features/calendar/presentation/providers/calendar_providers.dart';
@@ -29,9 +30,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final List<CalendarEventModel> allEvents =
-        ref.watch(watchAllEventsProvider).value ?? <CalendarEventModel>[];
-    final Map<DateTime, List<CalendarEventModel>> byDay = _groupByDay(allEvents);
+    final AsyncValue<List<CalendarEventModel>> eventsAsync =
+        ref.watch(watchAllEventsProvider);
+    // Grid markers degrade to none while loading or on error — the day list
+    // below carries the explicit loading/error state (P5-T2).
+    final Map<DateTime, List<CalendarEventModel>> byDay =
+        _groupByDay(eventsAsync.value ?? const <CalendarEventModel>[]);
 
     return Scaffold(
       appBar: const VWAppBar(title: AppStrings.calendar),
@@ -83,7 +87,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ),
             ),
           ),
-          Expanded(child: _buildDayList(byDay)),
+          Expanded(
+            child: eventsAsync.when(
+              loading: () => const VWLoadingIndicator(),
+              error: (Object error, StackTrace stack) => VWEmptyState(
+                icon: Icons.error_outline,
+                title: 'Could not load your events',
+                message: 'Something went wrong reading your calendar.',
+                actionLabel: 'Retry',
+                onAction: () => ref.invalidate(watchAllEventsProvider),
+              ),
+              data: (List<CalendarEventModel> events) =>
+                  _buildDayList(_groupByDay(events)),
+            ),
+          ),
         ],
       ),
     );

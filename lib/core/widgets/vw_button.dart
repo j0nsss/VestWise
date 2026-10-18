@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vestwise/core/widgets/vw_inline_spinner.dart';
 
 enum VWButtonVariant { primary, secondary, destructive }
 
@@ -28,10 +29,7 @@ class VWButton extends StatelessWidget {
     final VoidCallback? effectiveOnPressed = isLoading ? null : onPressed;
 
     final Widget child = isLoading
-        ? const SizedBox.square(
-            dimension: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          )
+        ? const VWInlineSpinner()
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[

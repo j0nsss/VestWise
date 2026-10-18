@@ -41,9 +41,12 @@ class TasksListScreen extends ConsumerWidget {
           Expanded(
             child: tasksAsync.when(
               loading: () => const VWLoadingIndicator(),
-              error: (Object error, StackTrace stack) => const VWEmptyState(
+              error: (Object error, StackTrace stack) => VWEmptyState(
                 icon: Icons.error_outline,
-                message: 'Could not load your tasks. Please try again.',
+                title: 'Could not load your tasks',
+                message: 'Something went wrong reading your tasks.',
+                actionLabel: 'Retry',
+                onAction: () => ref.invalidate(watchAllTasksProvider),
               ),
               data: (List<TaskModel> tasks) {
                 if (tasks.isEmpty) {

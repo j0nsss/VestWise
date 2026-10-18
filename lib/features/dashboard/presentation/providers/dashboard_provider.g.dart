@@ -64,4 +64,4 @@ final class DashboardProvider
   }
 }
 
-String _$dashboardHash() => r'8d862723a32b1287c42b74c384ff018b01b075cc';
+String _$dashboardHash() => r'511b5a5a0dda69c4a594c79998ad7a3541e89c94';

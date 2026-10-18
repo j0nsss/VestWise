@@ -9,6 +9,7 @@ import 'package:vestwise/core/storage/file_storage_service.dart';
 import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
+import 'package:vestwise/core/widgets/vw_inline_spinner.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
 import 'package:vestwise/core/widgets/vw_text_field.dart';
 import 'package:vestwise/features/notes/data/models/imported_document_model.dart';
@@ -39,10 +40,7 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
           actions: <Widget>[
             IconButton(
               icon: _importing
-                  ? const SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const VWInlineSpinner(dimension: 20)
                   : const Icon(Icons.upload_file),
               tooltip: 'Import document',
               onPressed: _importing ? null : _importDocument,
@@ -147,9 +145,12 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
         Expanded(
           child: notesAsync.when(
             loading: () => const VWLoadingIndicator(),
-            error: (Object error, StackTrace stack) => const VWEmptyState(
+            error: (Object error, StackTrace stack) => VWEmptyState(
               icon: Icons.error_outline,
-              message: 'Could not load your notes.',
+              title: 'Could not load your notes',
+              message: 'Something went wrong reading your notes.',
+              actionLabel: 'Retry',
+              onAction: () => ref.invalidate(watchNotesMatchingProvider(_query)),
             ),
             data: (List<NoteModel> notes) {
               if (notes.isEmpty) {
@@ -206,9 +207,12 @@ class _DocumentsTab extends ConsumerWidget {
 
     return documentsAsync.when(
       loading: () => const VWLoadingIndicator(),
-      error: (Object error, StackTrace stack) => const VWEmptyState(
+      error: (Object error, StackTrace stack) => VWEmptyState(
         icon: Icons.error_outline,
-        message: 'Could not load your documents.',
+        title: 'Could not load your documents',
+        message: 'Something went wrong reading your imported files.',
+        actionLabel: 'Retry',
+        onAction: () => ref.invalidate(watchImportedDocumentsProvider),
       ),
       data: (List<ImportedDocumentModel> documents) {
         if (documents.isEmpty) {

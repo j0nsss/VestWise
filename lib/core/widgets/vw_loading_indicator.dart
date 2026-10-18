@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
+import 'package:vestwise/core/widgets/vw_inline_spinner.dart';
 
-/// Centered spinner for async states (plan P1-T6). The only sanctioned loading
-/// indicator for screens — never drop a bare [CircularProgressIndicator].
+/// Centered spinner for screen-level async states (plan P1-T6/P5-T2). The only
+/// sanctioned full-screen loading indicator — never drop a bare
+/// [CircularProgressIndicator] into a screen.
 class VWLoadingIndicator extends StatelessWidget {
   const VWLoadingIndicator({this.message, super.key});
 
@@ -14,7 +16,7 @@ class VWLoadingIndicator extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const CircularProgressIndicator(),
+          const VWInlineSpinner(dimension: 36),
           if (message != null) ...<Widget>[
             const SizedBox(height: AppSpacing.lg),
             Text(

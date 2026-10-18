@@ -42,9 +42,12 @@ class FinanceHomeScreen extends ConsumerWidget {
       ),
       body: transactionsAsync.when(
         loading: () => const VWLoadingIndicator(),
-        error: (Object error, StackTrace stack) => const VWEmptyState(
+        error: (Object error, StackTrace stack) => VWEmptyState(
           icon: Icons.error_outline,
-          message: 'Could not load your transactions.',
+          title: 'Could not load your transactions',
+          message: 'Something went wrong reading your finance data.',
+          actionLabel: 'Retry',
+          onAction: () => ref.invalidate(watchAllTransactionsProvider),
         ),
         data: (List<TransactionModel> transactions) =>
             _buildBody(context, ref, transactions),
