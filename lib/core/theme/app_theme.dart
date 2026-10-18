@@ -101,6 +101,16 @@ abstract final class AppTheme {
           vertical: AppSpacing.md,
         ),
       ),
+      // Overlays are the one place elevation is allowed (P8-T2): they float, so
+      // they keep their shadow but use the sheet radius from AppRadii.
+      bottomSheetTheme: const BottomSheetThemeData(
+        shape: RoundedRectangleBorder(borderRadius: AppRadii.sheet),
+        elevation: AppElevation.overlay,
+      ),
+      dialogTheme: const DialogThemeData(
+        shape: RoundedRectangleBorder(borderRadius: AppRadii.card),
+        elevation: AppElevation.overlay,
+      ),
     );
   }
 }
