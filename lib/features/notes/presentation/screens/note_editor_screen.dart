@@ -14,6 +14,7 @@ import 'package:vestwise/features/notes/domain/repositories/notes_repository.dar
 import 'package:vestwise/features/notes/presentation/providers/notes_providers.dart';
 import 'package:vestwise/features/notes/presentation/widgets/document_title_field.dart';
 import 'package:vestwise/features/notes/presentation/widgets/last_edited_label.dart';
+import 'package:vestwise/features/notes/presentation/widgets/note_icon_picker.dart';
 
 /// Rich-text note editor backed by flutter_quill (plan P3-NOTES-2).
 ///
@@ -48,6 +49,11 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
   /// accurate without rebuilding the screen from the database on every save.
   DateTime? _updatedAt;
 
+  /// The chosen icon, held in state because choosing an icon on an existing
+  /// note saves immediately while a brand-new note is only written once it has
+  /// a title or body.
+  int? _iconCodePoint;
+
   bool get _isEditing => _noteId != null;
 
   @override
@@ -73,6 +79,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
       _titleController.text = note.title == 'Untitled' ? '' : note.title;
       _quillController.document = _documentFromJson(note.contentJson);
       _updatedAt = note.updatedAt;
+      _iconCodePoint = note.iconCodePoint;
     }
     if (mounted) {
       setState(() => _loading = false);
@@ -130,6 +137,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
         ..title = title.isEmpty ? 'Untitled' : title
         ..contentJson = contentJson
         ..contentPlainText = plainText
+        ..iconCodePoint = _iconCodePoint
         ..createdAt = now
         ..updatedAt = now;
       final int? id = (await _repository.createNote(note)).dataOrNull;
@@ -144,6 +152,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
           ..title = title.isEmpty ? 'Untitled' : title
           ..contentJson = contentJson
           ..contentPlainText = plainText
+          ..iconCodePoint = _iconCodePoint
           ..updatedAt = now;
         await _repository.updateNote(existing);
       }
@@ -153,6 +162,22 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
     if (mounted) {
       setState(() {});
     }
+  }
+
+  Future<void> _pickIcon() async {
+    final IconData? picked = await showModalBottomSheet<IconData>(
+      context: context,
+      builder: (BuildContext context) => const NoteIconPicker(),
+    );
+    if (picked == null || !mounted) {
+      return;
+    }
+    setState(() => _iconCodePoint = picked.codePoint);
+    // Choosing an icon is a deliberate edit, so it is written now rather than
+    // waiting on the typing debounce. On a still-empty note `_save` is a no-op,
+    // and the choice rides along with the first real save.
+    _debounce?.cancel();
+    await _save();
   }
 
   Future<void> _confirmDelete() async {
@@ -211,19 +236,32 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
                     AppSpacing.lg,
                     AppSpacing.sm,
                   ),
-                  child: Column(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      DocumentTitleField(
-                        controller: _titleController,
-                        autofocus: widget.noteId == RoutePaths.newId,
-                        onChanged: (String _) => _scheduleSave(),
+                      IconButton(
+                        icon: Icon(noteIconFor(_iconCodePoint)),
+                        tooltip: 'Choose icon',
+                        onPressed: _pickIcon,
                       ),
-                      // Nothing to report until the autosave has written once.
-                      if (_updatedAt != null) ...<Widget>[
-                        const SizedBox(height: AppSpacing.xs),
-                        LastEditedLabel(updatedAt: _updatedAt!),
-                      ],
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            DocumentTitleField(
+                              controller: _titleController,
+                              autofocus: widget.noteId == RoutePaths.newId,
+                              onChanged: (String _) => _scheduleSave(),
+                            ),
+                            // Nothing to report until the autosave writes once.
+                            if (_updatedAt != null) ...<Widget>[
+                              const SizedBox(height: AppSpacing.xs),
+                              LastEditedLabel(updatedAt: _updatedAt!),
+                            ],
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

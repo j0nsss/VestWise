@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vestwise/core/errors/result.dart';
 import 'package:vestwise/features/notes/data/models/imported_document_model.dart';
 import 'package:vestwise/features/notes/data/models/note_model.dart';
 import 'package:vestwise/features/notes/data/repositories/notes_repository_impl.dart';
 import 'package:vestwise/features/notes/domain/repositories/notes_repository.dart';
+import 'package:vestwise/features/notes/presentation/widgets/note_icon_picker.dart';
 
 import '../../../helpers/isar_test_harness.dart';
 
@@ -65,6 +67,22 @@ void main() {
 
     final List<NoteModel> notes = await repo.watchAllNotes().first;
     expect(notes.first.title, 'Important');
+  });
+
+  test('a note icon round-trips, and absence stays null (P10-NOTES-2)', () async {
+    final int id = (await repo.createNote(_note())).dataOrNull!;
+    expect((await repo.getNoteById(id)).dataOrNull?.iconCodePoint, isNull);
+
+    final NoteModel loaded = (await repo.getNoteById(id)).dataOrNull!;
+    await repo.updateNote(loaded..iconCodePoint = Icons.lightbulb_outline.codePoint);
+
+    // Read through the picker's own resolver: null must fall back to a
+    // document rather than throwing on a missing code point.
+    expect(
+      noteIconFor((await repo.getNoteById(id)).dataOrNull?.iconCodePoint),
+      Icons.lightbulb_outline,
+    );
+    expect(noteIconFor(null), Icons.description_outlined);
   });
 
   test('imported documents can be created, watched and deleted', () async {

@@ -17,6 +17,11 @@ class NoteModel {
 
   List<String> tags = [];
 
+  /// Material icon code point chosen for this note, or null for the default
+  /// document icon (plan2.md P10-NOTES-2). Additive and nullable, so notes
+  /// written before this field existed load as "no icon" rather than failing.
+  int? iconCodePoint;
+
   bool isPinned = false;
 
   bool isArchived = false;

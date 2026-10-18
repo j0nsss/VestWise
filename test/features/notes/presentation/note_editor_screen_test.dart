@@ -185,5 +185,82 @@ void main() {
       // itself a failure.
       handle.dispose();
     });
+
+    testWidgets('choosing an icon saves it on the note immediately', (
+      WidgetTester tester,
+    ) async {
+      final _FakeNotesRepository repository = await _pumpEditor(
+        tester,
+        noteId: '3',
+        note: NoteModel()
+          ..id = 3
+          ..title = 'Groceries'
+          ..contentJson = '[]'
+          ..createdAt = DateTime(2026, 3, 1)
+          ..updatedAt = DateTime(2026, 3, 1),
+      );
+
+      // Before choosing, the header offers the default document icon.
+      expect(find.byIcon(Icons.description_outlined), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Choose icon'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Idea'));
+      await tester.pumpAndSettle();
+
+      expect(
+        repository.updated?.iconCodePoint,
+        Icons.lightbulb_outline.codePoint,
+      );
+      expect(find.byIcon(Icons.lightbulb_outline), findsOneWidget);
+      // The write went through the normal save path, so the note also reports
+      // a fresh edit time rather than only changing its icon.
+      expect(find.text('Edited just now'), findsOneWidget);
+    });
+
+    testWidgets('a note with a saved icon opens showing that icon', (
+      WidgetTester tester,
+    ) async {
+      await _pumpEditor(
+        tester,
+        noteId: '3',
+        note: NoteModel()
+          ..id = 3
+          ..title = 'Groceries'
+          ..contentJson = '[]'
+          ..iconCodePoint = Icons.work_outline.codePoint
+          ..createdAt = DateTime(2026, 3, 1)
+          ..updatedAt = DateTime(2026, 3, 1),
+      );
+
+      expect(find.byIcon(Icons.work_outline), findsOneWidget);
+      expect(find.byIcon(Icons.description_outlined), findsNothing);
+    });
+
+    testWidgets('an untouched note keeps its icon when the body changes', (
+      WidgetTester tester,
+    ) async {
+      final _FakeNotesRepository repository = await _pumpEditor(
+        tester,
+        noteId: '3',
+        note: NoteModel()
+          ..id = 3
+          ..title = 'Old'
+          ..contentJson = '[]'
+          ..iconCodePoint = Icons.star_outline.codePoint
+          ..createdAt = DateTime(2026, 3, 1)
+          ..updatedAt = DateTime(2026, 3, 1),
+      );
+
+      await tester.enterText(find.byType(DocumentTitleField), 'New title');
+      await tester.pump(const Duration(milliseconds: 900));
+      await tester.pumpAndSettle();
+
+      expect(repository.updated?.title, 'New title');
+      expect(
+        repository.updated?.iconCodePoint,
+        Icons.star_outline.codePoint,
+      );
+    });
   });
 }

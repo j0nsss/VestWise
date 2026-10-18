@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:vestwise/features/notes/data/models/note_model.dart';
+import 'package:vestwise/features/notes/presentation/widgets/note_icon_picker.dart';
 
 /// One row in the notes list: title, plain-text preview, updated time, pin
 /// affordance (plan P3-NOTES-1).
@@ -25,6 +26,11 @@ class NoteListTile extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      // Only for notes that have one: a default icon on every row would be
+      // decoration, not information (P10-NOTES-2).
+      leading: note.iconCodePoint == null
+          ? null
+          : Icon(noteIconFor(note.iconCodePoint), color: muted),
       title: Text(note.title.isEmpty ? 'Untitled' : note.title, maxLines: 1),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -91,6 +91,8 @@ delegates to it.)
 | The note title reads as a document heading | PASS | `DocumentTitleField` draws no border until focused and grows to fit; asserted in `test/features/notes/presentation/note_editor_screen_test.dart`. |
 | "Last edited" tells the truth after a save | PASS | The label is fed from the same `updatedAt` the autosave writes, and is absent on a note that has not been saved yet — same test file. |
 | The title is announced as a header | PASS | The field is wrapped in `Semantics(header: true)`, asserted with `isSemantics(isHeader: true, isTextField: true)`. |
+| A chosen icon persists and defaults safely | PASS | `iconCodePoint` is nullable and additive, so notes written before the field existed load as "no icon" (document glyph) rather than failing; round-trip asserted in `test/features/notes/data/notes_repository_test.dart`. |
+| Every icon option is labelled | PASS | `NoteIconPicker` gives each option a tooltip, and the list is asserted to have no duplicate glyphs or labels — `test/features/notes/presentation/note_icon_picker_test.dart`. |
 | Editor screen on device | MANUAL — todo | `integration_test/app_flow_test.dart` ("writes a note and sees it persisted") was updated for the new header but has not been re-run since the device was disconnected. |
 
 ## Re-running the automated part
