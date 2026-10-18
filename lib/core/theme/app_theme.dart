@@ -5,8 +5,13 @@ import 'package:vestwise/core/constants/app_text_styles.dart';
 
 /// Builds the light and dark [ThemeData] from a single brand seed, per §1.5.
 ///
-/// Elevation policy: flat surfaces with a subtle `surfaceContainerHighest`
-/// background and a thin border rather than heavy shadows.
+/// Elevation policy: flat surfaces with a warm neutral background and a thin
+/// border rather than heavy shadows.
+///
+/// Surface policy (plan2.md P8-T1): the seed still decides the brand accent, but
+/// every *neutral* role is overridden with [AppColors]' warm scale, so the app
+/// is warm off-white / warm near-black instead of Material's cool indigo-tinted
+/// surfaces. Widgets keep reading `Theme.of(context)` — nothing has to know.
 abstract final class AppTheme {
   static ThemeData get light => _build(Brightness.light);
 
@@ -16,6 +21,18 @@ abstract final class AppTheme {
     final ColorScheme scheme = ColorScheme.fromSeed(
       seedColor: AppColors.seed,
       brightness: brightness,
+      // Overriding the neutral roles on top of the seeded scheme keeps the
+      // brand hue (primary) intact while warming every surface and text tone.
+    ).copyWith(
+      surface: AppColors.surfaceFor(brightness),
+      surfaceContainerHighest:
+          AppColors.surfaceContainerHighestFor(brightness),
+      onSurface: AppColors.textPrimaryFor(brightness),
+      onSurfaceVariant: AppColors.textSecondaryFor(brightness),
+      outlineVariant: AppColors.borderSubtleFor(brightness),
+      // No elevation tint: surfaces are already the warm tones we want, so the
+      // scheme must not re-tint them back towards the seed.
+      surfaceTint: Colors.transparent,
     );
 
     final ThemeData base = ThemeData(
