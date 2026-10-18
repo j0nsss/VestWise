@@ -13,6 +13,7 @@ import 'package:vestwise/core/widgets/vw_section_header.dart';
 import 'package:vestwise/features/finance/data/models/category_model.dart';
 import 'package:vestwise/features/finance/data/models/transaction_model.dart';
 import 'package:vestwise/features/finance/presentation/providers/finance_providers.dart';
+import 'package:vestwise/features/finance/presentation/widgets/category_breakdown.dart';
 import 'package:vestwise/features/finance/presentation/widgets/money.dart';
 
 enum _Range { week, month }
@@ -289,48 +290,56 @@ class _Breakdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     final double total = expenses.fold<double>(
       0,
       (double acc, TransactionModel t) => acc + t.amount,
     );
-
-    final Map<String, double> byCategory = <String, double>{};
-    final Map<String, Color> colors = <String, Color>{};
-    for (final TransactionModel t in expenses) {
-      final CategoryModel? category = t.category.value;
-      final String name = category?.name ?? 'Uncategorized';
-      byCategory[name] = (byCategory[name] ?? 0) + t.amount;
-      colors[name] = category != null
-          ? Color(category.colorValue)
-          : Theme.of(context).colorScheme.onSurfaceVariant;
-    }
-    final List<MapEntry<String, double>> entries = byCategory.entries.toList()
-      ..sort(
-        (MapEntry<String, double> a, MapEntry<String, double> b) =>
-            b.value.compareTo(a.value),
-      );
+    final List<CategoryTotal> totals = categoryTotals(expenses);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         const VWSectionHeader(title: 'Spending by category'),
-        const SizedBox(height: AppSpacing.sm),
-        if (entries.isEmpty)
+        const SizedBox(height: AppSpacing.md),
+        if (totals.isEmpty)
           Text(
             'No expenses in this period.',
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: theme.textTheme.bodyMedium,
           )
         else
-          for (final MapEntry<String, double> entry in entries)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-              child: _BreakdownRow(
-                name: entry.key,
-                amount: entry.value,
-                total: total,
-                color: colors[entry.key]!,
+          // The ring answers "how did it split up?" in one glance; the rows
+          // answer "how much, exactly?". Both read the same `totals`, so they
+          // cannot disagree (plan2.md P10-FIN-3).
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              CategoryRing(totals: totals),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    for (final CategoryTotal entry in totals)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.xs,
+                        ),
+                        child: _BreakdownRow(
+                          name: entry.name,
+                          amount: entry.amount,
+                          total: total,
+                          color: AppColors.tagFor(
+                            entry.tag,
+                            theme.brightness,
+                          ).foreground,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
+            ],
+          ),
       ],
     );
   }

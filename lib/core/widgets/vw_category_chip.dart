@@ -40,23 +40,11 @@ class VWCategoryChip extends StatelessWidget {
 
   final String? semanticLabel;
 
-  /// The hue a label maps to: FNV-1a over the characters, so it is stable
-  /// across runs and platforms (Dart's `String.hashCode` is neither).
-  static AppTag tagForLabel(String label) {
-    int hash = 0x811c9dc5;
-    for (final int unit in label.codeUnits) {
-      hash ^= unit;
-      hash = (hash * 0x01000193) & 0xFFFFFFFF;
-    }
-
-    return AppTag.values[hash % AppTag.values.length];
-  }
-
   @override
   Widget build(BuildContext context) {
     final Brightness brightness = Theme.of(context).brightness;
     final AppTagColor pair = AppColors.tagFor(
-      tag ?? tagForLabel(label ?? icon.codePoint.toString()),
+      tag ?? AppColors.tagForLabel(label ?? icon.codePoint.toString()),
       brightness,
     );
 

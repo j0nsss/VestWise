@@ -126,9 +126,9 @@ void main() {
     test('the derived hue is stable across runs, not run-random', () {
       // Pinned values: if this ever changes, existing categories silently
       // change colour after an update, so it should be a deliberate decision.
-      expect(VWCategoryChip.tagForLabel('Food'), VWCategoryChip.tagForLabel('Food'));
+      expect(AppColors.tagForLabel('Food'), AppColors.tagForLabel('Food'));
       expect(
-        VWCategoryChip.tagForLabel('Food'),
+        AppColors.tagForLabel('Food'),
         isA<AppTag>(),
       );
 
@@ -147,7 +147,7 @@ void main() {
           'Health',
           'Other',
         ])
-          VWCategoryChip.tagForLabel(name),
+          AppColors.tagForLabel(name),
       };
 
       expect(

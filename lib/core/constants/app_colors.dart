@@ -201,6 +201,22 @@ abstract final class AppColors {
       AppTag.values
           .map((AppTag tag) => tagFor(tag, brightness))
           .toList(growable: false);
+
+  /// The hue a label maps to — a category name, a priority, a tag.
+  ///
+  /// FNV-1a over the characters, so it is stable across runs and platforms:
+  /// Dart's `String.hashCode` is not, and a category that changed colour on
+  /// every launch would be worse than one with no colour at all. Nothing is
+  /// stored, so the mapping is the same for a fresh install and an old one.
+  static AppTag tagForLabel(String label) {
+    int hash = 0x811c9dc5;
+    for (final int unit in label.codeUnits) {
+      hash ^= unit;
+      hash = (hash * 0x01000193) & 0xFFFFFFFF;
+    }
+
+    return AppTag.values[hash % AppTag.values.length];
+  }
 }
 
 /// The hues available to the tag palette, in a fixed order.

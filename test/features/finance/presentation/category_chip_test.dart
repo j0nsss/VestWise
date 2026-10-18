@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/theme/app_theme.dart';
 import 'package:vestwise/core/widgets/icon_data_from_code_point.dart';
-import 'package:vestwise/core/widgets/vw_category_chip.dart';
 import 'package:vestwise/features/finance/data/models/category_model.dart';
 import 'package:vestwise/features/finance/data/repositories/finance_repository_impl.dart';
 import 'package:vestwise/features/finance/presentation/widgets/category_chip.dart';
@@ -105,7 +104,7 @@ void main() {
   test('the seeded category names take several different hues', () {
     final Set<AppTag> hues = <AppTag>{
       for (final CategoryModel category in categories)
-        VWCategoryChip.tagForLabel(category.name),
+        AppColors.tagForLabel(category.name),
     };
 
     expect(
