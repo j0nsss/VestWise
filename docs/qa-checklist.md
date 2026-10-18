@@ -185,6 +185,29 @@ delegates to it.)
 | The existing accessibility assertions are untouched | PASS | `test/core/widgets/vw_button_test.dart`'s original 48px tap-target, semantics-label and loading-spinner tests pass unchanged; only new cases were appended. |
 | Button and card feel identical on device | MANUAL — todo | On the Redmi Note 8, tap a card and a button side by side and confirm the feedback reads as one gesture, not two. |
 
+## Phase 12 — Cross-cutting QA
+
+### Automated suite (P12-T1)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| The analyzer is silent across app, tests and device tests | PASS | `dart analyze lib test integration_test` → `No issues found!` (0 errors, 0 warnings, 0 infos — warnings count here, so unused imports left behind by a restyle would have failed this). |
+| The whole suite is green at the end of the upgrade | PASS | `flutter test -j 1` → `All tests passed!` — **300 tests**, up from 264 at the start of Phase 11 and 59 before Phase 8. |
+| Nothing fails for a *behavioural* reason | PASS | Every expectation that changed during Phases 8–11 was updated in the same commit as the change it accompanied (§3.5's anticipated churn), so this final run needed no fixes: it is a confirmation, not a repair. |
+| The suite still runs serially without flakes | PASS | Run with `-j 1`, the same way every phase was validated: `All tests passed!` on the first attempt, ~4 minutes. |
+
+### On-device pass (P12-T2..T4)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| 200-item scroll frame times | MANUAL — todo | Redmi Note 8, `flutter run --profile`, performance overlay: seed 200 transactions and scroll. Closes the open P5-T5 row above. |
+| Cold start trace | MANUAL — todo | `flutter run --profile --trace-startup`, closes the open P5-T5 row above. |
+| Task morph, tab switching, icon-picker sheet frame times | MANUAL — todo | Same profile run: toggle several tasks, walk all five tabs repeatedly, open/close the notes icon-picker sheet; no sustained >16ms/frame runs. |
+| Reduced motion collapses every Phase 9–11 animation | MANUAL — todo | Android "Remove animations" on: task morph, swipe reveal, tab settle, list entrance, skeleton sweep, card/button press. All should become instant rather than merely faster. |
+| TalkBack pass over the new controls | MANUAL — todo | Quick-add row, swipe actions, icon picker, collapsible section headers, category/priority chips, the skeleton→content handover. Label, role and state announced for each; closes the open P5-T3 row above. |
+| Swipe-to-complete, quick-add, section toggle and Settings E2E together | MANUAL — todo | `flutter test integration_test -d <device-id>` — all scenarios green, including the Settings one that has been "written but unrun" since Phase 5/6. |
+| iOS | NOT IN SCOPE | No CocoaPods on this machine, so iOS has never been validated. Recorded as an open item rather than silently skipped. |
+
 ## Re-running the automated part
 
 ```sh
