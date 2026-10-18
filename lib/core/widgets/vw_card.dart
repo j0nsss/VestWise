@@ -100,9 +100,7 @@ class _VWCardState extends State<VWCard> {
     if (interactive) {
       card = AnimatedScale(
         scale: _pressed ? _pressedScale : 1,
-        duration: prefersReducedMotion(context)
-            ? Duration.zero
-            : AppMotion.stateChange,
+        duration: motionDuration(context, AppMotion.stateChange),
         curve: AppMotion.standardCurve,
         child: card,
       );
