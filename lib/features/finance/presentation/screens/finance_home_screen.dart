@@ -69,8 +69,9 @@ class FinanceHomeScreen extends ConsumerWidget {
 
     if (transactions.isEmpty) {
       slivers.add(
+        // Keep the default `hasScrollBody: true` so the empty state fills and
+        // scrolls within the remaining viewport.
         SliverFillRemaining(
-          hasScrollBody: false,
           child: VWEmptyState(
             icon: Icons.account_balance_wallet_outlined,
             title: 'No transactions yet',

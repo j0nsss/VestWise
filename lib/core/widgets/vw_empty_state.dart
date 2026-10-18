@@ -25,47 +25,38 @@ class VWEmptyState extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final Color muted = theme.colorScheme.onSurfaceVariant;
 
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        // `maxHeight` is infinite inside an unbounded parent (e.g. a card in a
-        // ListView); only constrain to fill when a finite height is available.
-        final double minHeight =
-            constraints.maxHeight.isFinite ? constraints.maxHeight : 0;
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: minHeight),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Icon(icon, size: 48, color: muted),
-                    const SizedBox(height: AppSpacing.lg),
-                    if (title != null) ...<Widget>[
-                      Text(
-                        title!,
-                        style: theme.textTheme.titleMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                    ],
-                    Text(
-                      message,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: muted),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (actionLabel != null && onAction != null) ...<Widget>[
-                      const SizedBox(height: AppSpacing.lg),
-                      VWButton(label: actionLabel!, onPressed: onAction),
-                    ],
-                  ],
-                ),
+    return Center(
+      // Scrollable so a long message never overflows a short viewport. Centers
+      // when there is room and scrolls when there is not, without a
+      // LayoutBuilder (which would break parents that query intrinsic
+      // dimensions, e.g. `SliverFillRemaining(hasScrollBody: false)`).
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 48, color: muted),
+            const SizedBox(height: AppSpacing.lg),
+            if (title != null) ...<Widget>[
+              Text(
+                title!,
+                style: theme.textTheme.titleMedium,
+                textAlign: TextAlign.center,
               ),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+            Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(color: muted),
+              textAlign: TextAlign.center,
             ),
-          ),
-        );
-      },
+            if (actionLabel != null && onAction != null) ...<Widget>[
+              const SizedBox(height: AppSpacing.lg),
+              VWButton(label: actionLabel!, onPressed: onAction),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
