@@ -81,6 +81,22 @@ void main() {
     expect(inRange.single.amount, 10);
   });
 
+  test('watchRecentTransactions caps the window at the newest rows', () async {
+    for (int i = 0; i < 5; i++) {
+      await repo.createTransaction(
+        _txn(10.0 + i, TransactionType.expense, date: DateTime(2026, 1, 1 + i)),
+      );
+    }
+
+    final List<TransactionModel> recent =
+        await repo.watchRecentTransactions(limit: 2).first;
+
+    expect(recent, hasLength(2));
+    // Newest first: 1 Jan + 4 days, then the day before.
+    expect(recent.first.amount, 14);
+    expect(recent.last.amount, 13);
+  });
+
   test('watchAllTransactions emits linked transactions without error', () async {
     await repo.seedDefaultCategories();
     final List<CategoryModel> categories =

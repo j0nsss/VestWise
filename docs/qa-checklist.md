@@ -47,19 +47,16 @@ delegates to it.)
 |-------|--------|---------------|
 | Theme choice persists across restart | PASS | The app reads the stored mode before the first frame (`ThemeStore.load()` in `main.dart`) so there is no flash of the wrong theme; round-trip and persistence asserted by `flutter test test/core/theme/theme_store_test.dart`. Device scenario: `integration_test/app_flow_test.dart` ("changes the theme and clears all data from Settings") checks the value lands in `shared_preferences`. |
 | Clear-all data is complete and non-destructive to settings | PASS | `resetAllData` clears the database, deletes every imported file and re-seeds default categories, while leaving the theme preference alone — `flutter test test/core/database/app_data_reset_test.dart`. |
-| Destructive action is confirmed first | PASS | "Clear all data" is a `danger` `VWButton` behind an `AlertDialog`; the confirm button repeats the wording. |
+| Destructive action is confirmed first | PASS | "Clear all data" is a danger-tinted `ListTile` that opens an `AlertDialog`; the confirming action repeats the wording and `Cancel` is listed first. |
 
-## P5-T5 — Performance (not yet implemented)
-
-The two rows below describe the target design from plan §7. They are **not
-implemented yet** — finance history and the summary screen still load the full
-history — so treat them as work to do, not as verified results.
+## P5-T5 — Performance
 
 | Check | Status | How to verify |
 |-------|--------|---------------|
 | Long lists are lazy | PASS | `SliverList.builder` / `ListView.builder` everywhere; no `Column(child: items.map(...))` for an unbounded collection. Dashboard cards iterate a bounded slice (`take(3)` / `take(2)`). |
-| Finance history is windowed | PENDING | Add `watchRecentTransactionsProvider` (at most `financeHistoryPageSize` rows, grown on demand via "Load older") instead of holding the entire history in memory. |
-| Summary queries are range-bounded | PENDING | Have the summary screen watch `watchTransactionsInRange` for the selected week/month rather than loading all history and filtering in Dart. |
+| Finance history is windowed | PASS | The finance home watches `watchRecentTransactionsProvider`, which reads at most `financeHistoryPageSize` (50) rows and grows the window on demand via a "Load older" button, instead of holding the entire history in memory. `flutter test test/features/finance/data/finance_repository_test.dart`. |
+| Summary queries are range-bounded | PASS | The summary screen watches `watchTransactionsInRangeProvider(start, end)` for the selected week/month rather than loading all history and filtering in Dart. |
+| Dashboard aggregates instead of scanning | PASS | The finance card takes its balance from `balanceProvider` (an Isar `sum()` that loads no rows) and its weekly net from the current week's range query — the dashboard no longer pulls the whole history to add two numbers up. |
 | 200-item list scroll | MANUAL — todo | Seed 200 transactions on the Redmi Note 8 and scroll the finance list with the performance overlay on. |
 | Cold start < ~2s | MANUAL — todo | `flutter run --profile --trace-startup` on the Redmi Note 8 (mid-range, Android 11). |
 

@@ -27,6 +27,18 @@ class FinanceRepositoryImpl implements FinanceRepository {
       .asyncMap(_withLoadedCategories);
 
   @override
+  Stream<List<TransactionModel>> watchRecentTransactions({
+    required int limit,
+  }) =>
+      _transactions
+          .where()
+          .sortByDateDesc()
+          .thenByCreatedAtDesc()
+          .limit(limit)
+          .watch(fireImmediately: true)
+          .asyncMap(_withLoadedCategories);
+
+  @override
   Stream<List<TransactionModel>> watchTransactionsInRange(
     DateTime start,
     DateTime end,

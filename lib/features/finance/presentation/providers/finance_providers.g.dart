@@ -98,6 +98,85 @@ final class WatchAllTransactionsProvider
 String _$watchAllTransactionsHash() =>
     r'41695620626102450d14d0f84c024a24b4c6b5fb';
 
+@ProviderFor(watchRecentTransactions)
+final watchRecentTransactionsProvider = WatchRecentTransactionsFamily._();
+
+final class WatchRecentTransactionsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<TransactionModel>>,
+          List<TransactionModel>,
+          Stream<List<TransactionModel>>
+        >
+    with
+        $FutureModifier<List<TransactionModel>>,
+        $StreamProvider<List<TransactionModel>> {
+  WatchRecentTransactionsProvider._({
+    required WatchRecentTransactionsFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'watchRecentTransactionsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$watchRecentTransactionsHash();
+
+  @override
+  String toString() {
+    return r'watchRecentTransactionsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<List<TransactionModel>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<TransactionModel>> create(Ref ref) {
+    final argument = this.argument as int;
+    return watchRecentTransactions(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is WatchRecentTransactionsProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$watchRecentTransactionsHash() =>
+    r'e7aa339804252e5a6cf557b011125f02e5db6498';
+
+final class WatchRecentTransactionsFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<List<TransactionModel>>, int> {
+  WatchRecentTransactionsFamily._()
+    : super(
+        retry: null,
+        name: r'watchRecentTransactionsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  WatchRecentTransactionsProvider call(int limit) =>
+      WatchRecentTransactionsProvider._(argument: limit, from: this);
+
+  @override
+  String toString() => r'watchRecentTransactionsProvider';
+}
+
 @ProviderFor(watchTransactionsInRange)
 final watchTransactionsInRangeProvider = WatchTransactionsInRangeFamily._();
 

@@ -112,7 +112,10 @@ class _LoadErrorBanner extends ConsumerWidget {
               onPressed: () {
                 ref
                   ..invalidate(watchTasksDueTodayProvider)
-                  ..invalidate(watchAllTransactionsProvider)
+                  // The finance card is backed by two providers: the balance
+                  // aggregate and the current week's transactions.
+                  ..invalidate(balanceProvider)
+                  ..invalidate(watchTransactionsInRangeProvider)
                   ..invalidate(watchUpcomingEventsProvider)
                   ..invalidate(watchAllNotesProvider);
               },

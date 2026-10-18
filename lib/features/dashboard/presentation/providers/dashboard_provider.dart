@@ -59,39 +59,40 @@ class DashboardState {
 @riverpod
 DashboardState dashboard(Ref ref) {
   final AsyncValue<List<TaskModel>> tasks = ref.watch(watchTasksDueTodayProvider);
-  final AsyncValue<List<TransactionModel>> transactions =
-      ref.watch(watchAllTransactionsProvider);
+  // Aggregates only: the balance is an Isar `sum()` and the week's net comes
+  // from a range query, so the dashboard never pulls the whole history into
+  // memory just to add two numbers up (plan P5-T5).
+  final AsyncValue<double> balanceAsync = ref.watch(balanceProvider);
+  final DateTime now = DateTime.now();
+  final DateTime weekStart = DateTime(now.year, now.month, now.day)
+      .subtract(Duration(days: now.weekday - 1));
+  final AsyncValue<List<TransactionModel>> weekTransactions =
+      ref.watch(
+    watchTransactionsInRangeProvider(weekStart, weekStart.add(const Duration(days: 7))),
+  );
   final AsyncValue<List<CalendarEventModel>> upcomingEvents =
       ref.watch(watchUpcomingEventsProvider);
   final AsyncValue<List<NoteModel>> allNotesAsync =
       ref.watch(watchAllNotesProvider);
 
   final bool isLoading = tasks.isLoading &&
-      transactions.isLoading &&
+      balanceAsync.isLoading &&
+      weekTransactions.isLoading &&
       upcomingEvents.isLoading &&
       allNotesAsync.isLoading;
 
   final Set<DashboardSection> failedSections = <DashboardSection>{
     if (tasks.hasError) DashboardSection.tasks,
-    if (transactions.hasError) DashboardSection.finance,
+    if (balanceAsync.hasError || weekTransactions.hasError)
+      DashboardSection.finance,
     if (upcomingEvents.hasError) DashboardSection.calendar,
     if (allNotesAsync.hasError) DashboardSection.notes,
   };
 
-  final List<TransactionModel> allTransactions =
-      transactions.value ?? const <TransactionModel>[];
+  final double balance = balanceAsync.value ?? 0;
 
-  final double balance = allTransactions.fold<double>(
-    0,
-    (double acc, TransactionModel t) =>
-        acc + (t.type == TransactionType.income ? t.amount : -t.amount),
-  );
-
-  final DateTime now = DateTime.now();
-  final DateTime weekStart =
-      DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
-  final double weeklyNetChange = allTransactions
-      .where((TransactionModel t) => !t.date.isBefore(weekStart))
+  final double weeklyNetChange = (weekTransactions.value ??
+          const <TransactionModel>[])
       .fold<double>(
         0,
         (double acc, TransactionModel t) =>

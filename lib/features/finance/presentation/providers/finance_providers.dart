@@ -7,6 +7,11 @@ import 'package:vestwise/features/finance/domain/repositories/finance_repository
 
 part 'finance_providers.g.dart';
 
+/// How many transactions the finance home loads at a time. Older rows are
+/// pulled in only when the user asks for them, so a long history stays cheap
+/// to render (plan P5-T5).
+const int financeHistoryPageSize = 50;
+
 @riverpod
 FinanceRepository financeRepository(Ref ref) {
   return FinanceRepositoryImpl(ref.watch(isarProvider).requireValue);
@@ -15,6 +20,10 @@ FinanceRepository financeRepository(Ref ref) {
 @riverpod
 Stream<List<TransactionModel>> watchAllTransactions(Ref ref) =>
     ref.watch(financeRepositoryProvider).watchAllTransactions();
+
+@riverpod
+Stream<List<TransactionModel>> watchRecentTransactions(Ref ref, int limit) =>
+    ref.watch(financeRepositoryProvider).watchRecentTransactions(limit: limit);
 
 @riverpod
 Stream<List<TransactionModel>> watchTransactionsInRange(

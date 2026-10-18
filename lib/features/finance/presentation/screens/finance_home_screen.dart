@@ -7,6 +7,7 @@ import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
+import 'package:vestwise/core/widgets/vw_button.dart';
 import 'package:vestwise/core/widgets/vw_card.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
@@ -17,13 +18,22 @@ import 'package:vestwise/features/finance/presentation/widgets/transaction_list_
 
 /// Finance home: current balance card + reverse-chronological transactions
 /// grouped by day (plan P3-FIN-2).
-class FinanceHomeScreen extends ConsumerWidget {
+class FinanceHomeScreen extends ConsumerStatefulWidget {
   const FinanceHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FinanceHomeScreen> createState() => _FinanceHomeScreenState();
+}
+
+class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
+  /// Size of the window of history currently on screen. Grows by
+  /// [financeHistoryPageSize] each time the user taps "Load older".
+  int _visibleCount = financeHistoryPageSize;
+
+  @override
+  Widget build(BuildContext context) {
     final AsyncValue<List<TransactionModel>> transactionsAsync =
-        ref.watch(watchAllTransactionsProvider);
+        ref.watch(watchRecentTransactionsProvider(_visibleCount));
 
     return Scaffold(
       appBar: VWAppBar(
@@ -48,20 +58,22 @@ class FinanceHomeScreen extends ConsumerWidget {
           title: 'Could not load your transactions',
           message: 'Something went wrong reading your finance data.',
           actionLabel: 'Retry',
-          onAction: () => ref.invalidate(watchAllTransactionsProvider),
+          onAction: () =>
+              ref.invalidate(watchRecentTransactionsProvider(_visibleCount)),
         ),
         data: (List<TransactionModel> transactions) =>
-            _buildBody(context, ref, transactions),
+            _buildBody(context, transactions),
       ),
     );
   }
 
   Widget _buildBody(
     BuildContext context,
-    WidgetRef ref,
     List<TransactionModel> transactions,
   ) {
     final List<_DayGroup> groups = _groupByDay(transactions);
+    // A full window means there may be older rows left to fetch.
+    final bool hasMore = transactions.length == _visibleCount;
 
     final List<Widget> slivers = <Widget>[
       const SliverToBoxAdapter(
@@ -119,6 +131,27 @@ class FinanceHomeScreen extends ConsumerWidget {
                   ? VWAnimatedListItem(key: key, child: tile)
                   : KeyedSubtree(key: key, child: tile);
             },
+          ),
+        );
+      }
+      if (hasMore) {
+        slivers.add(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                0,
+              ),
+              child: VWButton(
+                label: 'Load older',
+                variant: VWButtonVariant.secondary,
+                expand: true,
+                onPressed: () =>
+                    setState(() => _visibleCount += financeHistoryPageSize),
+              ),
+            ),
           ),
         );
       }

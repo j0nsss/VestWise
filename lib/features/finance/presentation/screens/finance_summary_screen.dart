@@ -32,8 +32,11 @@ class _FinanceSummaryScreenState extends ConsumerState<FinanceSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Query only the selected period instead of loading all history and
+    // filtering it in Dart (plan P5-T5).
+    final (DateTime start, DateTime end) = _bounds(_range);
     final AsyncValue<List<TransactionModel>> transactionsAsync =
-        ref.watch(watchAllTransactionsProvider);
+        ref.watch(watchTransactionsInRangeProvider(start, end));
 
     return Scaffold(
       appBar: const VWAppBar(title: 'Summary'),
@@ -44,11 +47,10 @@ class _FinanceSummaryScreenState extends ConsumerState<FinanceSummaryScreen> {
           title: 'Could not load your transactions',
           message: 'Something went wrong reading your finance data.',
           actionLabel: 'Retry',
-          onAction: () => ref.invalidate(watchAllTransactionsProvider),
+          onAction: () =>
+              ref.invalidate(watchTransactionsInRangeProvider(start, end)),
         ),
         data: (List<TransactionModel> transactions) {
-          final List<TransactionModel> inRange =
-              _inRange(transactions, _range);
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: <Widget>[
@@ -65,9 +67,9 @@ class _FinanceSummaryScreenState extends ConsumerState<FinanceSummaryScreen> {
                     setState(() => _range = selection.first),
               ),
               const SizedBox(height: AppSpacing.lg),
-              VWCard(child: _Chart(buckets: _buckets(inRange, _range))),
+              VWCard(child: _Chart(buckets: _buckets(transactions, _range))),
               const SizedBox(height: AppSpacing.lg),
-              VWCard(child: _Breakdown(expenses: _expenses(inRange))),
+              VWCard(child: _Breakdown(expenses: _expenses(transactions))),
             ],
           );
         },
@@ -75,21 +77,19 @@ class _FinanceSummaryScreenState extends ConsumerState<FinanceSummaryScreen> {
     );
   }
 
-  List<TransactionModel> _inRange(
-    List<TransactionModel> transactions,
-    _Range range,
-  ) {
+  /// Half-open `[start, end)` bounds of the selected period. The end is the day
+  /// after the period closes so `dateBetween` (inclusive) covers the last day.
+  (DateTime, DateTime) _bounds(_Range range) {
     final DateTime now = DateTime.now();
-    final DateTime start;
     if (range == _Range.week) {
-      start = DateTime(now.year, now.month, now.day)
+      final DateTime start = DateTime(now.year, now.month, now.day)
           .subtract(Duration(days: now.weekday - 1));
-    } else {
-      start = DateTime(now.year, now.month);
+      return (start, start.add(const Duration(days: 7)));
     }
-    return transactions
-        .where((TransactionModel t) => !t.date.isBefore(start))
-        .toList();
+    return (
+      DateTime(now.year, now.month),
+      DateTime(now.year, now.month + 1, 1),
+    );
   }
 
   List<_Bucket> _buckets(List<TransactionModel> transactions, _Range range) {
