@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vestwise/core/constants/app_motion.dart';
 import 'package:vestwise/core/router/app_shell.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/features/calendar/presentation/screens/calendar_screen.dart';
@@ -20,6 +21,10 @@ import 'package:vestwise/features/tasks/presentation/screens/tasks_list_screen.d
 ///
 /// Five top-level destinations live inside a persistent bottom-navigation
 /// [StatefulShellRoute]; detail/edit screens are nested per feature.
+///
+/// Every route shares one short fade-through transition (P5-T1) — 200ms, well
+/// under the 250ms budget, and skipped entirely when the platform requests
+/// reduced motion.
 final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
   return GoRouter(
     initialLocation: RoutePaths.dashboard,
@@ -35,8 +40,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: RoutePaths.dashboard,
-                builder: (BuildContext context, GoRouterState state) =>
-                    const DashboardScreen(),
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    _transitionPage(state, const DashboardScreen()),
               ),
             ],
           ),
@@ -44,20 +49,23 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: RoutePaths.finance,
-                builder: (BuildContext context, GoRouterState state) =>
-                    const FinanceHomeScreen(),
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    _transitionPage(state, const FinanceHomeScreen()),
                 routes: <RouteBase>[
                   GoRoute(
                     path: 'add',
-                    builder: (BuildContext context, GoRouterState state) =>
-                        AddTransactionScreen(
-                      transactionId: state.uri.queryParameters['id'],
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _transitionPage(
+                      state,
+                      AddTransactionScreen(
+                        transactionId: state.uri.queryParameters['id'],
+                      ),
                     ),
                   ),
                   GoRoute(
                     path: 'summary',
-                    builder: (BuildContext context, GoRouterState state) =>
-                        const FinanceSummaryScreen(),
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _transitionPage(state, const FinanceSummaryScreen()),
                   ),
                 ],
               ),
@@ -67,20 +75,26 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: RoutePaths.notes,
-                builder: (BuildContext context, GoRouterState state) =>
-                    const NotesListScreen(),
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    _transitionPage(state, const NotesListScreen()),
                 routes: <RouteBase>[
                   GoRoute(
                     path: 'document/:id',
-                    builder: (BuildContext context, GoRouterState state) =>
-                        DocumentViewerScreen(
-                      documentId: state.pathParameters['id'],
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _transitionPage(
+                      state,
+                      DocumentViewerScreen(
+                        documentId: state.pathParameters['id'],
+                      ),
                     ),
                   ),
                   GoRoute(
                     path: ':id/edit',
-                    builder: (BuildContext context, GoRouterState state) =>
-                        NoteEditorScreen(noteId: state.pathParameters['id']),
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _transitionPage(
+                      state,
+                      NoteEditorScreen(noteId: state.pathParameters['id']),
+                    ),
                   ),
                 ],
               ),
@@ -90,13 +104,16 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: RoutePaths.tasks,
-                builder: (BuildContext context, GoRouterState state) =>
-                    const TasksListScreen(),
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    _transitionPage(state, const TasksListScreen()),
                 routes: <RouteBase>[
                   GoRoute(
                     path: ':id',
-                    builder: (BuildContext context, GoRouterState state) =>
-                        TaskDetailScreen(taskId: state.pathParameters['id']),
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _transitionPage(
+                      state,
+                      TaskDetailScreen(taskId: state.pathParameters['id']),
+                    ),
                   ),
                 ],
               ),
@@ -106,13 +123,16 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: RoutePaths.calendar,
-                builder: (BuildContext context, GoRouterState state) =>
-                    const CalendarScreen(),
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    _transitionPage(state, const CalendarScreen()),
                 routes: <RouteBase>[
                   GoRoute(
                     path: 'event/:id',
-                    builder: (BuildContext context, GoRouterState state) =>
-                        EventDetailScreen(eventId: state.pathParameters['id']),
+                    pageBuilder: (BuildContext context, GoRouterState state) =>
+                        _transitionPage(
+                      state,
+                      EventDetailScreen(eventId: state.pathParameters['id']),
+                    ),
                   ),
                 ],
               ),
@@ -122,9 +142,43 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: RoutePaths.settings,
-        builder: (BuildContext context, GoRouterState state) =>
-            const SettingsScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _transitionPage(state, const SettingsScreen()),
       ),
     ],
   );
 });
+
+/// One shared fade + slight-rise page transition for every destination.
+Page<void> _transitionPage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: AppMotion.pageTransition,
+    reverseTransitionDuration: AppMotion.pageTransition,
+    transitionsBuilder: (
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      Widget child,
+    ) {
+      if (prefersReducedMotion(context)) {
+        return child;
+      }
+      final Animation<double> curved = CurvedAnimation(
+        parent: animation,
+        curve: AppMotion.standardCurve,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.02),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}

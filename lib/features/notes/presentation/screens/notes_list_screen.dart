@@ -6,6 +6,7 @@ import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/storage/file_storage_service.dart';
+import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
@@ -169,12 +170,16 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
                 itemCount: notes.length,
                 itemBuilder: (BuildContext context, int index) {
                   final NoteModel note = notes[index];
-                  return NoteListTile(
+                  final Widget tile = NoteListTile(
                     note: note,
                     onTap: () =>
                         context.go(RoutePaths.noteEditorFor(note.id)),
                     onTogglePin: () => _togglePin(note),
                   );
+                  final Key key = ValueKey<int>(note.id);
+                  return VWAnimatedListItem.animates(index)
+                      ? VWAnimatedListItem(key: key, child: tile)
+                      : KeyedSubtree(key: key, child: tile);
                 },
               );
             },
@@ -220,12 +225,16 @@ class _DocumentsTab extends ConsumerWidget {
                 itemCount: documents.length,
                 itemBuilder: (BuildContext context, int index) {
                   final ImportedDocumentModel document = documents[index];
-                  return DocumentListTile(
+                  final Widget tile = DocumentListTile(
                     document: document,
                     onTap: () =>
                         context.go(RoutePaths.documentViewerFor(document.id)),
                     onDelete: () => _delete(context, ref, document),
                   );
+                  final Key key = ValueKey<int>(document.id);
+                  return VWAnimatedListItem.animates(index)
+                      ? VWAnimatedListItem(key: key, child: tile)
+                      : KeyedSubtree(key: key, child: tile);
                 },
               ),
             ),

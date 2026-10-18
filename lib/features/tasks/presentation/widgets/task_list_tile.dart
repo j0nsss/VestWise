@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:vestwise/core/constants/app_motion.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_priority_style.dart';
@@ -31,13 +32,19 @@ class TaskListTile extends StatelessWidget {
         value: done,
         onChanged: (_) => onToggle(),
       ),
-      title: Text(
-        task.title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.bodyLarge?.copyWith(
+      title: AnimatedDefaultTextStyle(
+        // Completing a task eases the strike-through and muted colour in rather
+        // than snapping (P5-T1).
+        duration: AppMotion.stateChange,
+        curve: AppMotion.standardCurve,
+        style: theme.textTheme.bodyLarge!.copyWith(
           decoration: done ? TextDecoration.lineThrough : null,
-          color: done ? muted : null,
+          color: done ? muted : theme.colorScheme.onSurface,
+        ),
+        child: Text(
+          task.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
       subtitle: Wrap(

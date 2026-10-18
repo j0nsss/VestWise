@@ -7,6 +7,7 @@ import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/notifications/notification_provider.dart';
 import 'package:vestwise/core/router/route_paths.dart';
+import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
@@ -114,11 +115,17 @@ class _TaskSliverList extends ConsumerWidget {
       itemCount: tasks.length,
       itemBuilder: (BuildContext context, int index) {
         final TaskModel task = tasks[index];
-        return TaskListTile(
+        final Widget tile = TaskListTile(
           task: task,
           onToggle: () => unawaited(_toggleComplete(ref, task)),
           onTap: () => context.go(RoutePaths.taskDetailFor(task.id)),
         );
+        // Keyed by id so a task added at the top mounts fresh (and therefore
+        // animates in) while existing rows keep their state and stay still.
+        final Key key = ValueKey<int>(task.id);
+        return VWAnimatedListItem.animates(index)
+            ? VWAnimatedListItem(key: key, child: tile)
+            : KeyedSubtree(key: key, child: tile);
       },
     );
   }

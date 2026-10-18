@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/router/route_paths.dart';
+import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_card.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
@@ -104,11 +105,15 @@ class FinanceHomeScreen extends ConsumerWidget {
             itemCount: group.items.length,
             itemBuilder: (BuildContext context, int index) {
               final TransactionModel transaction = group.items[index];
-              return TransactionListTile(
+              final Widget tile = TransactionListTile(
                 transaction: transaction,
                 onTap: () =>
                     context.go(RoutePaths.financeAddFor(transaction.id)),
               );
+              final Key key = ValueKey<int>(transaction.id);
+              return VWAnimatedListItem.animates(index)
+                  ? VWAnimatedListItem(key: key, child: tile)
+                  : KeyedSubtree(key: key, child: tile);
             },
           ),
         );
