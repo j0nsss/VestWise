@@ -9,10 +9,11 @@ import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
-import 'package:vestwise/core/widgets/vw_text_field.dart';
 import 'package:vestwise/features/notes/data/models/note_model.dart';
 import 'package:vestwise/features/notes/domain/repositories/notes_repository.dart';
 import 'package:vestwise/features/notes/presentation/providers/notes_providers.dart';
+import 'package:vestwise/features/notes/presentation/widgets/document_title_field.dart';
+import 'package:vestwise/features/notes/presentation/widgets/last_edited_label.dart';
 
 /// Rich-text note editor backed by flutter_quill (plan P3-NOTES-2).
 ///
@@ -43,6 +44,10 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
   int? _noteId;
   bool _loading = true;
 
+  /// Mirrors the note's `updatedAt` so the header's "last edited" line is
+  /// accurate without rebuilding the screen from the database on every save.
+  DateTime? _updatedAt;
+
   bool get _isEditing => _noteId != null;
 
   @override
@@ -67,6 +72,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
       _noteId = note.id;
       _titleController.text = note.title == 'Untitled' ? '' : note.title;
       _quillController.document = _documentFromJson(note.contentJson);
+      _updatedAt = note.updatedAt;
     }
     if (mounted) {
       setState(() => _loading = false);
@@ -142,6 +148,11 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
         await _repository.updateNote(existing);
       }
     }
+
+    _updatedAt = now;
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _confirmDelete() async {
@@ -177,7 +188,9 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: VWAppBar(
-        title: _isEditing ? 'Edit note' : 'New note',
+        // The title lives in the page (P10-NOTES-1), not in the bar; the bar
+        // keeps only the back affordance and the note's own actions.
+        title: '',
         actions: <Widget>[
           if (_isEditing && widget.noteId != RoutePaths.newId)
             IconButton(
@@ -192,26 +205,46 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
           : Column(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: VWTextField(
-                    controller: _titleController,
-                    label: 'Title',
-                    onChanged: (String _) => _scheduleSave(),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.md,
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      DocumentTitleField(
+                        controller: _titleController,
+                        autofocus: widget.noteId == RoutePaths.newId,
+                        onChanged: (String _) => _scheduleSave(),
+                      ),
+                      // Nothing to report until the autosave has written once.
+                      if (_updatedAt != null) ...<Widget>[
+                        const SizedBox(height: AppSpacing.xs),
+                        LastEditedLabel(updatedAt: _updatedAt!),
+                      ],
+                    ],
                   ),
                 ),
-                QuillSimpleToolbar(
-                  controller: _quillController,
-                  config: const QuillSimpleToolbarConfig(),
-                ),
-                const Divider(height: 1),
                 Expanded(
                   child: QuillEditor.basic(
                     controller: _quillController,
                     config: const QuillEditorConfig(
-                      padding: EdgeInsets.all(AppSpacing.lg),
+                      padding: EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.sm,
+                        AppSpacing.lg,
+                        AppSpacing.lg,
+                      ),
                       placeholder: 'Start writing…',
                     ),
                   ),
+                ),
+                const Divider(height: 1),
+                QuillSimpleToolbar(
+                  controller: _quillController,
+                  config: const QuillSimpleToolbarConfig(),
                 ),
               ],
             ),

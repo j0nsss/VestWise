@@ -12,6 +12,7 @@ import 'package:vestwise/core/notifications/notification_service.dart';
 import 'package:vestwise/core/theme/theme_store.dart';
 import 'package:vestwise/features/finance/data/repositories/finance_repository_impl.dart';
 import 'package:vestwise/features/finance/presentation/widgets/money.dart';
+import 'package:vestwise/features/notes/presentation/widgets/document_title_field.dart';
 
 /// On-device end-to-end smoke tests for the Phase 3 modules (plan P6-T3).
 ///
@@ -171,12 +172,12 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.add));
     await settle(tester);
-    expect(find.text('New note'), findsOneWidget);
+    // P10-NOTES-1: the editor's title is an in-page document heading, so the
+    // empty header is identified by its hint rather than by an app-bar title.
+    final Finder titleField = find.byType(DocumentTitleField);
+    expect(titleField, findsOneWidget);
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Title'),
-      'Integration Note',
-    );
+    await tester.enterText(titleField, 'Integration Note');
     // Let the 800ms autosave debounce fire, then flush on pop.
     await tester.pump(const Duration(milliseconds: 1000));
     await settle(tester);

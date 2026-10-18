@@ -72,6 +72,27 @@ delegates to it.)
 | Tab switches and detail screens, on device | MANUAL — todo | Tap through all five tabs and into one detail screen per feature on the Redmi Note 8; confirm no pop/flash and that the Android back gesture is still smooth. |
 | Task-complete morph + haptic | MANUAL — todo | Toggle a task on the Redmi Note 8: expect the check to fill and the title to strike through over ~320ms with a light haptic tick, and the row to reclassify into active/completed afterwards. |
 
+## Phase 10 — Feature restyle
+
+### Finance (P10-FIN-1..4)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| Category colour comes from one palette | PASS | `VWCategoryChip` resolves its pair through `AppColors.tagFor`, so a category (or a label) always lands on the same colour everywhere. `flutter test test/core/widgets/vw_category_chip_test.dart`, `test/features/finance/presentation/category_chip_test.dart`. |
+| Category colours stay legible in both themes | PASS | Every tag pair is asserted ≥ 4.5:1 for foreground-on-background and ≥ 3:1 for foreground-on-`surfaceContainerHighest` (WCAG 1.4.11) — `test/core/constants/app_colors_test.dart`. |
+| The breakdown is grouped once, not per widget | PASS | `categoryTotals` is pure and returns biggest-spend-first totals; the ring and the rows both render from that one list, so they cannot disagree. `flutter test test/features/finance/presentation/category_breakdown_test.dart`. |
+| The dashboard sparkline and the weekly delta describe the same week | PASS | Both come from `watchLast7DaysNetProvider`; days with no activity are zero-filled rather than skipped, so the line has seven points. `test/features/finance/data/finance_repository_test.dart`, `test/core/widgets/vw_sparkline_test.dart`. |
+| A fresh install does not claim a balance of zero | PASS | With no transactions the balance card renders `VWEmptyState` instead of "0.00". Emptiness is decided by a one-row transaction query, not by the balance (income and expenses can cancel out). `flutter test test/features/dashboard/presentation/dashboard_screen_test.dart`. |
+
+### Notes (P10-NOTES-1..4)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| The note title reads as a document heading | PASS | `DocumentTitleField` draws no border until focused and grows to fit; asserted in `test/features/notes/presentation/note_editor_screen_test.dart`. |
+| "Last edited" tells the truth after a save | PASS | The label is fed from the same `updatedAt` the autosave writes, and is absent on a note that has not been saved yet — same test file. |
+| The title is announced as a header | PASS | The field is wrapped in `Semantics(header: true)`, asserted with `isSemantics(isHeader: true, isTextField: true)`. |
+| Editor screen on device | MANUAL — todo | `integration_test/app_flow_test.dart` ("writes a note and sees it persisted") was updated for the new header but has not been re-run since the device was disconnected. |
+
 ## Re-running the automated part
 
 ```sh
