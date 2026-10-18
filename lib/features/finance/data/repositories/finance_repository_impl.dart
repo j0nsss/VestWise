@@ -19,7 +19,10 @@ class FinanceRepositoryImpl implements FinanceRepository {
   Stream<List<TransactionModel>> watchAllTransactions() => _transactions
       .where()
       .sortByDateDesc()
-      .thenByIdDesc()
+      // Note: sorting by the primary key (`thenByIdDesc`) is not supported by
+      // Isar's native query and throws `Unknown property "id"` at runtime, so we
+      // tie-break on `createdAt` instead (newest first).
+      .thenByCreatedAtDesc()
       .watch(fireImmediately: true)
       .asyncMap(_withLoadedCategories);
 

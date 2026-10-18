@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vestwise/core/errors/result.dart';
 import 'package:vestwise/features/finance/data/models/category_model.dart';
@@ -77,5 +79,29 @@ void main() {
         .first;
     expect(inRange, hasLength(1));
     expect(inRange.single.amount, 10);
+  });
+
+  test('watchAllTransactions emits linked transactions without error', () async {
+    await repo.seedDefaultCategories();
+    final List<CategoryModel> categories =
+        (await repo.getAllCategories()).dataOrNull!;
+    final CategoryModel food =
+        categories.firstWhere((CategoryModel c) => c.name == 'Food');
+
+    final TransactionModel txn = _txn(100, TransactionType.expense)
+      ..category.value = food;
+    await repo.createTransaction(txn);
+
+    final List<Object> errors = <Object>[];
+    final List<List<TransactionModel>> emissions = <List<TransactionModel>>[];
+    final StreamSubscription<List<TransactionModel>> sub = repo
+        .watchAllTransactions()
+        .listen(emissions.add, onError: errors.add);
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    await sub.cancel();
+
+    expect(errors, isEmpty, reason: 'stream errored: $errors');
+    expect(emissions.last, hasLength(1));
+    expect(emissions.last.single.category.value?.name, 'Food');
   });
 }
