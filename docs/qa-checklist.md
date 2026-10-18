@@ -109,6 +109,9 @@ delegates to it.)
 | Grouping is deterministic, not clock-dependent in tests | PASS | `today` is injected into `buildTaskRows`, so the boundary cases (due at 23:59, due yesterday) are tested rather than hoped for. |
 | Group headings are collapsible and announced | PASS | `VWSectionDisclosure` (shared with the notes list) rotates its chevron over `stateChange` and reports `label`/`isExpanded` to screen readers — `test/features/tasks/presentation/task_list_tile_test.dart`, `test/features/notes/presentation/notes_sections_test.dart`. |
 | Collapse state is not persisted | PASS | In-memory `Set<TaskGroup>` on the screen's state only. |
+| Quick-add creates a task in one line | PASS | Enter in the row above the list writes a Medium, no-due-date task through the same `TasksRepository.createTask`; it appears under "No due date" straight from the stream, with no manual refresh — `flutter test test/features/tasks/presentation/task_quick_add_test.dart`. |
+| Quick-add uses the form's own validation | PASS | Both call `validateTaskTitle`, so an empty or whitespace-only submit is a no-op in one place and cannot drift in the other. |
+| Quick-add row on device | MANUAL — todo | Add three tasks in a row on the Redmi Note 8 and confirm the keyboard stays up between them. |
 
 ## Re-running the automated part
 

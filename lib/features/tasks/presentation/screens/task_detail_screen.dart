@@ -14,6 +14,7 @@ import 'package:vestwise/core/widgets/vw_button.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
 import 'package:vestwise/core/widgets/vw_text_field.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
+import 'package:vestwise/features/tasks/domain/task_validation.dart';
 import 'package:vestwise/features/tasks/presentation/providers/tasks_providers.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_priority_style.dart';
 
@@ -116,8 +117,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           controller: _titleController,
           label: 'Title',
           textInputAction: TextInputAction.next,
-          validator: (String? value) =>
-              (value == null || value.trim().isEmpty) ? 'Title is required' : null,
+          validator: validateTaskTitle,
         ),
         const SizedBox(height: AppSpacing.lg),
         VWTextField(

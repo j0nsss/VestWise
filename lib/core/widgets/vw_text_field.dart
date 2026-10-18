@@ -18,6 +18,8 @@ class VWTextField extends StatelessWidget {
     this.enabled = true,
     this.textInputAction,
     this.focusNode,
+    this.autofocus = false,
+    this.onFieldSubmitted,
     super.key,
   });
 
@@ -35,6 +37,10 @@ class VWTextField extends StatelessWidget {
   final bool enabled;
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
+  final bool autofocus;
+
+  /// Called when the user submits from the keyboard (Enter / done).
+  final ValueChanged<String>? onFieldSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +48,8 @@ class VWTextField extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       enabled: enabled,
+      autofocus: autofocus,
+      onFieldSubmitted: onFieldSubmitted,
       keyboardType: keyboardType,
       obscureText: obscureText,
       maxLines: maxLines,

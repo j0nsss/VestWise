@@ -20,6 +20,7 @@ import 'package:vestwise/features/tasks/domain/repositories/tasks_repository.dar
 import 'package:vestwise/features/tasks/presentation/providers/tasks_providers.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_groups.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_list_tile.dart';
+import 'package:vestwise/features/tasks/presentation/widgets/task_quick_add.dart';
 
 /// Task list (plan P3-TASK-1).
 ///
@@ -108,6 +109,10 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
       body: Column(
         children: <Widget>[
           const VWNotificationBanner(),
+          // Pinned above the list rather than scrolled with it: adding a task
+          // is the screen's primary action, and hiding it behind a scroll
+          // would make the FAB the only way back to it.
+          const TaskQuickAdd(),
           Expanded(
             child: tasksAsync.when(
               loading: () => const VWLoadingIndicator(),
