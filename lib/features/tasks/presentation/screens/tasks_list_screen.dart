@@ -18,6 +18,9 @@ import 'package:vestwise/core/widgets/vw_notification_banner.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
 import 'package:vestwise/features/tasks/domain/repositories/tasks_repository.dart';
 import 'package:vestwise/features/tasks/presentation/providers/tasks_providers.dart';
+import 'package:vestwise/features/tasks/presentation/task_reminders.dart';
+import 'package:vestwise/features/tasks/presentation/widgets/delete_task_dialog.dart';
+import 'package:vestwise/features/tasks/presentation/widgets/swipeable_task_row.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_groups.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_list_tile.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_quick_add.dart';
@@ -72,17 +75,31 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
     }
 
     // Completing a task also cancels its pending reminder (P4-T3).
-    final int? reminderId = task.notificationId;
-    if (!task.isCompleted && reminderId != null) {
-      try {
-        await notifications.cancelNotification(reminderId);
-      } catch (_) {
-        // The reminder may already have fired; cancelling is best-effort.
-      }
+    if (!task.isCompleted && task.notificationId != null) {
+      await cancelTaskReminder(notifications, task.notificationId);
       task.notificationId = null;
       await repository.updateTask(task);
     }
     await repository.toggleComplete(task.id);
+  }
+
+  /// Swipe-to-delete (plan P10-TASKS-3): confirm, cancel the reminder, then
+  /// delete. The same three steps the detail screen performs, through the same
+  /// two helpers — the swipe adds a gesture, not a second delete path.
+  Future<void> _deleteTask(TaskModel task) async {
+    final bool confirmed = await confirmTaskDeletion(context);
+    if (!confirmed || !mounted) {
+      return;
+    }
+
+    // Captured before any await so the write still lands if the screen is
+    // disposed while the dialog closes.
+    final TasksRepository repository = ref.read(tasksRepositoryProvider);
+    final NotificationService notifications =
+        ref.read(notificationServiceProvider);
+
+    await cancelTaskReminder(notifications, task.notificationId);
+    await repository.deleteTask(task.id);
   }
 
   /// A light tick on completion. Best-effort: a device without a haptics engine
@@ -157,11 +174,13 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
                             onToggle: () => _toggleGroup(row.group),
                           );
                         }
+                        final TaskModel task = (row as TaskItemRow).task;
                         return _TaskListTileRow(
-                          task: (row as TaskItemRow).task,
+                          task: task,
                           index: index,
                           morphingId: _morphingId,
                           onToggle: _toggleComplete,
+                          onDelete: _deleteTask,
                         );
                       },
                     ),
@@ -194,20 +213,27 @@ class _TaskListTileRow extends ConsumerWidget {
     required this.index,
     required this.morphingId,
     required this.onToggle,
+    required this.onDelete,
   });
 
   final TaskModel task;
   final int index;
   final int? morphingId;
   final Future<void> Function(TaskModel task) onToggle;
+  final Future<void> Function(TaskModel task) onDelete;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Widget tile = TaskListTile(
-      task: task,
-      morphing: morphingId == task.id,
-      onToggle: () => unawaited(onToggle(task)),
-      onTap: () => context.go(RoutePaths.taskDetailFor(task.id)),
+    final Widget tile = SwipeableTaskRow(
+      taskId: task.id,
+      onSwipeComplete: () => unawaited(onToggle(task)),
+      onSwipeDelete: () => onDelete(task),
+      child: TaskListTile(
+        task: task,
+        morphing: morphingId == task.id,
+        onToggle: () => unawaited(onToggle(task)),
+        onTap: () => context.go(RoutePaths.taskDetailFor(task.id)),
+      ),
     );
 
     final Key key = ValueKey<int>(task.id);

@@ -112,6 +112,10 @@ delegates to it.)
 | Quick-add creates a task in one line | PASS | Enter in the row above the list writes a Medium, no-due-date task through the same `TasksRepository.createTask`; it appears under "No due date" straight from the stream, with no manual refresh — `flutter test test/features/tasks/presentation/task_quick_add_test.dart`. |
 | Quick-add uses the form's own validation | PASS | Both call `validateTaskTitle`, so an empty or whitespace-only submit is a no-op in one place and cannot drift in the other. |
 | Quick-add row on device | MANUAL — todo | Add three tasks in a row on the Redmi Note 8 and confirm the keyboard stays up between them. |
+| Swiping right completes, swiping left deletes | PASS | `SwipeableTaskRow` wraps each row in a `Dismissible` with `direction: horizontal` and branches in `confirmDismiss`; a right-swipe calls the same `_toggleComplete` the checkbox does, a left-swipe hits the confirmation first — `flutter test test/features/tasks/presentation/task_swipe_test.dart`. |
+| Swipe-delete cannot destroy a task silently | PASS | Both the swipe and the detail screen's delete button go through one `confirmTaskDeletion` dialog and one `cancelTaskReminder` + `deleteTask` pair; the tests assert nothing is deleted (and no reminder is cancelled) until "Delete" is tapped. |
+| The swipe does not fight the completion morph | PASS | `confirmDismiss` returns false in both directions, so the row snaps back and leaves when the stream says so — the P9-T4 morph is not cut short, and Flutter's "a dismissed Dismissible is still part of the tree" assertion is never reachable from a stream-driven list. |
+| Swipe gestures on device | MANUAL — todo | Swipe a task right (expect the tick + strike-through, then a move to Completed), then swipe another one left and cancel, then delete. Confirm the horizontal drags do not fight the vertical list scroll or the Android back gesture. |
 
 ## Re-running the automated part
 

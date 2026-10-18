@@ -15,6 +15,8 @@ import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
 import 'package:vestwise/core/widgets/vw_text_field.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
 import 'package:vestwise/features/tasks/domain/task_validation.dart';
+import 'package:vestwise/features/tasks/presentation/task_reminders.dart';
+import 'package:vestwise/features/tasks/presentation/widgets/delete_task_dialog.dart';
 import 'package:vestwise/features/tasks/presentation/providers/tasks_providers.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_priority_style.dart';
 
@@ -290,7 +292,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     // Cancel any reminder scheduled on a previous save before re-scheduling, so
     // editing the due date never leaves a stale notification behind (P4-T3).
     if (_notificationId != null) {
-      await _safeCancel(notifications, _notificationId!);
+      await cancelTaskReminder(notifications, _notificationId);
     }
 
     int? notificationId;
@@ -357,30 +359,15 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   }
 
   Future<void> _confirmDelete() async {
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Delete task?'),
-        content: const Text('This task and its reminder will be removed.'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) {
+    final bool confirmed = await confirmTaskDeletion(context);
+    if (!confirmed || !mounted) {
       return;
     }
 
-    if (_notificationId != null) {
-      await _safeCancel(ref.read(notificationServiceProvider), _notificationId!);
-    }
+    await cancelTaskReminder(
+      ref.read(notificationServiceProvider),
+      _notificationId,
+    );
     await ref.read(tasksRepositoryProvider).deleteTask(_taskId!);
     if (mounted) {
       context.pop();
@@ -404,11 +391,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     }
   }
 
-  Future<void> _safeCancel(NotificationService service, int id) async {
-    try {
-      await service.cancelNotification(id);
-    } catch (_) {}
-  }
 }
 
 /// A single editable sub-task row: its completion state, text controller and a
