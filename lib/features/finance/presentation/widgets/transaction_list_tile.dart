@@ -25,8 +25,9 @@ class TransactionListTile extends StatelessWidget {
         : Icons.receipt_long;
 
     final bool isIncome = transaction.type == TransactionType.income;
-    final Color amountColor =
-        isIncome ? AppColors.incomeGreen : AppColors.expenseRed;
+    final Color amountColor = isIncome
+        ? AppColors.incomeFor(theme.brightness)
+        : AppColors.expenseFor(theme.brightness);
     final String sign = isIncome ? '+' : '-';
 
     final String? note = transaction.note?.trim();

@@ -95,6 +95,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           if (_isEditing)
             IconButton(
               icon: const Icon(Icons.delete_outline),
+              tooltip: 'Delete event',
               onPressed: _loading ? null : _confirmDelete,
             ),
         ],

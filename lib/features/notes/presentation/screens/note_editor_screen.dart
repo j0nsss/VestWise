@@ -182,6 +182,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
           if (_isEditing && widget.noteId != RoutePaths.newId)
             IconButton(
               icon: const Icon(Icons.delete_outline),
+              tooltip: 'Delete note',
               onPressed: _confirmDelete,
             ),
         ],

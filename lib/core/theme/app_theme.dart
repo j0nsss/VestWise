@@ -53,9 +53,21 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
+          // 48px is the minimum comfortable tap target (P5-T3).
+          minimumSize: const Size(0, 48),
           shape: const RoundedRectangleBorder(borderRadius: AppRadii.input),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.xl,
+            vertical: AppSpacing.md,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 48),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadii.input),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
             vertical: AppSpacing.md,
           ),
         ),

@@ -95,6 +95,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           if (_isEditing)
             IconButton(
               icon: const Icon(Icons.delete_outline),
+              tooltip: 'Delete task',
               onPressed: _loading ? null : _confirmDelete,
             ),
         ],

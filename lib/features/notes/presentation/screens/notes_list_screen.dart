@@ -54,6 +54,7 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
+          tooltip: 'New note',
           onPressed: () => context.go(RoutePaths.noteEditorFor(RoutePaths.newId)),
           child: const Icon(Icons.add),
         ),

@@ -87,6 +87,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
           if (_isEditing)
             IconButton(
               icon: const Icon(Icons.delete_outline),
+              tooltip: 'Delete transaction',
               onPressed: _loading ? null : _confirmDelete,
             ),
         ],

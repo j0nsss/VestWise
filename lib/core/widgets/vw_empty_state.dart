@@ -35,7 +35,8 @@ class VWEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(icon, size: 48, color: muted),
+            // Decorative: announcing the glyph adds nothing over the message.
+            ExcludeSemantics(child: Icon(icon, size: 48, color: muted)),
             const SizedBox(height: AppSpacing.lg),
             if (title != null) ...<Widget>[
               Text(

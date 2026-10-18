@@ -32,6 +32,7 @@ class TasksListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: const VWAppBar(title: AppStrings.tasks),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Add task',
         onPressed: () => context.go(RoutePaths.taskDetailFor(RoutePaths.newId)),
         child: const Icon(Icons.add),
       ),

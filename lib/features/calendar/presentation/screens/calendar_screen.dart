@@ -40,6 +40,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return Scaffold(
       appBar: const VWAppBar(title: AppStrings.calendar),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Add event',
         onPressed: () => context.go(RoutePaths.eventDetailFor(RoutePaths.newId)),
         child: const Icon(Icons.add),
       ),

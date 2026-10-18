@@ -218,7 +218,7 @@ class _Chart extends StatelessWidget {
                     barRods: <BarChartRodData>[
                       BarChartRodData(
                         toY: buckets[i].income,
-                        color: AppColors.incomeGreen,
+                        color: AppColors.incomeFor(theme.brightness),
                         width: 8,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(4),
@@ -226,7 +226,7 @@ class _Chart extends StatelessWidget {
                       ),
                       BarChartRodData(
                         toY: buckets[i].expense,
-                        color: AppColors.expenseRed,
+                        color: AppColors.expenseFor(theme.brightness),
                         width: 8,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(4),
@@ -248,11 +248,12 @@ class _ChartLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    final Brightness brightness = Theme.of(context).brightness;
+    return Row(
       children: <Widget>[
-        _LegendDot(color: AppColors.incomeGreen, label: 'Income'),
-        SizedBox(width: AppSpacing.lg),
-        _LegendDot(color: AppColors.expenseRed, label: 'Expense'),
+        _LegendDot(color: AppColors.incomeFor(brightness), label: 'Income'),
+        const SizedBox(width: AppSpacing.lg),
+        _LegendDot(color: AppColors.expenseFor(brightness), label: 'Expense'),
       ],
     );
   }

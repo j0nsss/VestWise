@@ -37,6 +37,7 @@ class FinanceHomeScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Add transaction',
         onPressed: () => context.go(RoutePaths.financeAdd),
         child: const Icon(Icons.add),
       ),

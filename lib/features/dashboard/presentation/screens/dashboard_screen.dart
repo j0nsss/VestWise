@@ -181,8 +181,9 @@ class _BalanceSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final bool positive = weeklyNetChange >= 0;
-    final Color changeColor =
-        positive ? AppColors.incomeGreen : AppColors.expenseRed;
+    final Color changeColor = positive
+        ? AppColors.incomeFor(theme.brightness)
+        : AppColors.expenseFor(theme.brightness);
 
     return VWCard(
       child: Column(
