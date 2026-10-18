@@ -37,11 +37,11 @@ List<TransactionModel> _dataset() {
         ..category.value = row.$1 == null
             ? null
             : (CategoryModel()
-              ..id = row.$1!.length
-              ..name = row.$1!
-              ..iconCodePoint = Icons.restaurant.codePoint
-              ..colorValue = 0
-              ..type = TransactionType.expense),
+                ..id = row.$1!.length
+                ..name = row.$1!
+                ..iconCodePoint = Icons.restaurant.codePoint
+                ..colorValue = 0
+                ..type = TransactionType.expense),
   ];
 }
 
@@ -67,10 +67,13 @@ void main() {
     test('groups by category name, biggest first', () {
       final List<CategoryTotal> totals = categoryTotals(_dataset());
 
-      expect(
-        totals.map((CategoryTotal t) => t.name).toList(),
-        <String>['Bills', 'Shopping', 'Food', 'Transport', uncategorizedLabel],
-      );
+      expect(totals.map((CategoryTotal t) => t.name).toList(), <String>[
+        'Bills',
+        'Shopping',
+        'Food',
+        'Transport',
+        uncategorizedLabel,
+      ]);
       expect(totals.first.amount, closeTo(255.00, 0.001));
       expect(totals.last.amount, 5.00);
     });
@@ -96,10 +99,9 @@ void main() {
         );
 
       expect(
-        categoryTotals(mixed).fold<double>(
-          0,
-          (double acc, CategoryTotal t) => acc + t.amount,
-        ),
+        categoryTotals(
+          mixed,
+        ).fold<double>(0, (double acc, CategoryTotal t) => acc + t.amount),
         closeTo(1563.99, 0.001),
       );
     });
@@ -107,8 +109,11 @@ void main() {
     test('no expenses gives no totals, and a zero total shares as zero', () {
       expect(categoryTotals(const <TransactionModel>[]), isEmpty);
       expect(
-        const CategoryTotal(name: 'Food', amount: 10, tag: AppTag.green)
-            .shareOf(0),
+        const CategoryTotal(
+          name: 'Food',
+          amount: 10,
+          tag: AppTag.green,
+        ).shareOf(0),
         0,
       );
     });
@@ -142,8 +147,7 @@ void main() {
   group('CategoryRing (P10-FIN-3)', () {
     Widget wrap(Widget child, {Brightness brightness = Brightness.light}) =>
         MaterialApp(
-          theme:
-              brightness == Brightness.dark ? AppTheme.dark : AppTheme.light,
+          theme: brightness == Brightness.dark ? AppTheme.dark : AppTheme.light,
           home: Scaffold(
             body: Center(child: SizedBox(width: 320, child: child)),
           ),

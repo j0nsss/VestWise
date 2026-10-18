@@ -31,15 +31,15 @@ class DashboardState {
   });
 
   const DashboardState.empty()
-      : todayTasks = const <TaskModel>[],
-        balance = 0,
-        weeklyNetChange = 0,
-        last7DaysNet = const <DailyNet>[],
-        hasFinanceData = false,
-        upcomingEvents = const <CalendarEventModel>[],
-        recentNotes = const <NoteModel>[],
-        isLoading = false,
-        failedSections = const <DashboardSection>{};
+    : todayTasks = const <TaskModel>[],
+      balance = 0,
+      weeklyNetChange = 0,
+      last7DaysNet = const <DailyNet>[],
+      hasFinanceData = false,
+      upcomingEvents = const <CalendarEventModel>[],
+      recentNotes = const <NoteModel>[],
+      isLoading = false,
+      failedSections = const <DashboardSection>{};
 
   final List<TaskModel> todayTasks;
   final double balance;
@@ -73,30 +73,40 @@ class DashboardState {
 /// manual refresh.
 @riverpod
 DashboardState dashboard(Ref ref) {
-  final AsyncValue<List<TaskModel>> tasks = ref.watch(watchTasksDueTodayProvider);
+  final AsyncValue<List<TaskModel>> tasks = ref.watch(
+    watchTasksDueTodayProvider,
+  );
   // Aggregates only: the balance is an Isar `sum()` and the week's net comes
   // from a range query, so the dashboard never pulls the whole history into
   // memory just to add two numbers up (plan P5-T5).
   final AsyncValue<double> balanceAsync = ref.watch(balanceProvider);
   final DateTime now = DateTime.now();
-  final DateTime weekStart = DateTime(now.year, now.month, now.day)
-      .subtract(Duration(days: now.weekday - 1));
-  final AsyncValue<List<TransactionModel>> weekTransactions =
-      ref.watch(
-    watchTransactionsInRangeProvider(weekStart, weekStart.add(const Duration(days: 7))),
+  final DateTime weekStart = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  ).subtract(Duration(days: now.weekday - 1));
+  final AsyncValue<List<TransactionModel>> weekTransactions = ref.watch(
+    watchTransactionsInRangeProvider(
+      weekStart,
+      weekStart.add(const Duration(days: 7)),
+    ),
   );
-  final AsyncValue<List<CalendarEventModel>> upcomingEvents =
-      ref.watch(watchUpcomingEventsProvider);
-  final AsyncValue<List<NoteModel>> allNotesAsync =
-      ref.watch(watchAllNotesProvider);
+  final AsyncValue<List<CalendarEventModel>> upcomingEvents = ref.watch(
+    watchUpcomingEventsProvider,
+  );
+  final AsyncValue<List<NoteModel>> allNotesAsync = ref.watch(
+    watchAllNotesProvider,
+  );
   // The sparkline's week (P10-FIN-2) and an exact "is there anything at all?"
   // signal (P10-FIN-4) — one bounded row, not a count query.
-  final AsyncValue<List<DailyNet>> week =
-      ref.watch(watchLast7DaysNetProvider);
-  final AsyncValue<List<TransactionModel>> anyTransaction =
-      ref.watch(watchRecentTransactionsProvider(1));
+  final AsyncValue<List<DailyNet>> week = ref.watch(watchLast7DaysNetProvider);
+  final AsyncValue<List<TransactionModel>> anyTransaction = ref.watch(
+    watchRecentTransactionsProvider(1),
+  );
 
-  final bool isLoading = tasks.isLoading &&
+  final bool isLoading =
+      tasks.isLoading &&
       balanceAsync.isLoading &&
       weekTransactions.isLoading &&
       upcomingEvents.isLoading &&
@@ -115,24 +125,25 @@ DashboardState dashboard(Ref ref) {
 
   final double balance = balanceAsync.value ?? 0;
 
-  final double weeklyNetChange = (weekTransactions.value ??
-          const <TransactionModel>[])
-      .fold<double>(
+  final double weeklyNetChange =
+      (weekTransactions.value ?? const <TransactionModel>[]).fold<double>(
         0,
         (double acc, TransactionModel t) =>
             acc + (t.type == TransactionType.income ? t.amount : -t.amount),
       );
 
   final List<NoteModel> recentNotes =
-      (allNotesAsync.value ?? const <NoteModel>[]).toList()
-        ..sort((NoteModel a, NoteModel b) => b.updatedAt.compareTo(a.updatedAt));
+      (allNotesAsync.value ?? const <NoteModel>[]).toList()..sort(
+        (NoteModel a, NoteModel b) => b.updatedAt.compareTo(a.updatedAt),
+      );
 
   return DashboardState(
     todayTasks: tasks.value ?? const <TaskModel>[],
     balance: balance,
     weeklyNetChange: weeklyNetChange,
     last7DaysNet: week.value ?? const <DailyNet>[],
-    hasFinanceData: (anyTransaction.value ?? const <TransactionModel>[]).isNotEmpty,
+    hasFinanceData:
+        (anyTransaction.value ?? const <TransactionModel>[]).isNotEmpty,
     upcomingEvents: upcomingEvents.value ?? const <CalendarEventModel>[],
     recentNotes: recentNotes.take(2).toList(),
     isLoading: isLoading,

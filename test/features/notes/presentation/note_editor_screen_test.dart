@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' show FlutterQuillLocalizations;
+import 'package:flutter_quill/flutter_quill.dart'
+    show FlutterQuillLocalizations;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vestwise/core/errors/failure.dart';
@@ -21,8 +22,9 @@ class _FakeNotesRepository implements NotesRepository {
   NoteModel? created;
 
   @override
-  Future<Result<NoteModel>> getNoteById(int id) async =>
-      note == null ? const Error<NoteModel>(UnexpectedFailure('missing')) : Success<NoteModel>(note!);
+  Future<Result<NoteModel>> getNoteById(int id) async => note == null
+      ? const Error<NoteModel>(UnexpectedFailure('missing'))
+      : Success<NoteModel>(note!);
 
   @override
   Future<Result<void>> updateNote(NoteModel note) async {
@@ -161,8 +163,10 @@ void main() {
     testWidgets('an empty note is not written at all', (
       WidgetTester tester,
     ) async {
-      final _FakeNotesRepository repository =
-          await _pumpEditor(tester, noteId: 'new');
+      final _FakeNotesRepository repository = await _pumpEditor(
+        tester,
+        noteId: 'new',
+      );
 
       await tester.pump(const Duration(milliseconds: 900));
       await tester.pumpAndSettle();
@@ -257,10 +261,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(repository.updated?.title, 'New title');
-      expect(
-        repository.updated?.iconCodePoint,
-        Icons.star_outline.codePoint,
-      );
+      expect(repository.updated?.iconCodePoint, Icons.star_outline.codePoint);
     });
   });
 }

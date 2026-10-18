@@ -91,8 +91,7 @@ class _LoadErrorBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
-    final String label =
-        (sections.map(_label).toList()..sort()).join(', ');
+    final String label = (sections.map(_label).toList()..sort()).join(', ');
 
     return Card(
       color: theme.colorScheme.errorContainer,
@@ -133,11 +132,11 @@ class _LoadErrorBanner extends ConsumerWidget {
   }
 
   String _label(DashboardSection section) => switch (section) {
-        DashboardSection.tasks => 'tasks',
-        DashboardSection.finance => 'finance',
-        DashboardSection.calendar => 'calendar',
-        DashboardSection.notes => 'notes',
-      };
+    DashboardSection.tasks => 'tasks',
+    DashboardSection.finance => 'finance',
+    DashboardSection.calendar => 'calendar',
+    DashboardSection.notes => 'notes',
+  };
 }
 
 class _TodayTasksCard extends ConsumerWidget {
@@ -172,7 +171,11 @@ class _TodayTasksCard extends ConsumerWidget {
                 value: task.isCompleted,
                 onChanged: (_) =>
                     ref.read(tasksRepositoryProvider).toggleComplete(task.id),
-                title: Text(task.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                title: Text(
+                  task.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 secondary: Icon(
                   Icons.circle,
                   size: 10,
@@ -235,8 +238,9 @@ class _BalanceSummaryCard extends StatelessWidget {
             ),
             Text(
               formatMoney(balance),
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Row(

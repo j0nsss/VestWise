@@ -12,10 +12,10 @@ abstract final class ThemeStore {
   /// Stored as the enum name (`system`/`light`/`dark`) so the on-disk value is
   /// readable and survives enum reordering.
   static ThemeMode decode(String? raw) => switch (raw) {
-        'light' => ThemeMode.light,
-        'dark' => ThemeMode.dark,
-        _ => ThemeMode.system,
-      };
+    'light' => ThemeMode.light,
+    'dark' => ThemeMode.dark,
+    _ => ThemeMode.system,
+  };
 
   static String encode(ThemeMode mode) => mode.name;
 

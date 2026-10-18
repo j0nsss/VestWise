@@ -33,57 +33,42 @@ class TasksRepositoryImpl implements TasksRepository {
   }
 
   @override
-  Future<Result<TaskModel>> getTaskById(int id) => resultGuard(
-        () async {
-          final TaskModel? task = await _tasks.get(id);
-          if (task == null) {
-            throw StateError('Task $id not found');
-          }
-          return task;
-        },
-        operation: 'getTaskById',
-      );
+  Future<Result<TaskModel>> getTaskById(int id) => resultGuard(() async {
+    final TaskModel? task = await _tasks.get(id);
+    if (task == null) {
+      throw StateError('Task $id not found');
+    }
+    return task;
+  }, operation: 'getTaskById');
 
   @override
-  Future<Result<int>> createTask(TaskModel task) => resultGuard(
-        () async {
-          await _isar.writeTxn(() async {
-            task.id = await _tasks.put(task);
-          });
-          return task.id;
-        },
-        operation: 'createTask',
-      );
+  Future<Result<int>> createTask(TaskModel task) => resultGuard(() async {
+    await _isar.writeTxn(() async {
+      task.id = await _tasks.put(task);
+    });
+    return task.id;
+  }, operation: 'createTask');
 
   @override
-  Future<Result<void>> updateTask(TaskModel task) => resultGuard(
-        () async {
-          await _isar.writeTxn(() => _tasks.put(task));
-        },
-        operation: 'updateTask',
-      );
+  Future<Result<void>> updateTask(TaskModel task) => resultGuard(() async {
+    await _isar.writeTxn(() => _tasks.put(task));
+  }, operation: 'updateTask');
 
   @override
-  Future<Result<void>> deleteTask(int id) => resultGuard(
-        () async {
-          await _isar.writeTxn(() => _tasks.delete(id));
-        },
-        operation: 'deleteTask',
-      );
+  Future<Result<void>> deleteTask(int id) => resultGuard(() async {
+    await _isar.writeTxn(() => _tasks.delete(id));
+  }, operation: 'deleteTask');
 
   @override
-  Future<Result<void>> toggleComplete(int id) => resultGuard(
-        () async {
-          await _isar.writeTxn(() async {
-            final TaskModel? task = await _tasks.get(id);
-            if (task == null) {
-              throw StateError('Task $id not found');
-            }
-            task.isCompleted = !task.isCompleted;
-            task.completedAt = task.isCompleted ? DateTime.now() : null;
-            await _tasks.put(task);
-          });
-        },
-        operation: 'toggleComplete',
-      );
+  Future<Result<void>> toggleComplete(int id) => resultGuard(() async {
+    await _isar.writeTxn(() async {
+      final TaskModel? task = await _tasks.get(id);
+      if (task == null) {
+        throw StateError('Task $id not found');
+      }
+      task.isCompleted = !task.isCompleted;
+      task.completedAt = task.isCompleted ? DateTime.now() : null;
+      await _tasks.put(task);
+    });
+  }, operation: 'toggleComplete');
 }

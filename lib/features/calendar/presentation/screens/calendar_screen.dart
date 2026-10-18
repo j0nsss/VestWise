@@ -30,18 +30,21 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final AsyncValue<List<CalendarEventModel>> eventsAsync =
-        ref.watch(watchAllEventsProvider);
+    final AsyncValue<List<CalendarEventModel>> eventsAsync = ref.watch(
+      watchAllEventsProvider,
+    );
     // Grid markers degrade to none while loading or on error — the day list
     // below carries the explicit loading/error state (P5-T2).
-    final Map<DateTime, List<CalendarEventModel>> byDay =
-        _groupByDay(eventsAsync.value ?? const <CalendarEventModel>[]);
+    final Map<DateTime, List<CalendarEventModel>> byDay = _groupByDay(
+      eventsAsync.value ?? const <CalendarEventModel>[],
+    );
 
     return Scaffold(
       appBar: const VWAppBar(title: AppStrings.calendar),
       floatingActionButton: FloatingActionButton(
         tooltip: 'Add event',
-        onPressed: () => context.go(RoutePaths.eventDetailFor(RoutePaths.newId)),
+        onPressed: () =>
+            context.go(RoutePaths.eventDetailFor(RoutePaths.newId)),
         child: const Icon(Icons.add),
       ),
       body: Column(
@@ -51,7 +54,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             firstDay: DateTime(2020),
             lastDay: DateTime(2035),
             focusedDay: _focusedDay,
-            selectedDayPredicate: (DateTime day) => isSameDay(_selectedDay, day),
+            selectedDayPredicate: (DateTime day) =>
+                isSameDay(_selectedDay, day),
             eventLoader: (DateTime day) => _eventsForDay(byDay, day),
             onDaySelected: (DateTime selectedDay, DateTime focusedDay) {
               setState(() {
@@ -218,6 +222,5 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   List<CalendarEventModel> _eventsForDay(
     Map<DateTime, List<CalendarEventModel>> byDay,
     DateTime day,
-  ) =>
-      byDay[DateTime(day.year, day.month, day.day)] ?? <CalendarEventModel>[];
+  ) => byDay[DateTime(day.year, day.month, day.day)] ?? <CalendarEventModel>[];
 }

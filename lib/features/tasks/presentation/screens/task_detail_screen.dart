@@ -270,8 +270,13 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       return;
     }
     setState(() {
-      _dueDate =
-          DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      _dueDate = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
     });
   }
 
@@ -281,8 +286,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     }
     setState(() => _saving = true);
 
-    final NotificationService notifications =
-        ref.read(notificationServiceProvider);
+    final NotificationService notifications = ref.read(
+      notificationServiceProvider,
+    );
     final DateTime now = DateTime.now();
     final List<SubTask> subTasks = _subTasks
         .map((_SubTaskField f) => f.toSubTask())
@@ -330,8 +336,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           ..completedAt = existing.completedAt
           ..createdAt = existing.createdAt;
       }
-      final result =
-          await ref.read(tasksRepositoryProvider).updateTask(task);
+      final result = await ref.read(tasksRepositoryProvider).updateTask(task);
       if (!mounted) {
         return;
       }
@@ -340,8 +345,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         onError: (Failure f) => _onSaveFailed(f),
       );
     } else {
-      final result =
-          await ref.read(tasksRepositoryProvider).createTask(task);
+      final result = await ref.read(tasksRepositoryProvider).createTask(task);
       if (!mounted) {
         return;
       }
@@ -354,8 +358,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   void _onSaveFailed(Failure failure) {
     setState(() => _saving = false);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(failure.message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(failure.message)));
   }
 
   Future<void> _confirmDelete() async {
@@ -390,16 +395,15 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       return null;
     }
   }
-
 }
 
 /// A single editable sub-task row: its completion state, text controller and a
 /// stable [localId] so reordering keeps widget state attached to the right row.
 class _SubTaskField {
   _SubTaskField({SubTask? subTask})
-      : isDone = subTask?.isDone ?? false,
-        localId = subTask?.localId ?? const Uuid().v4(),
-        title = TextEditingController(text: subTask?.title ?? '');
+    : isDone = subTask?.isDone ?? false,
+      localId = subTask?.localId ?? const Uuid().v4(),
+      title = TextEditingController(text: subTask?.title ?? '');
 
   final String localId;
   bool isDone;

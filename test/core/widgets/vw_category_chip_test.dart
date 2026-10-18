@@ -15,8 +15,8 @@ Widget _wrap(Widget child, {Brightness brightness = Brightness.light}) =>
 /// The chip's own [Material] — the nearest one to its label, since the app and
 /// the scaffold each contribute one too.
 Material _pillOf(WidgetTester tester, Finder label) => tester.widget<Material>(
-      find.ancestor(of: label, matching: find.byType(Material)).first,
-    );
+  find.ancestor(of: label, matching: find.byType(Material)).first,
+);
 
 void main() {
   group('VWCategoryChip (P10-FIN-1)', () {
@@ -69,7 +69,10 @@ void main() {
         ),
       );
 
-      final AppTagColor pair = AppColors.tagFor(AppTag.purple, Brightness.light);
+      final AppTagColor pair = AppColors.tagFor(
+        AppTag.purple,
+        Brightness.light,
+      );
       final Material pill = _pillOf(tester, find.text('Food'));
       final Icon icon = tester.widget<Icon>(find.byIcon(Icons.restaurant));
       final Text label = tester.widget<Text>(find.text('Food'));
@@ -127,10 +130,7 @@ void main() {
       // Pinned values: if this ever changes, existing categories silently
       // change colour after an update, so it should be a deliberate decision.
       expect(AppColors.tagForLabel('Food'), AppColors.tagForLabel('Food'));
-      expect(
-        AppColors.tagForLabel('Food'),
-        isA<AppTag>(),
-      );
+      expect(AppColors.tagForLabel('Food'), isA<AppTag>());
 
       final Set<AppTag> hues = <AppTag>{
         for (final String name in <String>[

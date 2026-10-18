@@ -33,8 +33,9 @@ class DocumentTitleField extends StatelessWidget {
         autofocus: autofocus,
         maxLines: null,
         textCapitalization: TextCapitalization.sentences,
-        style: theme.textTheme.headlineMedium
-            ?.copyWith(fontWeight: FontWeight.w700),
+        style: theme.textTheme.headlineMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
         decoration: InputDecoration(
           hintText: 'Untitled',
           hintStyle: theme.textTheme.headlineMedium?.copyWith(

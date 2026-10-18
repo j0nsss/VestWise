@@ -20,7 +20,7 @@ class ScheduledReminder {
 /// on [TaskModel] / [CalendarEventModel] and cancelled on edit/delete.
 class NotificationService {
   NotificationService({FlutterLocalNotificationsPlugin? plugin})
-      : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   static const String _channelId = 'vestwise_reminders';
   static const String _channelName = 'Reminders';
@@ -38,13 +38,15 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin;
   bool _initialized = false;
 
-  AndroidFlutterLocalNotificationsPlugin? get _android =>
-      _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+  AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
 
-  IOSFlutterLocalNotificationsPlugin? get _ios =>
-      _plugin.resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>();
+  IOSFlutterLocalNotificationsPlugin? get _ios => _plugin
+      .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+      >();
 
   /// Initializes the plugin and sets the local timezone. Safe to call twice.
   Future<void> init() async {
@@ -54,8 +56,9 @@ class NotificationService {
 
     await _configureLocalTimeZone();
 
-    const AndroidInitializationSettings android =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const AndroidInitializationSettings android = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const DarwinInitializationSettings darwin = DarwinInitializationSettings(
       // Permissions are requested explicitly via [requestPermissions] at a
       // sensible moment (P4-T2), not on cold launch.
@@ -84,8 +87,8 @@ class NotificationService {
   /// Requests notification permission on Android 13+ and iOS (P4-T2).
   /// Returns `true` when the app is allowed to post notifications.
   Future<bool> requestPermissions() async {
-    final bool? androidGranted =
-        await _android?.requestNotificationsPermission();
+    final bool? androidGranted = await _android
+        ?.requestNotificationsPermission();
     final bool? iosGranted = await _ios?.requestPermissions(
       alert: true,
       badge: true,
@@ -114,8 +117,8 @@ class NotificationService {
       return androidEnabled;
     }
 
-    final NotificationsEnabledOptions? iosOptions =
-        await _ios?.checkPermissions();
+    final NotificationsEnabledOptions? iosOptions = await _ios
+        ?.checkPermissions();
     if (iosOptions != null) {
       return iosOptions.isEnabled || iosOptions.isProvisionalEnabled;
     }

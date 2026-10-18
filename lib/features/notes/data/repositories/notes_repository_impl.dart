@@ -38,79 +38,57 @@ class NotesRepositoryImpl implements NotesRepository {
   }
 
   @override
-  Stream<List<ImportedDocumentModel>> watchImportedDocuments() => _documents
-      .where()
-      .sortByImportedAtDesc()
-      .watch(fireImmediately: true);
+  Stream<List<ImportedDocumentModel>> watchImportedDocuments() =>
+      _documents.where().sortByImportedAtDesc().watch(fireImmediately: true);
 
   @override
-  Future<Result<NoteModel>> getNoteById(int id) => resultGuard(
-        () async {
-          final NoteModel? note = await _notes.get(id);
-          if (note == null) {
-            throw StateError('Note $id not found');
-          }
-          return note;
-        },
-        operation: 'getNoteById',
-      );
+  Future<Result<NoteModel>> getNoteById(int id) => resultGuard(() async {
+    final NoteModel? note = await _notes.get(id);
+    if (note == null) {
+      throw StateError('Note $id not found');
+    }
+    return note;
+  }, operation: 'getNoteById');
 
   @override
-  Future<Result<int>> createNote(NoteModel note) => resultGuard(
-        () async {
-          await _isar.writeTxn(() async {
-            note.id = await _notes.put(note);
-          });
-          return note.id;
-        },
-        operation: 'createNote',
-      );
+  Future<Result<int>> createNote(NoteModel note) => resultGuard(() async {
+    await _isar.writeTxn(() async {
+      note.id = await _notes.put(note);
+    });
+    return note.id;
+  }, operation: 'createNote');
 
   @override
-  Future<Result<void>> updateNote(NoteModel note) => resultGuard(
-        () async {
-          await _isar.writeTxn(() => _notes.put(note));
-        },
-        operation: 'updateNote',
-      );
+  Future<Result<void>> updateNote(NoteModel note) => resultGuard(() async {
+    await _isar.writeTxn(() => _notes.put(note));
+  }, operation: 'updateNote');
 
   @override
-  Future<Result<void>> deleteNote(int id) => resultGuard(
-        () async {
-          await _isar.writeTxn(() => _notes.delete(id));
-        },
-        operation: 'deleteNote',
-      );
+  Future<Result<void>> deleteNote(int id) => resultGuard(() async {
+    await _isar.writeTxn(() => _notes.delete(id));
+  }, operation: 'deleteNote');
 
   @override
-  Future<Result<ImportedDocumentModel>> getDocumentById(int id) => resultGuard(
-        () async {
-          final ImportedDocumentModel? document = await _documents.get(id);
-          if (document == null) {
-            throw StateError('Document $id not found');
-          }
-          return document;
-        },
-        operation: 'getDocumentById',
-      );
+  Future<Result<ImportedDocumentModel>> getDocumentById(int id) =>
+      resultGuard(() async {
+        final ImportedDocumentModel? document = await _documents.get(id);
+        if (document == null) {
+          throw StateError('Document $id not found');
+        }
+        return document;
+      }, operation: 'getDocumentById');
 
   @override
   Future<Result<int>> createImportedDocument(ImportedDocumentModel document) =>
-      resultGuard(
-        () async {
-          await _isar.writeTxn(() async {
-            document.id = await _documents.put(document);
-          });
-          return document.id;
-        },
-        operation: 'createImportedDocument',
-      );
+      resultGuard(() async {
+        await _isar.writeTxn(() async {
+          document.id = await _documents.put(document);
+        });
+        return document.id;
+      }, operation: 'createImportedDocument');
 
   @override
-  Future<Result<void>> deleteImportedDocument(int id) => resultGuard(
-        () async {
-          await _isar.writeTxn(() => _documents.delete(id));
-        },
-        operation: 'deleteImportedDocument',
-      );
+  Future<Result<void>> deleteImportedDocument(int id) => resultGuard(() async {
+    await _isar.writeTxn(() => _documents.delete(id));
+  }, operation: 'deleteImportedDocument');
 }

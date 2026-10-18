@@ -2,10 +2,7 @@ import 'package:isar_community/isar.dart';
 
 part 'category_model.g.dart';
 
-enum TransactionType {
-  income,
-  expense,
-}
+enum TransactionType { income, expense }
 
 @collection
 class CategoryModel {

@@ -2,13 +2,7 @@ import 'package:isar_community/isar.dart';
 
 part 'calendar_event_model.g.dart';
 
-enum EventRepeat {
-  none,
-  daily,
-  weekly,
-  monthly,
-  yearly,
-}
+enum EventRepeat { none, daily, weekly, monthly, yearly }
 
 @collection
 class CalendarEventModel {

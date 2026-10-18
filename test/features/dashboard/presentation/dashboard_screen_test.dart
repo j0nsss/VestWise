@@ -12,9 +12,9 @@ import 'package:vestwise/features/finance/domain/models/daily_net.dart';
 import 'package:vestwise/features/finance/presentation/widgets/money.dart';
 
 List<DailyNet> _week(List<double> nets) => <DailyNet>[
-      for (int i = 0; i < nets.length; i++)
-        DailyNet(day: DateTime(2026, 3, 1 + i), net: nets[i]),
-    ];
+  for (int i = 0; i < nets.length; i++)
+    DailyNet(day: DateTime(2026, 3, 1 + i), net: nets[i]),
+];
 
 Future<void> _pump(
   WidgetTester tester,
@@ -23,11 +23,7 @@ Future<void> _pump(
 }) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [
-        dashboardProvider.overrideWith(
-          (Ref ref) => state,
-        ),
-      ],
+      overrides: [dashboardProvider.overrideWith((Ref ref) => state)],
       child: MaterialApp(
         theme: brightness == Brightness.dark ? AppTheme.dark : AppTheme.light,
         home: const DashboardScreen(),

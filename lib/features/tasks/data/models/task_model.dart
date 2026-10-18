@@ -2,11 +2,7 @@ import 'package:isar_community/isar.dart';
 
 part 'task_model.g.dart';
 
-enum TaskPriority {
-  low,
-  medium,
-  high,
-}
+enum TaskPriority { low, medium, high }
 
 @embedded
 class SubTask {

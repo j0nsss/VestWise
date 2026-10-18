@@ -12,7 +12,7 @@ import 'package:uuid/uuid.dart';
 /// plugin is unavailable.
 class FileStorageService {
   FileStorageService({this.baseDirectory, Uuid? uuid})
-      : _uuid = uuid ?? const Uuid();
+    : _uuid = uuid ?? const Uuid();
 
   static const String importedDirName = 'imported_documents';
 

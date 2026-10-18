@@ -20,7 +20,8 @@ class VWSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    final Widget? end = trailing ??
+    final Widget? end =
+        trailing ??
         (actionLabel != null && onAction != null
             ? TextButton(onPressed: onAction, child: Text(actionLabel!))
             : null);

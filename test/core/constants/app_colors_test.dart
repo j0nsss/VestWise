@@ -26,7 +26,10 @@ void main() {
 
         test('expense on $name ${surface.key}', () {
           expect(
-            contrastRatio(AppColors.expenseFor(theme.brightness), surface.value),
+            contrastRatio(
+              AppColors.expenseFor(theme.brightness),
+              surface.value,
+            ),
             greaterThanOrEqualTo(4.5),
           );
         });
@@ -42,8 +45,9 @@ void main() {
       final Map<String, Color> surfaces = <String, Color>{
         'surface': AppColors.surfaceFor(brightness),
         'surfaceSoft': AppColors.surfaceSoftFor(brightness),
-        'surfaceContainerHighest':
-            AppColors.surfaceContainerHighestFor(brightness),
+        'surfaceContainerHighest': AppColors.surfaceContainerHighestFor(
+          brightness,
+        ),
       };
       final Map<String, Color> tones = <String, Color>{
         'textPrimary': AppColors.textPrimaryFor(brightness),
@@ -78,8 +82,14 @@ void main() {
     }
 
     test('the theme maps the warm neutrals onto the ColorScheme', () {
-      for (final ThemeData theme in <ThemeData>[AppTheme.light, AppTheme.dark]) {
-        expect(theme.colorScheme.surface, AppColors.surfaceFor(theme.brightness));
+      for (final ThemeData theme in <ThemeData>[
+        AppTheme.light,
+        AppTheme.dark,
+      ]) {
+        expect(
+          theme.colorScheme.surface,
+          AppColors.surfaceFor(theme.brightness),
+        );
         expect(
           theme.colorScheme.onSurface,
           AppColors.textPrimaryFor(theme.brightness),
@@ -112,8 +122,7 @@ void main() {
 
     test('every tag is a distinct pair', () {
       for (final Brightness brightness in Brightness.values) {
-        final List<AppTagColor> palette =
-            AppColors.tagPaletteFor(brightness);
+        final List<AppTagColor> palette = AppColors.tagPaletteFor(brightness);
 
         expect(palette, hasLength(AppTag.values.length));
         expect(

@@ -13,9 +13,7 @@ class VWInlineSpinner extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox.square(
       dimension: dimension,
-      child: Center(
-        child: CircularProgressIndicator(strokeWidth: strokeWidth),
-      ),
+      child: Center(child: CircularProgressIndicator(strokeWidth: strokeWidth)),
     );
   }
 }

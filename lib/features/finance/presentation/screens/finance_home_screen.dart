@@ -32,8 +32,9 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<TransactionModel>> transactionsAsync =
-        ref.watch(watchRecentTransactionsProvider(_visibleCount));
+    final AsyncValue<List<TransactionModel>> transactionsAsync = ref.watch(
+      watchRecentTransactionsProvider(_visibleCount),
+    );
 
     return Scaffold(
       appBar: VWAppBar(
@@ -67,10 +68,7 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
     );
   }
 
-  Widget _buildBody(
-    BuildContext context,
-    List<TransactionModel> transactions,
-  ) {
+  Widget _buildBody(BuildContext context, List<TransactionModel> transactions) {
     final List<_DayGroup> groups = _groupByDay(transactions);
     // A full window means there may be older rows left to fetch.
     final bool hasMore = transactions.length == _visibleCount;
@@ -193,8 +191,9 @@ class _BalanceCard extends ConsumerWidget {
         children: <Widget>[
           Text(
             'Current balance',
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: AppSpacing.xs),
           balance.when(

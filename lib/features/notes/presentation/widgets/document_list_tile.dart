@@ -28,7 +28,11 @@ class DocumentListTile extends StatelessWidget {
         backgroundColor: theme.colorScheme.surfaceContainerHighest,
         child: Icon(_iconFor(document.fileExtension), color: muted),
       ),
-      title: Text(document.fileName, maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: Text(
+        document.fileName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       subtitle: Text(
         '${formatBytes(document.fileSizeBytes)} · '
         '${DateFormat.yMMMd().format(document.importedAt)}',

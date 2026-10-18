@@ -79,9 +79,9 @@ class VWCategoryChip extends StatelessWidget {
                   SizedBox(width: gap),
                   Text(
                     label!,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: foreground,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelMedium?.copyWith(color: foreground),
                   ),
                 ],
               ],

@@ -44,7 +44,9 @@ void main() {
       for (final CategoryModel category in categories) {
         await tester.pumpWidget(
           MaterialApp(
-            theme: brightness == Brightness.dark ? AppTheme.dark : AppTheme.light,
+            theme: brightness == Brightness.dark
+                ? AppTheme.dark
+                : AppTheme.light,
             home: Scaffold(
               body: Center(child: CategoryChip(category: category)),
             ),
@@ -57,10 +59,16 @@ void main() {
           reason: '${category.name} did not render on ${brightness.name}',
         );
 
-        final Icon icon =
-            tester.widget<Icon>(find.byIcon(iconDataFromCodePoint(category.iconCodePoint)));
+        final Icon icon = tester.widget<Icon>(
+          find.byIcon(iconDataFromCodePoint(category.iconCodePoint)),
+        );
         final Material pill = tester.widget<Material>(
-          find.ancestor(of: find.text(category.name), matching: find.byType(Material)).first,
+          find
+              .ancestor(
+                of: find.text(category.name),
+                matching: find.byType(Material),
+              )
+              .first,
         );
 
         // The whole point of dropping the stored ARGB colour: what is actually
@@ -88,7 +96,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
-        home: Scaffold(body: Center(child: CategoryChip(category: legacy))),
+        home: Scaffold(
+          body: Center(child: CategoryChip(category: legacy)),
+        ),
       ),
     );
 
@@ -110,7 +120,8 @@ void main() {
     expect(
       hues.length,
       greaterThan(2),
-      reason: 'twelve categories collapsing to one or two colours would be a bug',
+      reason:
+          'twelve categories collapsing to one or two colours would be a bug',
     );
   });
 }

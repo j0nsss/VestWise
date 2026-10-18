@@ -10,11 +10,7 @@ import 'package:vestwise/features/finance/domain/repositories/finance_repository
 
 import '../../../helpers/isar_test_harness.dart';
 
-TransactionModel _txn(
-  double amount,
-  TransactionType type, {
-  DateTime? date,
-}) =>
+TransactionModel _txn(double amount, TransactionType type, {DateTime? date}) =>
     TransactionModel()
       ..amount = amount
       ..type = type
@@ -37,7 +33,10 @@ void main() {
     final List<CategoryModel> first =
         (await repo.getAllCategories()).dataOrNull!;
     expect(first, isNotEmpty);
-    expect(first.where((CategoryModel c) => c.isDefault), hasLength(first.length));
+    expect(
+      first.where((CategoryModel c) => c.isDefault),
+      hasLength(first.length),
+    );
 
     await repo.seedDefaultCategories();
     final List<CategoryModel> second =
@@ -56,8 +55,9 @@ void main() {
   test('watchCategories filters by transaction type', () async {
     await repo.seedDefaultCategories();
 
-    final List<CategoryModel> income =
-        await repo.watchCategories(type: TransactionType.income).first;
+    final List<CategoryModel> income = await repo
+        .watchCategories(type: TransactionType.income)
+        .first;
     expect(income, isNotEmpty);
     expect(
       income.every((CategoryModel c) => c.type == TransactionType.income),
@@ -68,19 +68,25 @@ void main() {
     expect(all.length, greaterThan(income.length));
   });
 
-  test('watchTransactionsInRange only returns transactions within the range',
-      () async {
-    final DateTime day1 = DateTime(2026, 1, 1, 10);
-    final DateTime day3 = DateTime(2026, 1, 3, 10);
-    await repo.createTransaction(_txn(10, TransactionType.expense, date: day1));
-    await repo.createTransaction(_txn(20, TransactionType.expense, date: day3));
+  test(
+    'watchTransactionsInRange only returns transactions within the range',
+    () async {
+      final DateTime day1 = DateTime(2026, 1, 1, 10);
+      final DateTime day3 = DateTime(2026, 1, 3, 10);
+      await repo.createTransaction(
+        _txn(10, TransactionType.expense, date: day1),
+      );
+      await repo.createTransaction(
+        _txn(20, TransactionType.expense, date: day3),
+      );
 
-    final List<TransactionModel> inRange = await repo
-        .watchTransactionsInRange(DateTime(2026, 1, 1), DateTime(2026, 1, 2))
-        .first;
-    expect(inRange, hasLength(1));
-    expect(inRange.single.amount, 10);
-  });
+      final List<TransactionModel> inRange = await repo
+          .watchTransactionsInRange(DateTime(2026, 1, 1), DateTime(2026, 1, 2))
+          .first;
+      expect(inRange, hasLength(1));
+      expect(inRange.single.amount, 10);
+    },
+  );
 
   test('watchRecentTransactions caps the window at the newest rows', () async {
     for (int i = 0; i < 5; i++) {
@@ -89,8 +95,9 @@ void main() {
       );
     }
 
-    final List<TransactionModel> recent =
-        await repo.watchRecentTransactions(limit: 2).first;
+    final List<TransactionModel> recent = await repo
+        .watchRecentTransactions(limit: 2)
+        .first;
 
     expect(recent, hasLength(2));
     // Newest first: 1 Jan + 4 days, then the day before.
@@ -102,21 +109,30 @@ void main() {
     /// Local midnight, `daysAgo` days before today.
     DateTime todayMinus(int daysAgo) {
       final DateTime now = DateTime.now();
-      return DateTime(now.year, now.month, now.day)
-          .subtract(Duration(days: daysAgo));
+      return DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: daysAgo));
     }
 
-    test('always returns seven days, oldest first, including empty ones',
-        () async {
-      final List<DailyNet> week = await repo.watchLast7DaysNet().first;
+    test(
+      'always returns seven days, oldest first, including empty ones',
+      () async {
+        final List<DailyNet> week = await repo.watchLast7DaysNet().first;
 
-      expect(week, hasLength(7));
-      expect(week.first.day, todayMinus(6));
-      expect(week.last.day, todayMinus(0));
-      for (final DailyNet day in week) {
-        expect(day.net, 0, reason: 'a day with no activity is a zero, not a gap');
-      }
-    });
+        expect(week, hasLength(7));
+        expect(week.first.day, todayMinus(6));
+        expect(week.last.day, todayMinus(0));
+        for (final DailyNet day in week) {
+          expect(
+            day.net,
+            0,
+            reason: 'a day with no activity is a zero, not a gap',
+          );
+        }
+      },
+    );
 
     test('nets income against expense per day', () async {
       await repo.createTransaction(
@@ -137,10 +153,7 @@ void main() {
       expect(week.last.net, 250);
       expect(week[3].net, -20);
       expect(week.first.net, 500);
-      expect(
-        week.where((DailyNet d) => d.net == 0),
-        hasLength(4),
-      );
+      expect(week.where((DailyNet d) => d.net == 0), hasLength(4));
     });
 
     test('ignores anything older than the window', () async {
@@ -178,27 +191,31 @@ void main() {
     });
   });
 
-  test('watchAllTransactions emits linked transactions without error', () async {
-    await repo.seedDefaultCategories();
-    final List<CategoryModel> categories =
-        (await repo.getAllCategories()).dataOrNull!;
-    final CategoryModel food =
-        categories.firstWhere((CategoryModel c) => c.name == 'Food');
+  test(
+    'watchAllTransactions emits linked transactions without error',
+    () async {
+      await repo.seedDefaultCategories();
+      final List<CategoryModel> categories =
+          (await repo.getAllCategories()).dataOrNull!;
+      final CategoryModel food = categories.firstWhere(
+        (CategoryModel c) => c.name == 'Food',
+      );
 
-    final TransactionModel txn = _txn(100, TransactionType.expense)
-      ..category.value = food;
-    await repo.createTransaction(txn);
+      final TransactionModel txn = _txn(100, TransactionType.expense)
+        ..category.value = food;
+      await repo.createTransaction(txn);
 
-    final List<Object> errors = <Object>[];
-    final List<List<TransactionModel>> emissions = <List<TransactionModel>>[];
-    final StreamSubscription<List<TransactionModel>> sub = repo
-        .watchAllTransactions()
-        .listen(emissions.add, onError: errors.add);
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    await sub.cancel();
+      final List<Object> errors = <Object>[];
+      final List<List<TransactionModel>> emissions = <List<TransactionModel>>[];
+      final StreamSubscription<List<TransactionModel>> sub = repo
+          .watchAllTransactions()
+          .listen(emissions.add, onError: errors.add);
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      await sub.cancel();
 
-    expect(errors, isEmpty, reason: 'stream errored: $errors');
-    expect(emissions.last, hasLength(1));
-    expect(emissions.last.single.category.value?.name, 'Food');
-  });
+      expect(errors, isEmpty, reason: 'stream errored: $errors');
+      expect(emissions.last, hasLength(1));
+      expect(emissions.last.single.category.value?.name, 'Food');
+    },
+  );
 }

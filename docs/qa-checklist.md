@@ -137,6 +137,21 @@ delegates to it.)
 | All five destinations still navigate | PASS | The walk taps each destination inside the bar and asserts `selectedIndex` plus which branch is actually hit-testable. It also builds the Finance and Notes branches for the first time in this suite (their list providers are now overridden with empty streams), so a broken branch would fail here rather than only on device. |
 | Bottom bar on device | MANUAL — todo | Check the hairline, the pill and label contrast in light and dark mode, including the selected icon on the pill, and confirm each tab's scroll position is still preserved. |
 
+## Phase 11 — Empty, loading and interactive states
+
+### Skeletons (P11-T1)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| The primitive is one bar and one sweep, not a widget per screen | PASS | `VWSkeleton` is a tinted block with an explicit size; `VWShimmer` is a `ShaderMask` sweep around a whole subtree, so a screen of six skeletons is six rectangles and one animation — `flutter test test/core/widgets/vw_skeleton_test.dart`. |
+| The tint is the theme's, not a literal | PASS | Bars paint `surfaceContainerHighest`, asserted in light *and* dark, so a skeleton reads as the app thinking rather than as a foreign widget. |
+| Reduced motion freezes the sweep instead of shortening it | CHANGED | `VWShimmer` checks `prefersReducedMotion` directly rather than routing through `motionDuration`: a zero-length `repeat()` is a busy loop, not "no animation". The one deliberate exception to the single-decision-point rule, documented in the widget. |
+| The sweep duration is a token, and its exemption is explicit | CHANGED | `AppMotion.skeletonSweep` (1200ms) is a *loop period*, not a transition, so the 250ms transition ceiling is the wrong ruler for it. `app_motion_test.dart` bands it (800–2000ms) and documents the exemption instead of leaving the token quietly unlisted. |
+| Each skeleton is the size of the row it replaces | PASS | Every skeleton is built from the same `ListTile`/card structure as its real counterpart, with bars at the line heights of the type roles they stand in for (`bodyLarge` ≈ 22, `bodyMedium` ≈ 20, `labelSmall` ≈ 14, `titleSmall` ≈ 18, `bodySmall` ≈ 17). Each test measures the real row and the skeleton and asserts they differ by ≤3px — `test/features/{tasks,finance,notes,calendar}/presentation/*_skeleton_test.dart`. |
+| A skeleton survives the scroll contexts that already crashed once | PASS | Each skeleton is pumped inside a `SliverList`, a `SliverFillRemaining(hasScrollBody: false)` and a plain `ListView` and asserted not to throw — the §1.4 #1 failure mode, tested directly rather than hoped for (`test/helpers/scroll_contexts.dart`). |
+| One documented difference: a one-line transaction row | CHANGED | The real row drops its category line when the note and the category say the same thing, so that row is one `bodyMedium` line shorter than its skeleton. Bounded to a single line and noted in the widget. |
+| Skeletons on device | MANUAL — todo | Cold-start each list on the Redmi Note 8 and confirm the sweep reads as "working" rather than as flicker, and that no row shifts when data lands. |
+
 ## Re-running the automated part
 
 ```sh

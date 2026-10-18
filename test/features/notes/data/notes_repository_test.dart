@@ -13,14 +13,13 @@ NoteModel _note({
   String title = 'Groceries',
   String plainText = '',
   bool pinned = false,
-}) =>
-    NoteModel()
-      ..title = title
-      ..contentJson = '{}'
-      ..contentPlainText = plainText
-      ..isPinned = pinned
-      ..createdAt = DateTime.now()
-      ..updatedAt = DateTime.now();
+}) => NoteModel()
+  ..title = title
+  ..contentJson = '{}'
+  ..contentPlainText = plainText
+  ..isPinned = pinned
+  ..createdAt = DateTime.now()
+  ..updatedAt = DateTime.now();
 
 void main() {
   late IsarTestHarness harness;
@@ -39,27 +38,33 @@ void main() {
 
     final NoteModel loaded = (await repo.getNoteById(id)).dataOrNull!;
     await repo.updateNote(loaded..title = 'Weekly groceries');
-    expect(
-      (await repo.getNoteById(id)).dataOrNull?.title,
-      'Weekly groceries',
-    );
+    expect((await repo.getNoteById(id)).dataOrNull?.title, 'Weekly groceries');
 
     await repo.deleteNote(id);
     expect(await repo.getNoteById(id), isA<Error<NoteModel>>());
   });
 
-  test('watchNotesMatching finds notes by title or plain-text content', () async {
-    await repo.createNote(_note(title: 'Workout plan', plainText: 'legs and back'));
-    await repo.createNote(_note(title: 'Reading list', plainText: 'workout science'));
+  test(
+    'watchNotesMatching finds notes by title or plain-text content',
+    () async {
+      await repo.createNote(
+        _note(title: 'Workout plan', plainText: 'legs and back'),
+      );
+      await repo.createNote(
+        _note(title: 'Reading list', plainText: 'workout science'),
+      );
 
-    final List<NoteModel> byTitle =
-        await repo.watchNotesMatching('workout').first;
-    expect(byTitle, hasLength(2));
+      final List<NoteModel> byTitle = await repo
+          .watchNotesMatching('workout')
+          .first;
+      expect(byTitle, hasLength(2));
 
-    final List<NoteModel> byContent =
-        await repo.watchNotesMatching('legs').first;
-    expect(byContent.single.title, 'Workout plan');
-  });
+      final List<NoteModel> byContent = await repo
+          .watchNotesMatching('legs')
+          .first;
+      expect(byContent.single.title, 'Workout plan');
+    },
+  );
 
   test('pinned notes sort first in watchAllNotes', () async {
     await repo.createNote(_note(title: 'Normal'));
@@ -69,21 +74,26 @@ void main() {
     expect(notes.first.title, 'Important');
   });
 
-  test('a note icon round-trips, and absence stays null (P10-NOTES-2)', () async {
-    final int id = (await repo.createNote(_note())).dataOrNull!;
-    expect((await repo.getNoteById(id)).dataOrNull?.iconCodePoint, isNull);
+  test(
+    'a note icon round-trips, and absence stays null (P10-NOTES-2)',
+    () async {
+      final int id = (await repo.createNote(_note())).dataOrNull!;
+      expect((await repo.getNoteById(id)).dataOrNull?.iconCodePoint, isNull);
 
-    final NoteModel loaded = (await repo.getNoteById(id)).dataOrNull!;
-    await repo.updateNote(loaded..iconCodePoint = Icons.lightbulb_outline.codePoint);
+      final NoteModel loaded = (await repo.getNoteById(id)).dataOrNull!;
+      await repo.updateNote(
+        loaded..iconCodePoint = Icons.lightbulb_outline.codePoint,
+      );
 
-    // Read through the picker's own resolver: null must fall back to a
-    // document rather than throwing on a missing code point.
-    expect(
-      noteIconFor((await repo.getNoteById(id)).dataOrNull?.iconCodePoint),
-      Icons.lightbulb_outline,
-    );
-    expect(noteIconFor(null), Icons.description_outlined);
-  });
+      // Read through the picker's own resolver: null must fall back to a
+      // document rather than throwing on a missing code point.
+      expect(
+        noteIconFor((await repo.getNoteById(id)).dataOrNull?.iconCodePoint),
+        Icons.lightbulb_outline,
+      );
+      expect(noteIconFor(null), Icons.description_outlined);
+    },
+  );
 
   test('imported documents can be created, watched and deleted', () async {
     final int id = (await repo.createImportedDocument(
@@ -93,11 +103,11 @@ void main() {
         ..fileExtension = 'pdf'
         ..fileSizeBytes = 2048
         ..importedAt = DateTime.now(),
-    ))
-        .dataOrNull!;
+    )).dataOrNull!;
 
-    final List<ImportedDocumentModel> docs =
-        await repo.watchImportedDocuments().first;
+    final List<ImportedDocumentModel> docs = await repo
+        .watchImportedDocuments()
+        .first;
     expect(docs.single.fileName, 'lease.pdf');
 
     await repo.deleteImportedDocument(id);

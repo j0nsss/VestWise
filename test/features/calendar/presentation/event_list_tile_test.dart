@@ -63,19 +63,18 @@ void main() {
     testWidgets('the accent bar carries the event colour', (
       WidgetTester tester,
     ) async {
-      await _pump(
-        tester,
-        EventListTile(event: _event(colorValue: 0xFF00897B)),
-      );
+      await _pump(tester, EventListTile(event: _event(colorValue: 0xFF00897B)));
 
       expect(_barColor(tester), const Color(0xFF00897B));
       expect(
-        tester.getSize(
-          find.descendant(
-            of: find.byType(EventListTile),
-            matching: find.byType(Container),
-          ),
-        ).width,
+        tester
+            .getSize(
+              find.descendant(
+                of: find.byType(EventListTile),
+                matching: find.byType(Container),
+              ),
+            )
+            .width,
         EventListTile.accentWidth,
       );
     });
@@ -114,11 +113,7 @@ void main() {
       final CalendarEventModel event = _event(colorValue: 0xFFFFEB3B);
 
       for (final bool dark in <bool>[false, true]) {
-        await _pump(
-          tester,
-          EventListTile(event: event),
-          dark: dark,
-        );
+        await _pump(tester, EventListTile(event: event), dark: dark);
 
         final BuildContext context = tester.element(find.byType(VWCard));
         final ThemeData theme = Theme.of(context);
@@ -147,10 +142,7 @@ void main() {
       expect(find.text(DateFormat.jm().format(start)), findsOneWidget);
 
       final DateTime end = DateTime(2026, 3, 4, 17);
-      await _pump(
-        tester,
-        EventListTile(event: _event(end: end)),
-      );
+      await _pump(tester, EventListTile(event: _event(end: end)));
       expect(
         find.text(
           '${DateFormat.jm().format(start)} – ${DateFormat.jm().format(end)}',
@@ -163,10 +155,7 @@ void main() {
       WidgetTester tester,
     ) async {
       int taps = 0;
-      await _pump(
-        tester,
-        EventListTile(event: _event(), onTap: () => taps++),
-      );
+      await _pump(tester, EventListTile(event: _event(), onTap: () => taps++));
 
       await tester.tap(find.byType(VWCard));
       await tester.pumpAndSettle();
@@ -179,7 +168,10 @@ void main() {
     ) async {
       await _pump(
         tester,
-        EventListTile(event: _event(title: 'Dentist'), onTap: () {}),
+        EventListTile(
+          event: _event(title: 'Dentist'),
+          onTap: () {},
+        ),
       );
 
       expect(

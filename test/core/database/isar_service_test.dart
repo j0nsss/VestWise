@@ -10,37 +10,42 @@ void main() {
     await Isar.initializeIsarCore(download: true);
   });
 
-  test('all schemas open, persist across a reopen, and openIsar is idempotent',
-      () async {
-    final Directory dir = await Directory.systemTemp.createTemp('vestwise_db');
-
-    final Isar first = await Isar.open(isarSchemas, directory: dir.path);
-    await first.writeTxn(() async {
-      await first.categoryModels.put(
-        CategoryModel()
-          ..name = 'Food'
-          ..iconCodePoint = 0xe56c
-          ..colorValue = 0xFF16A34A
-          ..type = TransactionType.expense
-          ..isDefault = true,
+  test(
+    'all schemas open, persist across a reopen, and openIsar is idempotent',
+    () async {
+      final Directory dir = await Directory.systemTemp.createTemp(
+        'vestwise_db',
       );
-    });
 
-    // openIsar() must return the already-open instance instead of throwing.
-    expect(Isar.getInstance(), same(first));
-    expect(await openIsar(), same(first));
+      final Isar first = await Isar.open(isarSchemas, directory: dir.path);
+      await first.writeTxn(() async {
+        await first.categoryModels.put(
+          CategoryModel()
+            ..name = 'Food'
+            ..iconCodePoint = 0xe56c
+            ..colorValue = 0xFF16A34A
+            ..type = TransactionType.expense
+            ..isDefault = true,
+        );
+      });
 
-    await first.close();
+      // openIsar() must return the already-open instance instead of throwing.
+      expect(Isar.getInstance(), same(first));
+      expect(await openIsar(), same(first));
 
-    // Reopen from the same directory: data must survive.
-    final Isar reopened = await Isar.open(isarSchemas, directory: dir.path);
-    final List<CategoryModel> categories =
-        await reopened.categoryModels.where().findAll();
-    expect(categories, hasLength(1));
-    expect(categories.single.name, 'Food');
-    expect(categories.single.type, TransactionType.expense);
+      await first.close();
 
-    await reopened.close();
-    await dir.delete(recursive: true);
-  });
+      // Reopen from the same directory: data must survive.
+      final Isar reopened = await Isar.open(isarSchemas, directory: dir.path);
+      final List<CategoryModel> categories = await reopened.categoryModels
+          .where()
+          .findAll();
+      expect(categories, hasLength(1));
+      expect(categories.single.name, 'Food');
+      expect(categories.single.type, TransactionType.expense);
+
+      await reopened.close();
+      await dir.delete(recursive: true);
+    },
+  );
 }

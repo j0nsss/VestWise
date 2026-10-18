@@ -12,9 +12,7 @@ abstract interface class FinanceRepository {
   /// The finance home uses this instead of [watchAllTransactions] so a long
   /// history never has to be held in memory at once (plan P5-T5); the caller
   /// asks for the next window when the user reaches the end of the list.
-  Stream<List<TransactionModel>> watchRecentTransactions({
-    required int limit,
-  });
+  Stream<List<TransactionModel>> watchRecentTransactions({required int limit});
 
   Stream<List<TransactionModel>> watchTransactionsInRange(
     DateTime start,

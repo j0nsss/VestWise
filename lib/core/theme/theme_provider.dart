@@ -28,8 +28,8 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 
   /// Cycles System → Light → Dark → System. Convenient for a settings toggle.
   Future<void> cycle() => setThemeMode(switch (state) {
-        ThemeMode.system => ThemeMode.light,
-        ThemeMode.light => ThemeMode.dark,
-        ThemeMode.dark => ThemeMode.system,
-      });
+    ThemeMode.system => ThemeMode.light,
+    ThemeMode.light => ThemeMode.dark,
+    ThemeMode.dark => ThemeMode.system,
+  });
 }

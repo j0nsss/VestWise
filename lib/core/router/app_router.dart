@@ -30,11 +30,12 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
     initialLocation: RoutePaths.dashboard,
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
-        builder: (
-          BuildContext context,
-          GoRouterState state,
-          StatefulNavigationShell navigationShell,
-        ) => AppShell(navigationShell: navigationShell),
+        builder:
+            (
+              BuildContext context,
+              GoRouterState state,
+              StatefulNavigationShell navigationShell,
+            ) => AppShell(navigationShell: navigationShell),
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
             routes: <RouteBase>[
@@ -56,11 +57,11 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                     path: 'add',
                     pageBuilder: (BuildContext context, GoRouterState state) =>
                         _transitionPage(
-                      state,
-                      AddTransactionScreen(
-                        transactionId: state.uri.queryParameters['id'],
-                      ),
-                    ),
+                          state,
+                          AddTransactionScreen(
+                            transactionId: state.uri.queryParameters['id'],
+                          ),
+                        ),
                   ),
                   GoRoute(
                     path: 'summary',
@@ -82,19 +83,19 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                     path: 'document/:id',
                     pageBuilder: (BuildContext context, GoRouterState state) =>
                         _transitionPage(
-                      state,
-                      DocumentViewerScreen(
-                        documentId: state.pathParameters['id'],
-                      ),
-                    ),
+                          state,
+                          DocumentViewerScreen(
+                            documentId: state.pathParameters['id'],
+                          ),
+                        ),
                   ),
                   GoRoute(
                     path: ':id/edit',
                     pageBuilder: (BuildContext context, GoRouterState state) =>
                         _transitionPage(
-                      state,
-                      NoteEditorScreen(noteId: state.pathParameters['id']),
-                    ),
+                          state,
+                          NoteEditorScreen(noteId: state.pathParameters['id']),
+                        ),
                   ),
                 ],
               ),
@@ -111,9 +112,9 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                     path: ':id',
                     pageBuilder: (BuildContext context, GoRouterState state) =>
                         _transitionPage(
-                      state,
-                      TaskDetailScreen(taskId: state.pathParameters['id']),
-                    ),
+                          state,
+                          TaskDetailScreen(taskId: state.pathParameters['id']),
+                        ),
                   ),
                 ],
               ),
@@ -130,9 +131,11 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                     path: 'event/:id',
                     pageBuilder: (BuildContext context, GoRouterState state) =>
                         _transitionPage(
-                      state,
-                      EventDetailScreen(eventId: state.pathParameters['id']),
-                    ),
+                          state,
+                          EventDetailScreen(
+                            eventId: state.pathParameters['id'],
+                          ),
+                        ),
                   ),
                 ],
               ),
@@ -156,29 +159,30 @@ Page<void> _transitionPage(GoRouterState state, Widget child) {
     child: child,
     transitionDuration: AppMotion.pageTransition,
     reverseTransitionDuration: AppMotion.pageTransition,
-    transitionsBuilder: (
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      Widget child,
-    ) {
-      if (prefersReducedMotion(context)) {
-        return child;
-      }
-      final Animation<double> curved = CurvedAnimation(
-        parent: animation,
-        curve: AppMotion.standardCurve,
-      );
-      return FadeTransition(
-        opacity: curved,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.02),
-            end: Offset.zero,
-          ).animate(curved),
-          child: child,
-        ),
-      );
-    },
+    transitionsBuilder:
+        (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child,
+        ) {
+          if (prefersReducedMotion(context)) {
+            return child;
+          }
+          final Animation<double> curved = CurvedAnimation(
+            parent: animation,
+            curve: AppMotion.standardCurve,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.02),
+                end: Offset.zero,
+              ).animate(curved),
+              child: child,
+            ),
+          );
+        },
   );
 }

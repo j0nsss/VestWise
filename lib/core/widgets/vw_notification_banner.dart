@@ -41,8 +41,7 @@ class _VWNotificationBannerState extends ConsumerState<VWNotificationBanner>
 
   @override
   Widget build(BuildContext context) {
-    final bool show =
-        ref.watch(notificationsBlockedProvider).value ?? false;
+    final bool show = ref.watch(notificationsBlockedProvider).value ?? false;
     if (!show) {
       return const SizedBox.shrink();
     }
@@ -74,8 +73,9 @@ class _VWNotificationBannerState extends ConsumerState<VWNotificationBanner>
               Expanded(
                 child: Text(
                   'Reminders are turned off, so due dates won’t notify you.',
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: scheme.onErrorContainer),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onErrorContainer,
+                  ),
                 ),
               ),
               TextButton(

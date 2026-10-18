@@ -30,8 +30,9 @@ void main() {
       final Set<int> codePoints = noteIconOptions
           .map((NoteIconOption option) => option.icon.codePoint)
           .toSet();
-      final Set<String> labels =
-          noteIconOptions.map((NoteIconOption option) => option.label).toSet();
+      final Set<String> labels = noteIconOptions
+          .map((NoteIconOption option) => option.label)
+          .toSet();
 
       expect(codePoints, hasLength(noteIconOptions.length));
       expect(labels, hasLength(noteIconOptions.length));
@@ -140,10 +141,7 @@ void main() {
         ),
       );
 
-      expect(
-        tester.widget<ListTile>(find.byType(ListTile)).leading,
-        isNull,
-      );
+      expect(tester.widget<ListTile>(find.byType(ListTile)).leading, isNull);
     });
 
     testWidgets('shows the chosen icon when there is one', (

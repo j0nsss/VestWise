@@ -129,8 +129,9 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
       return;
     }
 
-    final String contentJson =
-        jsonEncode(_quillController.document.toDelta().toJson());
+    final String contentJson = jsonEncode(
+      _quillController.document.toDelta().toJson(),
+    );
     final DateTime now = DateTime.now();
 
     if (_noteId == null) {
@@ -146,8 +147,9 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen>
         _noteId = id;
       }
     } else {
-      final NoteModel? existing =
-          (await _repository.getNoteById(_noteId!)).dataOrNull;
+      final NoteModel? existing = (await _repository.getNoteById(
+        _noteId!,
+      )).dataOrNull;
       if (existing != null) {
         existing
           ..title = title.isEmpty ? 'Untitled' : title

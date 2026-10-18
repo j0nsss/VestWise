@@ -2,11 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_groups.dart';
 
-TaskModel _task(
-  int id, {
-  DateTime? dueDate,
-  bool completed = false,
-}) =>
+TaskModel _task(int id, {DateTime? dueDate, bool completed = false}) =>
     TaskModel()
       ..id = id
       ..title = 'Task $id'
@@ -57,7 +53,10 @@ void main() {
     test('a task due late tonight still counts as today', () {
       // Guards the boundary: the day ends at midnight, not at the current time.
       expect(
-        taskGroupOf(_task(1, dueDate: DateTime(2026, 3, 10, 23, 59)), today: today),
+        taskGroupOf(
+          _task(1, dueDate: DateTime(2026, 3, 10, 23, 59)),
+          today: today,
+        ),
         TaskGroup.today,
       );
     });
@@ -87,28 +86,31 @@ void main() {
       expect(ids.toSet(), <int>{1, 2, 3, 4, 5});
     });
 
-    test('groups come out in Today, Upcoming, No due date, Completed order', () {
-      final List<TaskRow> rows = buildTaskRows(
-        <TaskModel>[
-          _task(1, completed: true),
-          _task(2),
-          _task(3, dueDate: DateTime(2026, 3, 20)),
-          _task(4, dueDate: DateTime(2026, 3, 10)),
-        ],
-        collapsed: <TaskGroup>{},
-        today: today,
-      );
+    test(
+      'groups come out in Today, Upcoming, No due date, Completed order',
+      () {
+        final List<TaskRow> rows = buildTaskRows(
+          <TaskModel>[
+            _task(1, completed: true),
+            _task(2),
+            _task(3, dueDate: DateTime(2026, 3, 20)),
+            _task(4, dueDate: DateTime(2026, 3, 10)),
+          ],
+          collapsed: <TaskGroup>{},
+          today: today,
+        );
 
-      expect(
-        rows.whereType<TaskGroupRow>().map((TaskGroupRow row) => row.group),
-        <TaskGroup>[
-          TaskGroup.today,
-          TaskGroup.upcoming,
-          TaskGroup.noDueDate,
-          TaskGroup.completed,
-        ],
-      );
-    });
+        expect(
+          rows.whereType<TaskGroupRow>().map((TaskGroupRow row) => row.group),
+          <TaskGroup>[
+            TaskGroup.today,
+            TaskGroup.upcoming,
+            TaskGroup.noDueDate,
+            TaskGroup.completed,
+          ],
+        );
+      },
+    );
 
     test('empty groups get no heading at all', () {
       final List<TaskRow> rows = buildTaskRows(
@@ -124,7 +126,10 @@ void main() {
 
     test('a collapsed group keeps its heading and its count', () {
       final List<TaskRow> rows = buildTaskRows(
-        <TaskModel>[_task(1, dueDate: DateTime(2026, 3, 10)), _task(2, dueDate: DateTime(2026, 3, 10))],
+        <TaskModel>[
+          _task(1, dueDate: DateTime(2026, 3, 10)),
+          _task(2, dueDate: DateTime(2026, 3, 10)),
+        ],
         collapsed: <TaskGroup>{TaskGroup.today},
         today: today,
       );
@@ -153,9 +158,11 @@ void main() {
   });
 
   test('group labels read as plain English', () {
-    expect(
-      TaskGroup.values.map(taskGroupLabel),
-      <String>['Today', 'Upcoming', 'No due date', 'Completed'],
-    );
+    expect(TaskGroup.values.map(taskGroupLabel), <String>[
+      'Today',
+      'Upcoming',
+      'No due date',
+      'Completed',
+    ]);
   });
 }

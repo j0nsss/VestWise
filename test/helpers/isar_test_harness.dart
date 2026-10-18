@@ -16,11 +16,15 @@ class IsarTestHarness {
       await Isar.initializeIsarCore(download: true);
       _coreInitialized = true;
     }
-    final Directory dir =
-        await Directory.systemTemp.createTemp('vestwise_repo_test');
+    final Directory dir = await Directory.systemTemp.createTemp(
+      'vestwise_repo_test',
+    );
     final String name = 'test_${DateTime.now().microsecondsSinceEpoch}';
-    final Isar isar =
-        await Isar.open(isarSchemas, directory: dir.path, name: name);
+    final Isar isar = await Isar.open(
+      isarSchemas,
+      directory: dir.path,
+      name: name,
+    );
     return IsarTestHarness(isar, dir);
   }
 

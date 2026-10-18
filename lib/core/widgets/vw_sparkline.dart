@@ -63,7 +63,8 @@ class VWSparkline extends StatelessWidget {
   Widget build(BuildContext context) {
     final Brightness brightness = Theme.of(context).brightness;
     final double last = values.isEmpty ? 0 : values.last;
-    final Color stroke = color ??
+    final Color stroke =
+        color ??
         (last < 0
             ? AppColors.expenseFor(brightness)
             : AppColors.incomeFor(brightness));

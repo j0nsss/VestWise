@@ -61,7 +61,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     }
 
     final CalendarEventModel? event =
-        (await ref.read(calendarRepositoryProvider).getEventById(id)).dataOrNull;
+        (await ref.read(calendarRepositoryProvider).getEventById(id))
+            .dataOrNull;
     if (event != null) {
       _eventId = event.id;
       _titleController.text = event.title;
@@ -70,8 +71,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       _end = event.endDateTime;
       _isAllDay = event.isAllDay;
       _repeat = event.repeat;
-      _reminderMinutesBefore =
-          event.hasReminder ? event.reminderMinutesBefore : null;
+      _reminderMinutesBefore = event.hasReminder
+          ? event.reminderMinutesBefore
+          : null;
       _notificationId = event.notificationId;
     }
     if (mounted) {
@@ -116,8 +118,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           controller: _titleController,
           label: 'Title',
           textInputAction: TextInputAction.next,
-          validator: (String? value) =>
-              (value == null || value.trim().isEmpty) ? 'Title is required' : null,
+          validator: (String? value) => (value == null || value.trim().isEmpty)
+              ? 'Title is required'
+              : null,
         ),
         const SizedBox(height: AppSpacing.lg),
         VWTextField(
@@ -254,8 +257,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
     setState(() => _saving = true);
 
-    final NotificationService notifications =
-        ref.read(notificationServiceProvider);
+    final NotificationService notifications = ref.read(
+      notificationServiceProvider,
+    );
     final int? minutesBefore = _reminderMinutesBefore;
 
     if (_notificationId != null) {
@@ -264,8 +268,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
     int? notificationId;
     if (minutesBefore != null) {
-      final DateTime fireAt =
-          _start.subtract(Duration(minutes: minutesBefore));
+      final DateTime fireAt = _start.subtract(Duration(minutes: minutesBefore));
       if (fireAt.isAfter(DateTime.now())) {
         final ScheduledReminder? reminder = await _safeSchedule(
           notifications,
@@ -293,8 +296,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
     if (_isEditing) {
       event.id = _eventId!;
-      final result =
-          await ref.read(calendarRepositoryProvider).updateEvent(event);
+      final result = await ref
+          .read(calendarRepositoryProvider)
+          .updateEvent(event);
       if (!mounted) {
         return;
       }
@@ -303,8 +307,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         onError: (Failure f) => _onSaveFailed(f),
       );
     } else {
-      final result =
-          await ref.read(calendarRepositoryProvider).createEvent(event);
+      final result = await ref
+          .read(calendarRepositoryProvider)
+          .createEvent(event);
       if (!mounted) {
         return;
       }
@@ -317,8 +322,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   void _onSaveFailed(Failure failure) {
     setState(() => _saving = false);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(failure.message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(failure.message)));
   }
 
   Future<void> _confirmDelete() async {
@@ -344,7 +350,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     }
 
     if (_notificationId != null) {
-      await _safeCancel(ref.read(notificationServiceProvider), _notificationId!);
+      await _safeCancel(
+        ref.read(notificationServiceProvider),
+        _notificationId!,
+      );
     }
     await ref.read(calendarRepositoryProvider).deleteEvent(_eventId!);
     if (mounted) {
@@ -379,12 +388,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       DateFormat.yMMMd().add_Hm().format(value);
 
   String _repeatLabel(EventRepeat repeat) => switch (repeat) {
-        EventRepeat.none => 'Does not repeat',
-        EventRepeat.daily => 'Daily',
-        EventRepeat.weekly => 'Weekly',
-        EventRepeat.monthly => 'Monthly',
-        EventRepeat.yearly => 'Yearly',
-      };
+    EventRepeat.none => 'Does not repeat',
+    EventRepeat.daily => 'Daily',
+    EventRepeat.weekly => 'Weekly',
+    EventRepeat.monthly => 'Monthly',
+    EventRepeat.yearly => 'Yearly',
+  };
 
   String _reminderLabel(int minutes) {
     if (minutes >= 1440) {

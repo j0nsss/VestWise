@@ -36,41 +36,32 @@ class CalendarRepositoryImpl implements CalendarRepository {
           .watch(fireImmediately: true);
 
   @override
-  Future<Result<CalendarEventModel>> getEventById(int id) => resultGuard(
-        () async {
-          final CalendarEventModel? event = await _events.get(id);
-          if (event == null) {
-            throw StateError('Event $id not found');
-          }
-          return event;
-        },
-        operation: 'getEventById',
-      );
+  Future<Result<CalendarEventModel>> getEventById(int id) =>
+      resultGuard(() async {
+        final CalendarEventModel? event = await _events.get(id);
+        if (event == null) {
+          throw StateError('Event $id not found');
+        }
+        return event;
+      }, operation: 'getEventById');
 
   @override
-  Future<Result<int>> createEvent(CalendarEventModel event) => resultGuard(
-        () async {
-          await _isar.writeTxn(() async {
-            event.id = await _events.put(event);
-          });
-          return event.id;
-        },
-        operation: 'createEvent',
-      );
+  Future<Result<int>> createEvent(CalendarEventModel event) =>
+      resultGuard(() async {
+        await _isar.writeTxn(() async {
+          event.id = await _events.put(event);
+        });
+        return event.id;
+      }, operation: 'createEvent');
 
   @override
-  Future<Result<void>> updateEvent(CalendarEventModel event) => resultGuard(
-        () async {
-          await _isar.writeTxn(() => _events.put(event));
-        },
-        operation: 'updateEvent',
-      );
+  Future<Result<void>> updateEvent(CalendarEventModel event) =>
+      resultGuard(() async {
+        await _isar.writeTxn(() => _events.put(event));
+      }, operation: 'updateEvent');
 
   @override
-  Future<Result<void>> deleteEvent(int id) => resultGuard(
-        () async {
-          await _isar.writeTxn(() => _events.delete(id));
-        },
-        operation: 'deleteEvent',
-      );
+  Future<Result<void>> deleteEvent(int id) => resultGuard(() async {
+    await _isar.writeTxn(() => _events.delete(id));
+  }, operation: 'deleteEvent');
 }

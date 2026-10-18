@@ -31,8 +31,7 @@ Stream<List<TransactionModel>> watchTransactionsInRange(
   Ref ref,
   DateTime start,
   DateTime end,
-) =>
-    ref.watch(financeRepositoryProvider).watchTransactionsInRange(start, end);
+) => ref.watch(financeRepositoryProvider).watchTransactionsInRange(start, end);
 
 /// Seven days of daily net for the dashboard sparkline (plan2.md P10-FIN-2).
 @riverpod
@@ -49,8 +48,5 @@ Future<double> balance(Ref ref) async {
 }
 
 @riverpod
-Stream<List<CategoryModel>> watchCategories(
-  Ref ref,
-  TransactionType? type,
-) =>
+Stream<List<CategoryModel>> watchCategories(Ref ref, TransactionType? type) =>
     ref.watch(financeRepositoryProvider).watchCategories(type: type);

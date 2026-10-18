@@ -88,7 +88,10 @@ class CategoryRing extends StatelessWidget {
                 for (final CategoryTotal entry in totals)
                   PieChartSectionData(
                     value: entry.amount,
-                    color: AppColors.tagFor(entry.tag, theme.brightness).foreground,
+                    color: AppColors.tagFor(
+                      entry.tag,
+                      theme.brightness,
+                    ).foreground,
                     radius: diameter * 0.19,
                     showTitle: false,
                   ),

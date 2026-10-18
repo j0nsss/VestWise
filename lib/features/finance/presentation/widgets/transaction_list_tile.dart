@@ -41,8 +41,9 @@ class TransactionListTile extends StatelessWidget {
       leading: category != null
           ? CategoryChip(category: category, showLabel: false, dense: true)
           : CircleAvatar(
-              backgroundColor:
-                  theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.15),
+              backgroundColor: theme.colorScheme.onSurfaceVariant.withValues(
+                alpha: 0.15,
+              ),
               child: Icon(
                 icon,
                 color: theme.colorScheme.onSurfaceVariant,

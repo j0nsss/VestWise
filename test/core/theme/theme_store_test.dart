@@ -33,7 +33,9 @@ void main() {
     test('starts from the mode read before the first frame', () {
       final ProviderContainer container = ProviderContainer(
         overrides: [
-          themeModeProvider.overrideWith(() => ThemeModeNotifier(ThemeMode.dark)),
+          themeModeProvider.overrideWith(
+            () => ThemeModeNotifier(ThemeMode.dark),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -41,17 +43,19 @@ void main() {
       expect(container.read(themeModeProvider), ThemeMode.dark);
     });
 
-    test('persists a change so the next launch paints the same theme',
-        () async {
-      final ProviderContainer container = ProviderContainer();
-      addTearDown(container.dispose);
+    test(
+      'persists a change so the next launch paints the same theme',
+      () async {
+        final ProviderContainer container = ProviderContainer();
+        addTearDown(container.dispose);
 
-      await container.read(themeModeProvider.notifier).setThemeMode(
-            ThemeMode.light,
-          );
+        await container
+            .read(themeModeProvider.notifier)
+            .setThemeMode(ThemeMode.light);
 
-      expect(container.read(themeModeProvider), ThemeMode.light);
-      expect(await ThemeStore.load(), ThemeMode.light);
-    });
+        expect(container.read(themeModeProvider), ThemeMode.light);
+        expect(await ThemeStore.load(), ThemeMode.light);
+      },
+    );
   });
 }

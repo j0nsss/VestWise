@@ -60,8 +60,9 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
     // Captured before any await, so the write still lands if the screen is
     // disposed while the animation is running.
     final TasksRepository repository = ref.read(tasksRepositoryProvider);
-    final NotificationService notifications =
-        ref.read(notificationServiceProvider);
+    final NotificationService notifications = ref.read(
+      notificationServiceProvider,
+    );
 
     unawaited(_haptic());
 
@@ -95,8 +96,9 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
     // Captured before any await so the write still lands if the screen is
     // disposed while the dialog closes.
     final TasksRepository repository = ref.read(tasksRepositoryProvider);
-    final NotificationService notifications =
-        ref.read(notificationServiceProvider);
+    final NotificationService notifications = ref.read(
+      notificationServiceProvider,
+    );
 
     await cancelTaskReminder(notifications, task.notificationId);
     await repository.deleteTask(task.id);
@@ -114,7 +116,9 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<TaskModel>> tasksAsync = ref.watch(watchAllTasksProvider);
+    final AsyncValue<List<TaskModel>> tasksAsync = ref.watch(
+      watchAllTasksProvider,
+    );
 
     return Scaffold(
       appBar: const VWAppBar(title: AppStrings.tasks),

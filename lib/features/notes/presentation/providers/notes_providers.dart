@@ -29,5 +29,6 @@ Stream<List<ImportedDocumentModel>> watchImportedDocuments(Ref ref) =>
 /// Total bytes on disk under `imported_documents/` (P4-T4). Invalidate after
 /// deleting a document so the readout stays truthful.
 final FutureProvider<int> importedFilesSizeProvider = FutureProvider<int>(
-  (Ref ref) => ref.watch(fileStorageServiceProvider).getImportedFilesSizeBytes(),
+  (Ref ref) =>
+      ref.watch(fileStorageServiceProvider).getImportedFilesSizeBytes(),
 );

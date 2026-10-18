@@ -78,10 +78,7 @@ Future<_RecordingTasksRepository> _pumpScreen(
           (Ref ref) => Stream<List<TaskModel>>.value(<TaskModel>[task]),
         ),
       ],
-      child: MaterialApp(
-        theme: AppTheme.light,
-        home: const TasksListScreen(),
-      ),
+      child: MaterialApp(theme: AppTheme.light, home: const TasksListScreen()),
     ),
   );
   await tester.pumpAndSettle();
@@ -94,8 +91,10 @@ void main() {
     testWidgets('swiping towards the end completes the task', (
       WidgetTester tester,
     ) async {
-      final _RecordingTasksRepository repository =
-          await _pumpScreen(tester, task: _task());
+      final _RecordingTasksRepository repository = await _pumpScreen(
+        tester,
+        task: _task(),
+      );
 
       await tester.drag(find.text('Write report'), const Offset(400, 0));
       await tester.pumpAndSettle();
@@ -110,8 +109,10 @@ void main() {
     testWidgets('swiping towards the start asks before destroying anything', (
       WidgetTester tester,
     ) async {
-      final _RecordingTasksRepository repository =
-          await _pumpScreen(tester, task: _task(notificationId: 55));
+      final _RecordingTasksRepository repository = await _pumpScreen(
+        tester,
+        task: _task(notificationId: 55),
+      );
 
       await tester.drag(find.text('Write report'), const Offset(-400, 0));
       await tester.pumpAndSettle();

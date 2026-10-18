@@ -11,27 +11,32 @@ import 'package:vestwise/core/theme/app_theme.dart';
 /// back to `DefaultTextStyle` — a real bug this test now prevents.
 void main() {
   Map<String, TextStyle?> roles(TextTheme t) => <String, TextStyle?>{
-        'displayLarge': t.displayLarge,
-        'displayMedium': t.displayMedium,
-        'displaySmall': t.displaySmall,
-        'headlineMedium': t.headlineMedium,
-        'headlineSmall': t.headlineSmall,
-        'titleLarge': t.titleLarge,
-        'titleMedium': t.titleMedium,
-        'titleSmall': t.titleSmall,
-        'bodyLarge': t.bodyLarge,
-        'bodyMedium': t.bodyMedium,
-        'bodySmall': t.bodySmall,
-        'labelLarge': t.labelLarge,
-        'labelMedium': t.labelMedium,
-        'labelSmall': t.labelSmall,
-      };
+    'displayLarge': t.displayLarge,
+    'displayMedium': t.displayMedium,
+    'displaySmall': t.displaySmall,
+    'headlineMedium': t.headlineMedium,
+    'headlineSmall': t.headlineSmall,
+    'titleLarge': t.titleLarge,
+    'titleMedium': t.titleMedium,
+    'titleSmall': t.titleSmall,
+    'bodyLarge': t.bodyLarge,
+    'bodyMedium': t.bodyMedium,
+    'bodySmall': t.bodySmall,
+    'labelLarge': t.labelLarge,
+    'labelMedium': t.labelMedium,
+    'labelSmall': t.labelSmall,
+  };
 
   test('every role the app can ask for is defined', () {
-    for (final MapEntry<String, TextStyle?> role
-        in roles(AppTextStyles.textTheme).entries) {
+    for (final MapEntry<String, TextStyle?> role in roles(
+      AppTextStyles.textTheme,
+    ).entries) {
       expect(role.value, isNotNull, reason: '${role.key} is undefined');
-      expect(role.value!.fontSize, isNotNull, reason: '${role.key} has no size');
+      expect(
+        role.value!.fontSize,
+        isNotNull,
+        reason: '${role.key} has no size',
+      );
       expect(
         role.value!.fontWeight,
         isNotNull,

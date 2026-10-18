@@ -95,8 +95,8 @@ abstract final class AppColors {
 
   static Color surfaceContainerHighestFor(Brightness brightness) =>
       brightness == Brightness.dark
-          ? surfaceContainerHighestDark
-          : surfaceContainerHighestLight;
+      ? surfaceContainerHighestDark
+      : surfaceContainerHighestLight;
 
   static Color textPrimaryFor(Brightness brightness) =>
       brightness == Brightness.dark ? textPrimaryDark : textPrimaryLight;
@@ -197,10 +197,9 @@ abstract final class AppColors {
   static AppTagColor tagForIndex(int index, Brightness brightness) =>
       tagFor(AppTag.values[index % AppTag.values.length], brightness);
 
-  static List<AppTagColor> tagPaletteFor(Brightness brightness) =>
-      AppTag.values
-          .map((AppTag tag) => tagFor(tag, brightness))
-          .toList(growable: false);
+  static List<AppTagColor> tagPaletteFor(Brightness brightness) => AppTag.values
+      .map((AppTag tag) => tagFor(tag, brightness))
+      .toList(growable: false);
 
   /// The hue a label maps to — a category name, a priority, a tag.
   ///

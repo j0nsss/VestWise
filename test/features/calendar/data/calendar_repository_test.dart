@@ -6,11 +6,14 @@ import 'package:vestwise/features/calendar/domain/repositories/calendar_reposito
 
 import '../../../helpers/isar_test_harness.dart';
 
-CalendarEventModel _event(String title, DateTime start, {EventRepeat repeat = EventRepeat.none}) =>
-    CalendarEventModel()
-      ..title = title
-      ..startDateTime = start
-      ..repeat = repeat;
+CalendarEventModel _event(
+  String title,
+  DateTime start, {
+  EventRepeat repeat = EventRepeat.none,
+}) => CalendarEventModel()
+  ..title = title
+  ..startDateTime = start
+  ..repeat = repeat;
 
 void main() {
   late IsarTestHarness harness;
@@ -24,17 +27,14 @@ void main() {
   tearDown(() => harness.dispose());
 
   test('create/get/update/delete an event', () async {
-    final int id =
-        (await repo.createEvent(_event('Standup', DateTime(2026, 2, 1, 9))))
-            .dataOrNull!;
+    final int id = (await repo.createEvent(
+      _event('Standup', DateTime(2026, 2, 1, 9)),
+    )).dataOrNull!;
     expect((await repo.getEventById(id)).dataOrNull?.title, 'Standup');
 
     final CalendarEventModel loaded = (await repo.getEventById(id)).dataOrNull!;
     await repo.updateEvent(loaded..description = 'Daily sync');
-    expect(
-      (await repo.getEventById(id)).dataOrNull?.description,
-      'Daily sync',
-    );
+    expect((await repo.getEventById(id)).dataOrNull?.description, 'Daily sync');
 
     await repo.deleteEvent(id);
     expect(await repo.getEventById(id), isA<Error<CalendarEventModel>>());
@@ -45,21 +45,38 @@ void main() {
     await repo.createEvent(_event('Day 1 late', DateTime(2026, 3, 1, 20)));
     await repo.createEvent(_event('Day 2', DateTime(2026, 3, 2, 8)));
 
-    final List<CalendarEventModel> day =
-        await repo.watchEventsForDay(DateTime(2026, 3, 1)).first;
-    expect(day.map((CalendarEventModel e) => e.title), <String>['Day 1', 'Day 1 late']);
+    final List<CalendarEventModel> day = await repo
+        .watchEventsForDay(DateTime(2026, 3, 1))
+        .first;
+    expect(day.map((CalendarEventModel e) => e.title), <String>[
+      'Day 1',
+      'Day 1 late',
+    ]);
   });
 
-  test('watchUpcomingEvents returns future events, soonest first, capped by limit',
-      () async {
-    final DateTime now = DateTime.now();
-    await repo.createEvent(_event('Past', now.subtract(const Duration(days: 1))));
-    await repo.createEvent(_event('Soon', now.add(const Duration(hours: 1))));
-    await repo.createEvent(_event('Later', now.add(const Duration(hours: 2))));
-    await repo.createEvent(_event('Latest', now.add(const Duration(hours: 3))));
+  test(
+    'watchUpcomingEvents returns future events, soonest first, capped by limit',
+    () async {
+      final DateTime now = DateTime.now();
+      await repo.createEvent(
+        _event('Past', now.subtract(const Duration(days: 1))),
+      );
+      await repo.createEvent(_event('Soon', now.add(const Duration(hours: 1))));
+      await repo.createEvent(
+        _event('Later', now.add(const Duration(hours: 2))),
+      );
+      await repo.createEvent(
+        _event('Latest', now.add(const Duration(hours: 3))),
+      );
 
-    final List<CalendarEventModel> upcoming =
-        await repo.watchUpcomingEvents().first;
-    expect(upcoming.map((CalendarEventModel e) => e.title), <String>['Soon', 'Later', 'Latest']);
-  });
+      final List<CalendarEventModel> upcoming = await repo
+          .watchUpcomingEvents()
+          .first;
+      expect(upcoming.map((CalendarEventModel e) => e.title), <String>[
+        'Soon',
+        'Later',
+        'Latest',
+      ]);
+    },
+  );
 }

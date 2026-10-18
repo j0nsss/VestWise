@@ -7,12 +7,12 @@ import 'package:vestwise/core/widgets/vw_fade_through.dart';
 import 'package:vestwise/core/widgets/vw_staggered_list.dart';
 
 Widget _wrap(Widget child, {bool reduce = false}) => MaterialApp(
-      theme: AppTheme.light,
-      home: MediaQuery(
-        data: MediaQueryData(disableAnimations: reduce),
-        child: Scaffold(body: child),
-      ),
-    );
+  theme: AppTheme.light,
+  home: MediaQuery(
+    data: MediaQueryData(disableAnimations: reduce),
+    child: Scaffold(body: child),
+  ),
+);
 
 void main() {
   group('VWFadeThrough (P9-T2)', () {
@@ -41,23 +41,25 @@ void main() {
     ) async {
       await tester.pumpWidget(_wrap(const VWFadeThrough(child: Text('a'))));
 
-      final AnimatedSwitcher switcher =
-          tester.widget<AnimatedSwitcher>(find.byType(AnimatedSwitcher));
+      final AnimatedSwitcher switcher = tester.widget<AnimatedSwitcher>(
+        find.byType(AnimatedSwitcher),
+      );
       expect(switcher.duration, AppMotion.stateChange);
       expect(switcher.duration, lessThanOrEqualTo(AppMotion.maxDuration));
     });
 
     testWidgets('is instant under reduced motion', (WidgetTester tester) async {
       Widget build(String label) => _wrap(
-            VWFadeThrough(child: Text(label, key: ValueKey(label))),
-            reduce: true,
-          );
+        VWFadeThrough(child: Text(label, key: ValueKey(label))),
+        reduce: true,
+      );
 
       await tester.pumpWidget(build('list'));
       await tester.pumpWidget(build('empty'));
 
-      final AnimatedSwitcher switcher =
-          tester.widget<AnimatedSwitcher>(find.byType(AnimatedSwitcher));
+      final AnimatedSwitcher switcher = tester.widget<AnimatedSwitcher>(
+        find.byType(AnimatedSwitcher),
+      );
       expect(switcher.duration, Duration.zero);
 
       await tester.pump();
@@ -135,8 +137,8 @@ void main() {
         reason: 'rows past the cap share the last delay, they do not queue up',
       );
 
-      final int worstCase = AppMotion.listItemEnter.inMilliseconds +
-          cap.inMilliseconds;
+      final int worstCase =
+          AppMotion.listItemEnter.inMilliseconds + cap.inMilliseconds;
       expect(
         worstCase,
         lessThanOrEqualTo(AppMotion.signature.inMilliseconds),
@@ -168,8 +170,9 @@ void main() {
       }
     });
 
-    testWidgets('rows are visible once settled, with no stagger left running',
-        (WidgetTester tester) async {
+    testWidgets('rows are visible once settled, with no stagger left running', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           Column(
@@ -183,8 +186,9 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      for (final AnimatedOpacity fade
-          in tester.widgetList<AnimatedOpacity>(find.byType(AnimatedOpacity))) {
+      for (final AnimatedOpacity fade in tester.widgetList<AnimatedOpacity>(
+        find.byType(AnimatedOpacity),
+      )) {
         expect(fade.opacity, 1);
       }
     });

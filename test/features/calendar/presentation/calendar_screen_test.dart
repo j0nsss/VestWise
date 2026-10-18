@@ -34,9 +34,8 @@ TableCalendar<CalendarEventModel> _calendar(WidgetTester tester) =>
       find.byType(TableCalendar<CalendarEventModel>),
     );
 
-ThemeData _theme(WidgetTester tester) => Theme.of(
-      tester.element(find.byType(TableCalendar<CalendarEventModel>)),
-    );
+ThemeData _theme(WidgetTester tester) =>
+    Theme.of(tester.element(find.byType(TableCalendar<CalendarEventModel>)));
 
 void main() {
   group('calendar header (P10-CAL-1)', () {
@@ -57,7 +56,8 @@ void main() {
       expect(
         header.formatButtonVisible,
         isFalse,
-        reason: 'the app only offers the month grid, so there is nothing to '
+        reason:
+            'the app only offers the month grid, so there is nothing to '
             'switch between',
       );
       final Icon left = header.leftChevronIcon as Icon;
@@ -67,9 +67,7 @@ void main() {
       expect(right.color, theme.colorScheme.onSurfaceVariant);
     });
 
-    testWidgets('weekend days are not tinted red', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('weekend days are not tinted red', (WidgetTester tester) async {
       await _pumpCalendar(tester, dark: false);
 
       final DaysOfWeekStyle dow = _calendar(tester).daysOfWeekStyle;
@@ -126,9 +124,7 @@ void main() {
       expect(find.byType(Divider), findsNothing);
     });
 
-    testWidgets('month navigation still works', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('month navigation still works', (WidgetTester tester) async {
       await _pumpCalendar(tester, dark: false);
 
       final DateTime now = DateTime.now();

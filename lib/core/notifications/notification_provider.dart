@@ -13,8 +13,9 @@ final Provider<NotificationService> notificationServiceProvider =
 /// so it never nags a first-run user who simply hasn't set a reminder yet.
 ///
 /// Invalidate after returning from system settings to re-check the OS state.
-final FutureProvider<bool> notificationsBlockedProvider =
-    FutureProvider<bool>((Ref ref) async {
+final FutureProvider<bool> notificationsBlockedProvider = FutureProvider<bool>((
+  Ref ref,
+) async {
   final NotificationService service = ref.watch(notificationServiceProvider);
   if (!await service.hasRequestedPermissions()) {
     return false;
@@ -44,10 +45,12 @@ class NotificationStatus {
 /// system settings, or after asking for permission, to re-read the OS state.
 final FutureProvider<NotificationStatus> notificationStatusProvider =
     FutureProvider<NotificationStatus>((Ref ref) async {
-  final NotificationService service = ref.watch(notificationServiceProvider);
-  return NotificationStatus(
-    permissionRequested: await service.hasRequestedPermissions(),
-    enabled: await service.notificationsEnabled(),
-    exactAlarmsAllowed: await service.canScheduleExactNotifications(),
-  );
-});
+      final NotificationService service = ref.watch(
+        notificationServiceProvider,
+      );
+      return NotificationStatus(
+        permissionRequested: await service.hasRequestedPermissions(),
+        enabled: await service.notificationsEnabled(),
+        exactAlarmsAllowed: await service.canScheduleExactNotifications(),
+      );
+    });

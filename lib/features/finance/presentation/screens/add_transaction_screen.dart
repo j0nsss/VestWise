@@ -100,8 +100,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
   Widget _buildForm(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final AsyncValue<List<CategoryModel>> categoriesAsync =
-        ref.watch(watchCategoriesProvider(_type));
+    final AsyncValue<List<CategoryModel>> categoriesAsync = ref.watch(
+      watchCategoriesProvider(_type),
+    );
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -146,30 +147,33 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             padding: EdgeInsets.all(AppSpacing.lg),
             child: VWLoadingIndicator(),
           ),
-          error: (Object error, StackTrace stack) =>
-              Text('Could not load categories', style: theme.textTheme.bodySmall),
-          data: (List<CategoryModel> categories) => DropdownButtonFormField<int>(
-            key: ValueKey<TransactionType>(_type),
-            initialValue: _selectedCategory?.id,
-            decoration: const InputDecoration(labelText: 'Category'),
-            validator: (int? value) =>
-                value == null ? 'Select a category' : null,
-            items: categories
-                .map(
-                  (CategoryModel c) => DropdownMenuItem<int>(
-                    value: c.id,
-                    child: Text(c.name),
-                  ),
-                )
-                .toList(),
-            onChanged: (int? value) => setState(() {
-              _selectedCategory = value == null
-                  ? null
-                  : categories.firstWhere(
-                      (CategoryModel c) => c.id == value,
-                    );
-            }),
+          error: (Object error, StackTrace stack) => Text(
+            'Could not load categories',
+            style: theme.textTheme.bodySmall,
           ),
+          data: (List<CategoryModel> categories) =>
+              DropdownButtonFormField<int>(
+                key: ValueKey<TransactionType>(_type),
+                initialValue: _selectedCategory?.id,
+                decoration: const InputDecoration(labelText: 'Category'),
+                validator: (int? value) =>
+                    value == null ? 'Select a category' : null,
+                items: categories
+                    .map(
+                      (CategoryModel c) => DropdownMenuItem<int>(
+                        value: c.id,
+                        child: Text(c.name),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (int? value) => setState(() {
+                  _selectedCategory = value == null
+                      ? null
+                      : categories.firstWhere(
+                          (CategoryModel c) => c.id == value,
+                        );
+                }),
+              ),
         ),
         const SizedBox(height: AppSpacing.lg),
         Text('Date', style: theme.textTheme.titleSmall),
@@ -230,8 +234,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
     if (_isEditing) {
       transaction.id = _transactionId!;
-      final Result<void> result =
-          await ref.read(financeRepositoryProvider).updateTransaction(transaction);
+      final Result<void> result = await ref
+          .read(financeRepositoryProvider)
+          .updateTransaction(transaction);
       if (!mounted) {
         return;
       }
@@ -240,8 +245,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         onError: (Failure f) => _onSaveFailed(f),
       );
     } else {
-      final Result<int> result =
-          await ref.read(financeRepositoryProvider).createTransaction(transaction);
+      final Result<int> result = await ref
+          .read(financeRepositoryProvider)
+          .createTransaction(transaction);
       if (!mounted) {
         return;
       }
@@ -254,8 +260,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
   void _onSaveFailed(Failure failure) {
     setState(() => _saving = false);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(failure.message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(failure.message)));
   }
 
   Future<void> _confirmDelete() async {
@@ -279,7 +286,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     if (confirmed != true || !mounted) {
       return;
     }
-    await ref.read(financeRepositoryProvider).deleteTransaction(_transactionId!);
+    await ref
+        .read(financeRepositoryProvider)
+        .deleteTransaction(_transactionId!);
     if (mounted) {
       context.pop();
     }

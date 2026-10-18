@@ -20,7 +20,8 @@ void main() {
       expect(
         token.value.inMilliseconds,
         lessThanOrEqualTo(AppMotion.maxDuration.inMilliseconds),
-        reason: '${token.key} exceeds the ${AppMotion.maxDuration.inMilliseconds}ms budget',
+        reason:
+            '${token.key} exceeds the ${AppMotion.maxDuration.inMilliseconds}ms budget',
       );
     }
   });
@@ -44,8 +45,18 @@ void main() {
     }
   });
 
+  test('the skeleton sweep is a loop, and exempt by category (P11-T1)', () {
+    // Outside the transition budget on purpose: a transition moves once when
+    // something happens, a loading sweep loops until the data arrives, and a
+    // sub-250ms loop reads as flicker. The exemption is banded and explicit
+    // here rather than left implicit by simply not listing the token.
+    expect(AppMotion.skeletonSweep, greaterThan(AppMotion.maxDuration));
+    expect(AppMotion.skeletonSweep.inMilliseconds, inInclusiveRange(800, 2000));
+  });
+
   test('the staggered cascade fits inside signature (P9-T1)', () {
-    final int cascade = AppMotion.listItemEnter.inMilliseconds +
+    final int cascade =
+        AppMotion.listItemEnter.inMilliseconds +
         AppMotion.staggerMaxItems * AppMotion.staggerStep.inMilliseconds;
 
     expect(
@@ -74,9 +85,9 @@ void main() {
 
   group('reduced motion short-circuits the new tokens too (P9-T1)', () {
     Widget harness({required bool reduce, required Widget child}) => MediaQuery(
-          data: MediaQueryData(disableAnimations: reduce),
-          child: child,
-        );
+      data: MediaQueryData(disableAnimations: reduce),
+      child: child,
+    );
 
     testWidgets('motionDuration collapses to zero when asked', (
       WidgetTester tester,

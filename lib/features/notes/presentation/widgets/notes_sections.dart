@@ -41,10 +41,12 @@ List<NotesRow> buildNoteRows(
     return <NotesRow>[for (final NoteModel note in notes) NoteRow(note)];
   }
 
-  final List<NoteModel> pinned =
-      notes.where((NoteModel note) => note.isPinned).toList();
-  final List<NoteModel> others =
-      notes.where((NoteModel note) => !note.isPinned).toList();
+  final List<NoteModel> pinned = notes
+      .where((NoteModel note) => note.isPinned)
+      .toList();
+  final List<NoteModel> others = notes
+      .where((NoteModel note) => !note.isPinned)
+      .toList();
 
   final List<NotesRow> rows = <NotesRow>[];
   // Headings only when both a pinned and an unpinned group exist, so a list
@@ -56,7 +58,9 @@ List<NotesRow> buildNoteRows(
       rows.add(SectionRow(NotesSection.pinned, pinned.length));
     }
     if (!collapsed.contains(NotesSection.pinned)) {
-      rows.addAll(<NotesRow>[for (final NoteModel note in pinned) NoteRow(note)]);
+      rows.addAll(<NotesRow>[
+        for (final NoteModel note in pinned) NoteRow(note),
+      ]);
     }
   }
 
@@ -65,7 +69,9 @@ List<NotesRow> buildNoteRows(
       rows.add(SectionRow(NotesSection.others, others.length));
     }
     if (!collapsed.contains(NotesSection.others)) {
-      rows.addAll(<NotesRow>[for (final NoteModel note in others) NoteRow(note)]);
+      rows.addAll(<NotesRow>[
+        for (final NoteModel note in others) NoteRow(note),
+      ]);
     }
   }
 
@@ -90,9 +96,9 @@ class NotesSectionHeader extends StatelessWidget {
   final VoidCallback onToggle;
 
   String get label => switch (section) {
-        NotesSection.pinned => 'Pinned',
-        NotesSection.others => 'Others',
-      };
+    NotesSection.pinned => 'Pinned',
+    NotesSection.others => 'Others',
+  };
 
   @override
   Widget build(BuildContext context) {

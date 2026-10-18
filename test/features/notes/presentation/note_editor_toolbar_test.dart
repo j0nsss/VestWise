@@ -34,10 +34,10 @@ void main() {
     ) async {
       await _pumpToolbar(tester);
 
-      final quill.QuillSimpleToolbar toolbar =
-          tester.widget<quill.QuillSimpleToolbar>(
-        find.byType(quill.QuillSimpleToolbar),
-      );
+      final quill.QuillSimpleToolbar toolbar = tester
+          .widget<quill.QuillSimpleToolbar>(
+            find.byType(quill.QuillSimpleToolbar),
+          );
 
       expect(toolbar.config.showDividers, isFalse);
       expect(toolbar.config.color, isNull);
@@ -49,10 +49,10 @@ void main() {
     ) async {
       await _pumpToolbar(tester);
 
-      final quill.QuillSimpleToolbar toolbar =
-          tester.widget<quill.QuillSimpleToolbar>(
-        find.byType(quill.QuillSimpleToolbar),
-      );
+      final quill.QuillSimpleToolbar toolbar = tester
+          .widget<quill.QuillSimpleToolbar>(
+            find.byType(quill.QuillSimpleToolbar),
+          );
 
       expect(toolbar.config.showFontFamily, isFalse);
       expect(toolbar.config.showFontSize, isFalse);
@@ -70,10 +70,10 @@ void main() {
     ) async {
       await _pumpToolbar(tester);
 
-      final quill.QuillSimpleToolbar toolbar =
-          tester.widget<quill.QuillSimpleToolbar>(
-        find.byType(quill.QuillSimpleToolbar),
-      );
+      final quill.QuillSimpleToolbar toolbar = tester
+          .widget<quill.QuillSimpleToolbar>(
+            find.byType(quill.QuillSimpleToolbar),
+          );
 
       expect(toolbar.config.toolbarRunSpacing, 0);
       expect(toolbar.config.toolbarSectionSpacing, 0);
@@ -99,13 +99,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      for (final (IconData icon, Attribute<dynamic> attribute) in <
-          (IconData, Attribute<dynamic>)>[
-        (Icons.format_bold, Attribute.bold),
-        (Icons.format_italic, Attribute.italic),
-        (Icons.format_underlined, Attribute.underline),
-        (Icons.format_strikethrough, Attribute.strikeThrough),
-      ]) {
+      for (final (IconData icon, Attribute<dynamic> attribute)
+          in <(IconData, Attribute<dynamic>)>[
+            (Icons.format_bold, Attribute.bold),
+            (Icons.format_italic, Attribute.italic),
+            (Icons.format_underlined, Attribute.underline),
+            (Icons.format_strikethrough, Attribute.strikeThrough),
+          ]) {
         await tester.tap(find.byIcon(icon).first);
         await tester.pumpAndSettle();
         expect(

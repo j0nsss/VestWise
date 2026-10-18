@@ -68,12 +68,12 @@ class _FakeTasksRepository implements TasksRepository {
 }
 
 Widget _wrap(Widget child, {bool reduce = false}) => MaterialApp(
-      theme: AppTheme.light,
-      home: MediaQuery(
-        data: MediaQueryData(disableAnimations: reduce),
-        child: child,
-      ),
-    );
+  theme: AppTheme.light,
+  home: MediaQuery(
+    data: MediaQueryData(disableAnimations: reduce),
+    child: child,
+  ),
+);
 
 void main() {
   group('TaskListTile (P9-T4)', () {
@@ -82,10 +82,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           Scaffold(
-            body: TaskListTile(
-              task: _task(),
-              onToggle: () => toggles++,
-            ),
+            body: TaskListTile(task: _task(), onToggle: () => toggles++),
           ),
         ),
       );
@@ -103,10 +100,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           Scaffold(
-            body: TaskListTile(
-              task: _task(completed: true),
-              onToggle: () {},
-            ),
+            body: TaskListTile(task: _task(completed: true), onToggle: () {}),
           ),
         ),
       );
@@ -123,11 +117,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           Scaffold(
-            body: TaskListTile(
-              task: _task(),
-              morphing: true,
-              onToggle: () {},
-            ),
+            body: TaskListTile(task: _task(), morphing: true, onToggle: () {}),
           ),
         ),
       );
@@ -232,8 +222,10 @@ void main() {
     testWidgets('reduced motion writes immediately, with no morph', (
       WidgetTester tester,
     ) async {
-      final _FakeTasksRepository repository =
-          await pumpScreen(tester, reduce: true);
+      final _FakeTasksRepository repository = await pumpScreen(
+        tester,
+        reduce: true,
+      );
 
       await tester.tap(find.byType(Checkbox));
       await tester.pump();
@@ -330,9 +322,7 @@ void main() {
       expect(find.text('Due today'), findsOneWidget);
     });
 
-    testWidgets('an empty group gets no heading', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('an empty group gets no heading', (WidgetTester tester) async {
       await pumpGroups(tester, <TaskModel>[_task(id: 3, title: 'No date')]);
 
       expect(find.byType(VWSectionDisclosure), findsOneWidget);

@@ -31,43 +31,45 @@ void main() {
     }
   });
 
-  test('clear-all wipes rows, deletes imported files and re-seeds categories',
-      () async {
-    final FinanceRepositoryImpl finance = FinanceRepositoryImpl(harness.isar);
-    await finance.seedDefaultCategories();
-    await finance.createTransaction(
-      TransactionModel()
-        ..amount = 10
-        ..type = TransactionType.expense
-        ..date = DateTime.now()
-        ..createdAt = DateTime.now(),
-    );
-    await TasksRepositoryImpl(harness.isar).createTask(
-      TaskModel()
-        ..title = 'Doomed'
-        ..priority = TaskPriority.medium
-        ..createdAt = DateTime.now(),
-    );
-    await storage.saveBytesIntoImportedStorage('note.txt', <int>[1, 2, 3]);
+  test(
+    'clear-all wipes rows, deletes imported files and re-seeds categories',
+    () async {
+      final FinanceRepositoryImpl finance = FinanceRepositoryImpl(harness.isar);
+      await finance.seedDefaultCategories();
+      await finance.createTransaction(
+        TransactionModel()
+          ..amount = 10
+          ..type = TransactionType.expense
+          ..date = DateTime.now()
+          ..createdAt = DateTime.now(),
+      );
+      await TasksRepositoryImpl(harness.isar).createTask(
+        TaskModel()
+          ..title = 'Doomed'
+          ..priority = TaskPriority.medium
+          ..createdAt = DateTime.now(),
+      );
+      await storage.saveBytesIntoImportedStorage('note.txt', <int>[1, 2, 3]);
 
-    expect(await harness.isar.transactionModels.count(), 1);
-    expect(await harness.isar.taskModels.count(), 1);
-    expect(await storage.getImportedFilesSizeBytes(), 3);
+      expect(await harness.isar.transactionModels.count(), 1);
+      expect(await harness.isar.taskModels.count(), 1);
+      expect(await storage.getImportedFilesSizeBytes(), 3);
 
-    // A plain NotificationService is fine here: the plugin channel is absent in
-    // tests and `cancelAll` is deliberately best-effort.
-    await resetAllData(
-      isar: harness.isar,
-      storage: storage,
-      notifications: NotificationService(),
-    );
+      // A plain NotificationService is fine here: the plugin channel is absent in
+      // tests and `cancelAll` is deliberately best-effort.
+      await resetAllData(
+        isar: harness.isar,
+        storage: storage,
+        notifications: NotificationService(),
+      );
 
-    expect(await harness.isar.transactionModels.count(), 0);
-    expect(await harness.isar.taskModels.count(), 0);
-    expect(await harness.isar.noteModels.count(), 0);
-    expect(await storage.getImportedFilesSizeBytes(), 0);
+      expect(await harness.isar.transactionModels.count(), 0);
+      expect(await harness.isar.taskModels.count(), 0);
+      expect(await harness.isar.noteModels.count(), 0);
+      expect(await storage.getImportedFilesSizeBytes(), 0);
 
-    // Default categories come back, so the app is usable immediately.
-    expect((await finance.getAllCategories()).dataOrNull, isNotEmpty);
-  });
+      // Default categories come back, so the app is usable immediately.
+      expect((await finance.getAllCategories()).dataOrNull, isNotEmpty);
+    },
+  );
 }

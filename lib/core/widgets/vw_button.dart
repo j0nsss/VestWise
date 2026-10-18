@@ -43,21 +43,21 @@ class VWButton extends StatelessWidget {
 
     final Widget button = switch (variant) {
       VWButtonVariant.primary => FilledButton(
-          onPressed: effectiveOnPressed,
-          child: child,
-        ),
+        onPressed: effectiveOnPressed,
+        child: child,
+      ),
       VWButtonVariant.secondary => OutlinedButton(
-          onPressed: effectiveOnPressed,
-          child: child,
-        ),
+        onPressed: effectiveOnPressed,
+        child: child,
+      ),
       VWButtonVariant.destructive => FilledButton(
-          onPressed: effectiveOnPressed,
-          style: FilledButton.styleFrom(
-            backgroundColor: scheme.error,
-            foregroundColor: scheme.onError,
-          ),
-          child: child,
+        onPressed: effectiveOnPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: scheme.error,
+          foregroundColor: scheme.onError,
         ),
+        child: child,
+      ),
     };
 
     return expand ? SizedBox(width: double.infinity, child: button) : button;

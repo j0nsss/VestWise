@@ -25,11 +25,11 @@ class TaskItemRow extends TaskRow {
 }
 
 String taskGroupLabel(TaskGroup group) => switch (group) {
-      TaskGroup.today => 'Today',
-      TaskGroup.upcoming => 'Upcoming',
-      TaskGroup.noDueDate => 'No due date',
-      TaskGroup.completed => 'Completed',
-    };
+  TaskGroup.today => 'Today',
+  TaskGroup.upcoming => 'Upcoming',
+  TaskGroup.noDueDate => 'No due date',
+  TaskGroup.completed => 'Completed',
+};
 
 /// Which group a task belongs to. Total by construction: every task lands in
 /// exactly one group, which is what keeps P10-TASKS-1's "no task silently
@@ -46,8 +46,11 @@ TaskGroup taskGroupOf(TaskModel task, {required DateTime today}) {
   if (due == null) {
     return TaskGroup.noDueDate;
   }
-  final DateTime endOfToday =
-      DateTime(today.year, today.month, today.day).add(const Duration(days: 1));
+  final DateTime endOfToday = DateTime(
+    today.year,
+    today.month,
+    today.day,
+  ).add(const Duration(days: 1));
   return due.isBefore(endOfToday) ? TaskGroup.today : TaskGroup.upcoming;
 }
 
@@ -80,9 +83,9 @@ List<TaskRow> buildTaskRows(
     }
     rows.add(TaskGroupRow(group, groupTasks.length));
     if (!collapsed.contains(group)) {
-      rows.addAll(
-        <TaskRow>[for (final TaskModel task in groupTasks) TaskItemRow(task)],
-      );
+      rows.addAll(<TaskRow>[
+        for (final TaskModel task in groupTasks) TaskItemRow(task),
+      ]);
     }
   }
 

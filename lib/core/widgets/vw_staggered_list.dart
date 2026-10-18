@@ -26,9 +26,7 @@ class VWStaggeredList extends StatelessWidget {
         ? index
         : AppMotion.staggerMaxItems;
 
-    return Duration(
-      milliseconds: AppMotion.staggerStep.inMilliseconds * steps,
-    );
+    return Duration(milliseconds: AppMotion.staggerStep.inMilliseconds * steps);
   }
 
   @override

@@ -17,8 +17,9 @@ abstract final class AppRadii {
   static const double sheetValue = 20;
 
   static const BorderRadius card = BorderRadius.all(Radius.circular(cardValue));
-  static const BorderRadius input =
-      BorderRadius.all(Radius.circular(inputValue));
+  static const BorderRadius input = BorderRadius.all(
+    Radius.circular(inputValue),
+  );
 
   /// Top-only radius for bottom sheets, so the sheet sits flush with the
   /// bottom edge.

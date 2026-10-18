@@ -22,16 +22,15 @@ class _FakeNotesRepository implements NotesRepository {
 
   @override
   Stream<List<NoteModel>> watchNotesMatching(String query) => Stream.value(
-        query.isEmpty
-            ? notes
-            : notes
-                .where(
-                  (NoteModel note) => note.title
-                      .toLowerCase()
-                      .contains(query.toLowerCase()),
-                )
-                .toList(),
-      );
+    query.isEmpty
+        ? notes
+        : notes
+              .where(
+                (NoteModel note) =>
+                    note.title.toLowerCase().contains(query.toLowerCase()),
+              )
+              .toList(),
+  );
 
   @override
   Stream<List<ImportedDocumentModel>> watchImportedDocuments() =>
@@ -88,10 +87,7 @@ Future<void> _pumpNotes(
           return _FakeNotesRepository(notes);
         }),
       ],
-      child: MaterialApp(
-        theme: AppTheme.light,
-        home: const NotesListScreen(),
-      ),
+      child: MaterialApp(theme: AppTheme.light, home: const NotesListScreen()),
     ),
   );
   await tester.pumpAndSettle();
@@ -103,20 +99,19 @@ void main() {
     final NoteModel other = _note(2, 'Other note');
 
     test('an unpinned library is one flat list with no headings', () {
-      final List<NotesRow> rows = buildNoteRows(
-        <NoteModel>[other],
-        collapsed: <NotesSection>{},
-      );
+      final List<NotesRow> rows = buildNoteRows(<NoteModel>[
+        other,
+      ], collapsed: <NotesSection>{});
 
       expect(rows, hasLength(1));
       expect(rows.single, isA<NoteRow>());
     });
 
     test('pinned notes are grouped first, with counts', () {
-      final List<NotesRow> rows = buildNoteRows(
-        <NoteModel>[pinned, other],
-        collapsed: <NotesSection>{},
-      );
+      final List<NotesRow> rows = buildNoteRows(<NoteModel>[
+        pinned,
+        other,
+      ], collapsed: <NotesSection>{});
 
       expect(rows, hasLength(4));
       expect((rows[0] as SectionRow).section, NotesSection.pinned);
@@ -139,10 +134,9 @@ void main() {
     });
 
     test('a library that is entirely pinned needs no headings', () {
-      final List<NotesRow> rows = buildNoteRows(
-        <NoteModel>[pinned],
-        collapsed: <NotesSection>{},
-      );
+      final List<NotesRow> rows = buildNoteRows(<NoteModel>[
+        pinned,
+      ], collapsed: <NotesSection>{});
 
       expect(rows, hasLength(1));
       expect(rows.single, isA<NoteRow>());

@@ -53,7 +53,8 @@ class _DocumentViewerScreenState extends ConsumerState<DocumentViewerScreen> {
     }
 
     final ImportedDocumentModel? document =
-        (await ref.read(notesRepositoryProvider).getDocumentById(id)).dataOrNull;
+        (await ref.read(notesRepositoryProvider).getDocumentById(id))
+            .dataOrNull;
     if (document == null) {
       setState(() {
         _loading = false;
@@ -62,7 +63,9 @@ class _DocumentViewerScreenState extends ConsumerState<DocumentViewerScreen> {
       return;
     }
 
-    final Directory dir = await ref.read(fileStorageServiceProvider).getImportedFilesDir();
+    final Directory dir = await ref
+        .read(fileStorageServiceProvider)
+        .getImportedFilesDir();
     if (!mounted) {
       return;
     }
@@ -82,13 +85,10 @@ class _DocumentViewerScreenState extends ConsumerState<DocumentViewerScreen> {
       body: _loading
           ? const VWLoadingIndicator()
           : _error != null
-              ? VWEmptyState(
-                  icon: Icons.error_outline,
-                  message: _error!,
-                )
-              : document!.fileExtension.toLowerCase() == 'pdf'
-                  ? _buildPdf(document)
-                  : _buildMetadataCard(document),
+          ? VWEmptyState(icon: Icons.error_outline, message: _error!)
+          : document!.fileExtension.toLowerCase() == 'pdf'
+          ? _buildPdf(document)
+          : _buildMetadataCard(document),
     );
   }
 
@@ -129,7 +129,10 @@ class _DocumentViewerScreenState extends ConsumerState<DocumentViewerScreen> {
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
-              _MetaRow(label: 'Type', value: document.fileExtension.toUpperCase()),
+              _MetaRow(
+                label: 'Type',
+                value: document.fileExtension.toUpperCase(),
+              ),
               _MetaRow(
                 label: 'Size',
                 value: formatBytes(document.fileSizeBytes),

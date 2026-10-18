@@ -35,9 +35,7 @@ Future<void> main() async {
       overrides: [
         isarProvider.overrideWithValue(AsyncValue<Isar>.data(isar)),
         notificationServiceProvider.overrideWithValue(notificationService),
-        themeModeProvider.overrideWith(
-          () => ThemeModeNotifier(themeMode),
-        ),
+        themeModeProvider.overrideWith(() => ThemeModeNotifier(themeMode)),
       ],
       child: const VestWiseApp(),
     ),

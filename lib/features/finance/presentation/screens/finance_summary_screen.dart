@@ -36,8 +36,9 @@ class _FinanceSummaryScreenState extends ConsumerState<FinanceSummaryScreen> {
     // Query only the selected period instead of loading all history and
     // filtering it in Dart (plan P5-T5).
     final (DateTime start, DateTime end) = _bounds(_range);
-    final AsyncValue<List<TransactionModel>> transactionsAsync =
-        ref.watch(watchTransactionsInRangeProvider(start, end));
+    final AsyncValue<List<TransactionModel>> transactionsAsync = ref.watch(
+      watchTransactionsInRangeProvider(start, end),
+    );
 
     return Scaffold(
       appBar: const VWAppBar(title: 'Summary'),
@@ -57,7 +58,10 @@ class _FinanceSummaryScreenState extends ConsumerState<FinanceSummaryScreen> {
             children: <Widget>[
               SegmentedButton<_Range>(
                 segments: const <ButtonSegment<_Range>>[
-                  ButtonSegment<_Range>(value: _Range.week, label: Text('Week')),
+                  ButtonSegment<_Range>(
+                    value: _Range.week,
+                    label: Text('Week'),
+                  ),
                   ButtonSegment<_Range>(
                     value: _Range.month,
                     label: Text('Month'),
@@ -83,8 +87,11 @@ class _FinanceSummaryScreenState extends ConsumerState<FinanceSummaryScreen> {
   (DateTime, DateTime) _bounds(_Range range) {
     final DateTime now = DateTime.now();
     if (range == _Range.week) {
-      final DateTime start = DateTime(now.year, now.month, now.day)
-          .subtract(Duration(days: now.weekday - 1));
+      final DateTime start = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: now.weekday - 1));
       return (start, start.add(const Duration(days: 7)));
     }
     return (
@@ -96,16 +103,21 @@ class _FinanceSummaryScreenState extends ConsumerState<FinanceSummaryScreen> {
   List<_Bucket> _buckets(List<TransactionModel> transactions, _Range range) {
     if (range == _Range.week) {
       final DateTime now = DateTime.now();
-      final DateTime start = DateTime(now.year, now.month, now.day)
-          .subtract(Duration(days: now.weekday - 1));
+      final DateTime start = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: now.weekday - 1));
       final List<_Bucket> buckets = List<_Bucket>.generate(
         7,
         (int i) => _Bucket(label: _weekdayLabel(start.add(Duration(days: i)))),
       );
       for (final TransactionModel t in transactions) {
-        final int index = DateTime(t.date.year, t.date.month, t.date.day)
-            .difference(start)
-            .inDays;
+        final int index = DateTime(
+          t.date.year,
+          t.date.month,
+          t.date.day,
+        ).difference(start).inDays;
         if (index >= 0 && index < buckets.length) {
           buckets[index].add(t);
         }
@@ -134,8 +146,15 @@ class _FinanceSummaryScreenState extends ConsumerState<FinanceSummaryScreen> {
           .where((TransactionModel t) => t.type == TransactionType.expense)
           .toList();
 
-  String _weekdayLabel(DateTime date) =>
-      const <String>['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1];
+  String _weekdayLabel(DateTime date) => const <String>[
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ][date.weekday - 1];
 }
 
 class _Bucket {
@@ -185,12 +204,15 @@ class _Chart extends StatelessWidget {
               borderData: FlBorderData(show: false),
               gridData: const FlGridData(show: true),
               titlesData: FlTitlesData(
-                leftTitles:
-                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles:
-                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                topTitles:
-                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                leftTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
@@ -303,10 +325,7 @@ class _Breakdown extends StatelessWidget {
         const VWSectionHeader(title: 'Spending by category'),
         const SizedBox(height: AppSpacing.md),
         if (totals.isEmpty)
-          Text(
-            'No expenses in this period.',
-            style: theme.textTheme.bodyMedium,
-          )
+          Text('No expenses in this period.', style: theme.textTheme.bodyMedium)
         else
           // The ring answers "how did it split up?" in one glance; the rows
           // answer "how much, exactly?". Both read the same `totals`, so they

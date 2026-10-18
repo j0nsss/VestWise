@@ -89,9 +89,7 @@ class _SwipeAction extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       // Decorative: the swipe itself is the affordance, and TalkBack reaches
       // both actions through the tile's own controls.
-      child: ExcludeSemantics(
-        child: Icon(icon, color: foreground),
-      ),
+      child: ExcludeSemantics(child: Icon(icon, color: foreground)),
     );
   }
 }

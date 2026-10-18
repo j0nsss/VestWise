@@ -57,7 +57,8 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           tooltip: 'New note',
-          onPressed: () => context.go(RoutePaths.noteEditorFor(RoutePaths.newId)),
+          onPressed: () =>
+              context.go(RoutePaths.noteEditorFor(RoutePaths.newId)),
           child: const Icon(Icons.add),
         ),
         body: const TabBarView(
@@ -82,10 +83,11 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
 
       // Copy into app-owned storage so the file survives picker-cache cleanup.
       final stored = await storage.copyPickedFileToLocalStorage(picked);
-      final String extension =
-          picked.extension ?? _extensionOf(picked.name);
+      final String extension = picked.extension ?? _extensionOf(picked.name);
 
-      await ref.read(notesRepositoryProvider).createImportedDocument(
+      await ref
+          .read(notesRepositoryProvider)
+          .createImportedDocument(
             ImportedDocumentModel()
               ..fileName = picked.name
               ..relativeFilePath = storage.relativePathOf(stored)
@@ -95,9 +97,9 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
           );
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Import failed: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Import failed: $error')));
       }
     } finally {
       if (mounted) {
@@ -136,8 +138,9 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<NoteModel>> notesAsync =
-        ref.watch(watchNotesMatchingProvider(_query));
+    final AsyncValue<List<NoteModel>> notesAsync = ref.watch(
+      watchNotesMatchingProvider(_query),
+    );
 
     return Column(
       children: <Widget>[
@@ -158,7 +161,8 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
               title: 'Could not load your notes',
               message: 'Something went wrong reading your notes.',
               actionLabel: 'Retry',
-              onAction: () => ref.invalidate(watchNotesMatchingProvider(_query)),
+              onAction: () =>
+                  ref.invalidate(watchNotesMatchingProvider(_query)),
             ),
             data: (List<NoteModel> notes) {
               if (notes.isEmpty) {
@@ -170,8 +174,9 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
                       : 'No notes match “$_query”.',
                   actionLabel: _query.isEmpty ? 'New note' : null,
                   onAction: _query.isEmpty
-                      ? () => context
-                          .go(RoutePaths.noteEditorFor(RoutePaths.newId))
+                      ? () => context.go(
+                          RoutePaths.noteEditorFor(RoutePaths.newId),
+                        )
                       : null,
                 );
               }
@@ -196,8 +201,7 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
                   final NoteModel note = (row as NoteRow).note;
                   final Widget tile = NoteListTile(
                     note: note,
-                    onTap: () =>
-                        context.go(RoutePaths.noteEditorFor(note.id)),
+                    onTap: () => context.go(RoutePaths.noteEditorFor(note.id)),
                     onTogglePin: () => _togglePin(note),
                   );
                   final Key key = ValueKey<int>(note.id);
@@ -222,9 +226,9 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
   }
 
   Future<void> _togglePin(NoteModel note) async {
-    await ref.read(notesRepositoryProvider).updateNote(
-          note..isPinned = !note.isPinned,
-        );
+    await ref
+        .read(notesRepositoryProvider)
+        .updateNote(note..isPinned = !note.isPinned);
   }
 }
 
@@ -233,8 +237,9 @@ class _DocumentsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<ImportedDocumentModel>> documentsAsync =
-        ref.watch(watchImportedDocumentsProvider);
+    final AsyncValue<List<ImportedDocumentModel>> documentsAsync = ref.watch(
+      watchImportedDocumentsProvider,
+    );
 
     return documentsAsync.when(
       loading: () => const VWLoadingIndicator(),

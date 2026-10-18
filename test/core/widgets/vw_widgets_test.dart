@@ -13,9 +13,9 @@ import 'package:vestwise/core/widgets/vw_section_header.dart';
 import 'package:vestwise/core/widgets/vw_text_field.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.light,
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.light,
+  home: Scaffold(body: child),
+);
 
 void main() {
   testWidgets('VWCard renders its child', (WidgetTester tester) async {
@@ -54,10 +54,7 @@ void main() {
       final Card card = tester.widget<Card>(find.byType(Card));
       expect(card.color, AppColors.surfaceSoftFor(Brightness.light));
       expect(card.elevation, AppElevation.flat);
-      expect(
-        (card.shape! as RoundedRectangleBorder).side,
-        BorderSide.none,
-      );
+      expect((card.shape! as RoundedRectangleBorder).side, BorderSide.none);
     });
 
     testWidgets('elevated is the one card allowed to float', (
@@ -122,8 +119,9 @@ void main() {
 
       expect(scale(), 1.0);
 
-      final TestGesture gesture =
-          await tester.startGesture(tester.getCenter(find.text('press')));
+      final TestGesture gesture = await tester.startGesture(
+        tester.getCenter(find.text('press')),
+      );
       await tester.pump();
       expect(scale(), lessThan(1.0));
 
@@ -141,8 +139,9 @@ void main() {
         _wrap(VWCard(onTap: () {}, child: const Text('press'))),
       );
 
-      final AnimatedScale animated =
-          tester.widget<AnimatedScale>(find.byType(AnimatedScale));
+      final AnimatedScale animated = tester.widget<AnimatedScale>(
+        find.byType(AnimatedScale),
+      );
       expect(animated.duration, AppMotion.stateChange);
       expect(animated.duration, lessThanOrEqualTo(AppMotion.maxDuration));
     });
@@ -162,8 +161,9 @@ void main() {
         ),
       );
 
-      final AnimatedScale animated =
-          tester.widget<AnimatedScale>(find.byType(AnimatedScale));
+      final AnimatedScale animated = tester.widget<AnimatedScale>(
+        find.byType(AnimatedScale),
+      );
       expect(animated.duration, Duration.zero);
     });
 
@@ -274,7 +274,9 @@ void main() {
   testWidgets('VWLoadingIndicator shows a spinner', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(_wrap(const VWLoadingIndicator(message: 'Loading')));
+    await tester.pumpWidget(
+      _wrap(const VWLoadingIndicator(message: 'Loading')),
+    );
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Loading'), findsOneWidget);
   });

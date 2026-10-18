@@ -11,13 +11,12 @@ TaskModel _task({
   TaskPriority priority = TaskPriority.medium,
   DateTime? dueDate,
   bool completed = false,
-}) =>
-    TaskModel()
-      ..title = title
-      ..priority = priority
-      ..dueDate = dueDate
-      ..isCompleted = completed
-      ..createdAt = DateTime.now();
+}) => TaskModel()
+  ..title = title
+  ..priority = priority
+  ..dueDate = dueDate
+  ..isCompleted = completed
+  ..createdAt = DateTime.now();
 
 void main() {
   late IsarTestHarness harness;
@@ -83,7 +82,10 @@ void main() {
     await repo.createTask(_task(title: 'First', completed: true));
 
     final List<TaskModel> tasks = await repo.watchAllTasks().first;
-    expect(tasks.map((TaskModel t) => t.title), containsAll(<String>['First', 'Second']));
+    expect(
+      tasks.map((TaskModel t) => t.title),
+      containsAll(<String>['First', 'Second']),
+    );
     expect(tasks.first.isCompleted, isFalse);
   });
 
@@ -91,7 +93,9 @@ void main() {
     final DateTime now = DateTime.now();
     final DateTime today = DateTime(now.year, now.month, now.day, 9);
     await repo.createTask(_task(title: 'Today', dueDate: today));
-    await repo.createTask(_task(title: 'Done today', dueDate: today, completed: true));
+    await repo.createTask(
+      _task(title: 'Done today', dueDate: today, completed: true),
+    );
     await repo.createTask(
       _task(title: 'Tomorrow', dueDate: today.add(const Duration(days: 1))),
     );

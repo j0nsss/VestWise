@@ -61,24 +61,29 @@ class _VWCardState extends State<VWCard> {
   @override
   Widget build(BuildContext context) {
     final bool interactive = widget.onTap != null;
-    final (Color? color, ShapeBorder? shape, double? elevation) =
-        switch (widget.variant) {
+    final (
+      Color? color,
+      ShapeBorder? shape,
+      double? elevation,
+    ) = switch (widget.variant) {
       // Inherit the theme's card decoration untouched.
       VWCardVariant.flat => (null, null, null),
       VWCardVariant.soft => (
-          AppColors.surfaceSoft(context),
-          const RoundedRectangleBorder(borderRadius: AppRadii.card),
-          AppElevation.flat,
-        ),
+        AppColors.surfaceSoft(context),
+        const RoundedRectangleBorder(borderRadius: AppRadii.card),
+        AppElevation.flat,
+      ),
       VWCardVariant.elevated => (
-          null,
-          const RoundedRectangleBorder(borderRadius: AppRadii.card),
-          AppElevation.overlay,
-        ),
+        null,
+        const RoundedRectangleBorder(borderRadius: AppRadii.card),
+        AppElevation.overlay,
+      ),
     };
 
-    final Widget content =
-        Padding(padding: widget.padding, child: widget.child);
+    final Widget content = Padding(
+      padding: widget.padding,
+      child: widget.child,
+    );
 
     Widget card = Card(
       clipBehavior: Clip.antiAlias,

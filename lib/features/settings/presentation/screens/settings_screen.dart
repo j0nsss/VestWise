@@ -79,7 +79,10 @@ class _ThemeModeSelector extends ConsumerWidget {
     return SegmentedButton<ThemeMode>(
       showSelectedIcon: false,
       segments: const <ButtonSegment<ThemeMode>>[
-        ButtonSegment<ThemeMode>(value: ThemeMode.system, label: Text('System')),
+        ButtonSegment<ThemeMode>(
+          value: ThemeMode.system,
+          label: Text('System'),
+        ),
         ButtonSegment<ThemeMode>(value: ThemeMode.light, label: Text('Light')),
         ButtonSegment<ThemeMode>(value: ThemeMode.dark, label: Text('Dark')),
       ],
@@ -126,24 +129,18 @@ class _NotificationSettingsState extends ConsumerState<_NotificationSettings>
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<NotificationStatus> statusAsync =
-        ref.watch(notificationStatusProvider);
+    final AsyncValue<NotificationStatus> statusAsync = ref.watch(
+      notificationStatusProvider,
+    );
 
     return statusAsync.when(
-      loading: () => const SizedBox(
-        height: 48,
-        child: VWLoadingIndicator(),
-      ),
-      error: (Object error, StackTrace stack) => const Text(
-        'Could not read the notification permission state.',
-      ),
+      loading: () => const SizedBox(height: 48, child: VWLoadingIndicator()),
+      error: (Object error, StackTrace stack) =>
+          const Text('Could not read the notification permission state.'),
       data: (NotificationStatus status) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          _StatusRow(
-            label: 'Permission',
-            value: _permissionLabel(status),
-          ),
+          _StatusRow(label: 'Permission', value: _permissionLabel(status)),
           _StatusRow(
             label: 'Exact alarms',
             value: status.exactAlarmsAllowed ? 'Allowed' : 'Approximate only',
@@ -232,10 +229,7 @@ class _StorageSettings extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _StatusRow(
-          label: 'Imported files',
-          value: '$fileCount $files',
-        ),
+        _StatusRow(label: 'Imported files', value: '$fileCount $files'),
         _StatusRow(
           label: 'Used',
           value: bytes == null ? '…' : formatBytes(bytes),
@@ -285,7 +279,10 @@ class _DangerZoneState extends ConsumerState<_DangerZone> {
           const SizedBox(height: AppSpacing.md),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.delete_forever_outlined, color: theme.colorScheme.error),
+            leading: Icon(
+              Icons.delete_forever_outlined,
+              color: theme.colorScheme.error,
+            ),
             title: const Text('Clear all data'),
             subtitle: const Text(
               'Removes every task, note, transaction, event and imported file '
@@ -347,9 +344,9 @@ class _DangerZoneState extends ConsumerState<_DangerZone> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not clear data: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not clear data: $error')));
       }
     } finally {
       if (mounted) {

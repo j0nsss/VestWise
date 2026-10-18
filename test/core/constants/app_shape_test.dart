@@ -15,13 +15,16 @@ void main() {
       );
     });
 
-    test('sheet rounds only the top, so it sits flush with the bottom edge', () {
-      expect(AppRadii.sheetValue, 20);
-      expect(AppRadii.sheet.topLeft.x, AppRadii.sheetValue);
-      expect(AppRadii.sheet.topRight.x, AppRadii.sheetValue);
-      expect(AppRadii.sheet.bottomLeft, Radius.zero);
-      expect(AppRadii.sheet.bottomRight, Radius.zero);
-    });
+    test(
+      'sheet rounds only the top, so it sits flush with the bottom edge',
+      () {
+        expect(AppRadii.sheetValue, 20);
+        expect(AppRadii.sheet.topLeft.x, AppRadii.sheetValue);
+        expect(AppRadii.sheet.topRight.x, AppRadii.sheetValue);
+        expect(AppRadii.sheet.bottomLeft, Radius.zero);
+        expect(AppRadii.sheet.bottomRight, Radius.zero);
+      },
+    );
 
     test('chip is a pill', () {
       expect(AppRadii.chip.topLeft.x, greaterThanOrEqualTo(100));
@@ -43,20 +46,22 @@ void main() {
 
   group('the theme wires the shape tokens in (P8-T2)', () {
     for (final ThemeData theme in <ThemeData>[AppTheme.light, AppTheme.dark]) {
-      test('${theme.brightness.name}: cards are flat with a hairline border',
-          () {
-        expect(theme.cardTheme.elevation, AppElevation.flat);
-        expect(theme.appBarTheme.elevation, AppElevation.flat);
-        expect(theme.appBarTheme.scrolledUnderElevation, AppElevation.flat);
+      test(
+        '${theme.brightness.name}: cards are flat with a hairline border',
+        () {
+          expect(theme.cardTheme.elevation, AppElevation.flat);
+          expect(theme.appBarTheme.elevation, AppElevation.flat);
+          expect(theme.appBarTheme.scrolledUnderElevation, AppElevation.flat);
 
-        final ShapeBorder? shape = theme.cardTheme.shape;
-        expect(shape, isA<RoundedRectangleBorder>());
-        expect(
-          (shape! as RoundedRectangleBorder).borderRadius,
-          AppRadii.card,
-        );
-        expect((shape as RoundedRectangleBorder).side.width, 1);
-      });
+          final ShapeBorder? shape = theme.cardTheme.shape;
+          expect(shape, isA<RoundedRectangleBorder>());
+          expect(
+            (shape! as RoundedRectangleBorder).borderRadius,
+            AppRadii.card,
+          );
+          expect((shape as RoundedRectangleBorder).side.width, 1);
+        },
+      );
 
       test('${theme.brightness.name}: overlays are the elevated exception', () {
         expect(theme.bottomSheetTheme.shape, isNotNull);

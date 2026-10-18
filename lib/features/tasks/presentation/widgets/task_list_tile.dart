@@ -50,11 +50,7 @@ class TaskListTile extends StatelessWidget {
         style: theme.textTheme.bodyLarge!.copyWith(
           color: done ? muted : theme.colorScheme.onSurface,
         ),
-        child: _StrikeThroughText(
-          text: task.title,
-          struck: done,
-          color: muted,
-        ),
+        child: _StrikeThroughText(text: task.title, struck: done, color: muted),
       ),
       subtitle: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
@@ -130,20 +126,22 @@ class _TaskCheckboxState extends State<_TaskCheckbox>
       duration: AppMotion.signature,
       value: 1,
     );
-    _scale = TweenSequence<double>(
-      <TweenSequenceItem<double>>[
-        TweenSequenceItem<double>(
-          tween: Tween<double>(begin: 1, end: 1.18)
-              .chain(CurveTween(curve: AppMotion.curveEmphasized)),
-          weight: 40,
-        ),
-        TweenSequenceItem<double>(
-          tween: Tween<double>(begin: 1.18, end: 1)
-              .chain(CurveTween(curve: AppMotion.standardCurve)),
-          weight: 60,
-        ),
-      ],
-    ).animate(_controller);
+    _scale = TweenSequence<double>(<TweenSequenceItem<double>>[
+      TweenSequenceItem<double>(
+        tween: Tween<double>(
+          begin: 1,
+          end: 1.18,
+        ).chain(CurveTween(curve: AppMotion.curveEmphasized)),
+        weight: 40,
+      ),
+      TweenSequenceItem<double>(
+        tween: Tween<double>(
+          begin: 1.18,
+          end: 1,
+        ).chain(CurveTween(curve: AppMotion.standardCurve)),
+        weight: 60,
+      ),
+    ]).animate(_controller);
   }
 
   @override
@@ -151,8 +149,7 @@ class _TaskCheckboxState extends State<_TaskCheckbox>
     super.didUpdateWidget(oldWidget);
     // Only on completion, and only when the morph is actually wanted.
     if (widget.morphing && !oldWidget.morphing) {
-      _controller.duration =
-          motionDuration(context, AppMotion.signature);
+      _controller.duration = motionDuration(context, AppMotion.signature);
       _controller.forward(from: 0);
     }
   }
@@ -268,11 +265,7 @@ class _StrikeThroughTextState extends State<_StrikeThroughText>
         ),
         child: child,
       ),
-      child: Text(
-        widget.text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+      child: Text(widget.text, maxLines: 1, overflow: TextOverflow.ellipsis),
     );
   }
 }

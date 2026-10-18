@@ -33,26 +33,24 @@ class FinanceRepositoryImpl implements FinanceRepository {
   @override
   Stream<List<TransactionModel>> watchRecentTransactions({
     required int limit,
-  }) =>
-      _transactions
-          .where()
-          .sortByDateDesc()
-          .thenByCreatedAtDesc()
-          .limit(limit)
-          .watch(fireImmediately: true)
-          .asyncMap(_withLoadedCategories);
+  }) => _transactions
+      .where()
+      .sortByDateDesc()
+      .thenByCreatedAtDesc()
+      .limit(limit)
+      .watch(fireImmediately: true)
+      .asyncMap(_withLoadedCategories);
 
   @override
   Stream<List<TransactionModel>> watchTransactionsInRange(
     DateTime start,
     DateTime end,
-  ) =>
-      _transactions
-          .where()
-          .dateBetween(start, end)
-          .sortByDateDesc()
-          .watch(fireImmediately: true)
-          .asyncMap(_withLoadedCategories);
+  ) => _transactions
+      .where()
+      .dateBetween(start, end)
+      .sortByDateDesc()
+      .watch(fireImmediately: true)
+      .asyncMap(_withLoadedCategories);
 
   /// Eagerly loads each transaction's category link so the UI can render the
   /// category icon/color without an extra async hop per list row.
@@ -78,7 +76,10 @@ class FinanceRepositoryImpl implements FinanceRepository {
         // most a week of rows.
         .dateBetween(start, today.add(const Duration(days: 1)))
         .watch(fireImmediately: true)
-        .map((List<TransactionModel> transactions) => _dailyNet(transactions, start));
+        .map(
+          (List<TransactionModel> transactions) =>
+              _dailyNet(transactions, start),
+        );
   }
 
   /// Buckets [transactions] into seven days starting at [start], oldest first.
@@ -97,78 +98,68 @@ class FinanceRepositoryImpl implements FinanceRepository {
       if (index < 0 || index >= kSparklineDays) {
         continue;
       }
-      buckets[index] +=
-          transaction.type == TransactionType.income ? transaction.amount : -transaction.amount;
+      buckets[index] += transaction.type == TransactionType.income
+          ? transaction.amount
+          : -transaction.amount;
     }
 
     return <DailyNet>[
       for (int i = 0; i < kSparklineDays; i++)
-        DailyNet(day: start.add(Duration(days: i)), net: buckets[i]),
+        DailyNet(
+          day: start.add(Duration(days: i)),
+          net: buckets[i],
+        ),
     ];
   }
 
   @override
-  Future<Result<TransactionModel>> getTransactionById(int id) => resultGuard(
-        () async {
-          final TransactionModel? transaction = await _transactions.get(id);
-          if (transaction == null) {
-            throw StateError('Transaction $id not found');
-          }
-          return transaction;
-        },
-        operation: 'getTransactionById',
-      );
+  Future<Result<TransactionModel>> getTransactionById(int id) =>
+      resultGuard(() async {
+        final TransactionModel? transaction = await _transactions.get(id);
+        if (transaction == null) {
+          throw StateError('Transaction $id not found');
+        }
+        return transaction;
+      }, operation: 'getTransactionById');
 
   @override
   Future<Result<int>> createTransaction(TransactionModel transaction) =>
-      resultGuard(
-        () async {
-          await _isar.writeTxn(() async {
-            transaction.id = await _transactions.put(transaction);
-            await transaction.category.save();
-          });
-          return transaction.id;
-        },
-        operation: 'createTransaction',
-      );
+      resultGuard(() async {
+        await _isar.writeTxn(() async {
+          transaction.id = await _transactions.put(transaction);
+          await transaction.category.save();
+        });
+        return transaction.id;
+      }, operation: 'createTransaction');
 
   @override
   Future<Result<void>> updateTransaction(TransactionModel transaction) =>
-      resultGuard(
-        () async {
-          await _isar.writeTxn(() async {
-            await _transactions.put(transaction);
-            await transaction.category.save();
-          });
-        },
-        operation: 'updateTransaction',
-      );
+      resultGuard(() async {
+        await _isar.writeTxn(() async {
+          await _transactions.put(transaction);
+          await transaction.category.save();
+        });
+      }, operation: 'updateTransaction');
 
   @override
-  Future<Result<void>> deleteTransaction(int id) => resultGuard(
-        () async {
-          await _isar.writeTxn(() => _transactions.delete(id));
-        },
-        operation: 'deleteTransaction',
-      );
+  Future<Result<void>> deleteTransaction(int id) => resultGuard(() async {
+    await _isar.writeTxn(() => _transactions.delete(id));
+  }, operation: 'deleteTransaction');
 
   @override
-  Future<Result<double>> getBalance() => resultGuard(
-        () async {
-          final double income = await _transactions
-              .filter()
-              .typeEqualTo(TransactionType.income)
-              .amountProperty()
-              .sum();
-          final double expense = await _transactions
-              .filter()
-              .typeEqualTo(TransactionType.expense)
-              .amountProperty()
-              .sum();
-          return income - expense;
-        },
-        operation: 'getBalance',
-      );
+  Future<Result<double>> getBalance() => resultGuard(() async {
+    final double income = await _transactions
+        .filter()
+        .typeEqualTo(TransactionType.income)
+        .amountProperty()
+        .sum();
+    final double expense = await _transactions
+        .filter()
+        .typeEqualTo(TransactionType.expense)
+        .amountProperty()
+        .sum();
+    return income - expense;
+  }, operation: 'getBalance');
 
   @override
   Stream<List<CategoryModel>> watchCategories({TransactionType? type}) {
@@ -184,51 +175,106 @@ class FinanceRepositoryImpl implements FinanceRepository {
 
   @override
   Future<Result<List<CategoryModel>>> getAllCategories() => resultGuard(
-        _categories.where().sortByName().findAll,
-        operation: 'getAllCategories',
-      );
+    _categories.where().sortByName().findAll,
+    operation: 'getAllCategories',
+  );
 
   @override
-  Future<Result<int>> createCategory(CategoryModel category) => resultGuard(
-        () async {
-          await _isar.writeTxn(() async {
-            category.id = await _categories.put(category);
-          });
-          return category.id;
-        },
-        operation: 'createCategory',
-      );
+  Future<Result<int>> createCategory(CategoryModel category) =>
+      resultGuard(() async {
+        await _isar.writeTxn(() async {
+          category.id = await _categories.put(category);
+        });
+        return category.id;
+      }, operation: 'createCategory');
 
   @override
-  Future<Result<void>> seedDefaultCategories() => resultGuard(
-        () async {
-          final int existing = await _categories.count();
-          if (existing > 0) {
-            return;
-          }
-          await _isar.writeTxn(() async {
-            await _categories.putAll(_defaultCategories());
-          });
-        },
-        operation: 'seedDefaultCategories',
-      );
+  Future<Result<void>> seedDefaultCategories() => resultGuard(() async {
+    final int existing = await _categories.count();
+    if (existing > 0) {
+      return;
+    }
+    await _isar.writeTxn(() async {
+      await _categories.putAll(_defaultCategories());
+    });
+  }, operation: 'seedDefaultCategories');
 
   List<CategoryModel> _defaultCategories() {
     final int incomeColor = AppColors.incomeGreen.toARGB32();
 
     return <CategoryModel>[
-      _category('Salary', Icons.work_outline, TransactionType.income, incomeColor),
-      _category('Allowance', Icons.savings_outlined, TransactionType.income, incomeColor),
-      _category('Gift', Icons.card_giftcard, TransactionType.income, incomeColor),
-      _category('Other Income', Icons.attach_money, TransactionType.income, incomeColor),
-      _category('Food', Icons.restaurant, TransactionType.expense, Colors.orange.toARGB32()),
-      _category('Transport', Icons.directions_bus, TransactionType.expense, Colors.blue.toARGB32()),
-      _category('Shopping', Icons.shopping_bag_outlined, TransactionType.expense, Colors.purple.toARGB32()),
-      _category('Bills', Icons.receipt_long, TransactionType.expense, Colors.teal.toARGB32()),
-      _category('Education', Icons.school_outlined, TransactionType.expense, Colors.indigo.toARGB32()),
-      _category('Entertainment', Icons.movie_outlined, TransactionType.expense, Colors.pink.toARGB32()),
-      _category('Health', Icons.favorite_border, TransactionType.expense, Colors.red.toARGB32()),
-      _category('Other', Icons.category_outlined, TransactionType.expense, Colors.blueGrey.toARGB32()),
+      _category(
+        'Salary',
+        Icons.work_outline,
+        TransactionType.income,
+        incomeColor,
+      ),
+      _category(
+        'Allowance',
+        Icons.savings_outlined,
+        TransactionType.income,
+        incomeColor,
+      ),
+      _category(
+        'Gift',
+        Icons.card_giftcard,
+        TransactionType.income,
+        incomeColor,
+      ),
+      _category(
+        'Other Income',
+        Icons.attach_money,
+        TransactionType.income,
+        incomeColor,
+      ),
+      _category(
+        'Food',
+        Icons.restaurant,
+        TransactionType.expense,
+        Colors.orange.toARGB32(),
+      ),
+      _category(
+        'Transport',
+        Icons.directions_bus,
+        TransactionType.expense,
+        Colors.blue.toARGB32(),
+      ),
+      _category(
+        'Shopping',
+        Icons.shopping_bag_outlined,
+        TransactionType.expense,
+        Colors.purple.toARGB32(),
+      ),
+      _category(
+        'Bills',
+        Icons.receipt_long,
+        TransactionType.expense,
+        Colors.teal.toARGB32(),
+      ),
+      _category(
+        'Education',
+        Icons.school_outlined,
+        TransactionType.expense,
+        Colors.indigo.toARGB32(),
+      ),
+      _category(
+        'Entertainment',
+        Icons.movie_outlined,
+        TransactionType.expense,
+        Colors.pink.toARGB32(),
+      ),
+      _category(
+        'Health',
+        Icons.favorite_border,
+        TransactionType.expense,
+        Colors.red.toARGB32(),
+      ),
+      _category(
+        'Other',
+        Icons.category_outlined,
+        TransactionType.expense,
+        Colors.blueGrey.toARGB32(),
+      ),
     ];
   }
 
@@ -237,11 +283,10 @@ class FinanceRepositoryImpl implements FinanceRepository {
     IconData icon,
     TransactionType type,
     int color,
-  ) =>
-      CategoryModel()
-        ..name = name
-        ..iconCodePoint = icon.codePoint
-        ..colorValue = color
-        ..type = type
-        ..isDefault = true;
+  ) => CategoryModel()
+    ..name = name
+    ..iconCodePoint = icon.codePoint
+    ..colorValue = color
+    ..type = type
+    ..isDefault = true;
 }

@@ -56,7 +56,8 @@ class _RecordingTasksRepository implements TasksRepository {
   Future<Result<void>> deleteTask(int id) async => const Success<void>(null);
 
   @override
-  Future<Result<void>> toggleComplete(int id) async => const Success<void>(null);
+  Future<Result<void>> toggleComplete(int id) async =>
+      const Success<void>(null);
 }
 
 Future<_RecordingTasksRepository> _pump(
@@ -68,9 +69,7 @@ Future<_RecordingTasksRepository> _pump(
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [
-        tasksRepositoryProvider.overrideWithValue(repository),
-      ],
+      overrides: [tasksRepositoryProvider.overrideWithValue(repository)],
       child: MaterialApp(
         theme: AppTheme.light,
         home: withList ? const TasksListScreen() : const _QuickAddOnly(),
@@ -94,8 +93,7 @@ class _QuickAddOnly extends StatelessWidget {
   const _QuickAddOnly();
 
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: TaskQuickAdd());
+  Widget build(BuildContext context) => const Scaffold(body: TaskQuickAdd());
 }
 
 void main() {
@@ -123,9 +121,7 @@ void main() {
       expect(task.isCompleted, isFalse);
     });
 
-    testWidgets('an empty submit writes nothing', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('an empty submit writes nothing', (WidgetTester tester) async {
       final _RecordingTasksRepository repository = await _pump(tester);
 
       // Focus the field first: `receiveAction` needs an attached input client,
@@ -158,7 +154,9 @@ void main() {
         isEmpty,
       );
       expect(
-        tester.widget<EditableText>(find.byType(EditableText)).focusNode
+        tester
+            .widget<EditableText>(find.byType(EditableText))
+            .focusNode
             .hasFocus,
         isTrue,
       );

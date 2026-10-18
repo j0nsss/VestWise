@@ -31,8 +31,10 @@ void main() {
     });
 
     test('a week or more old falls back to a date', () {
-      final String label =
-          lastEditedLabel(DateTime(2026, 2, 1, 9, 30), now: now);
+      final String label = lastEditedLabel(
+        DateTime(2026, 2, 1, 9, 30),
+        now: now,
+      );
 
       expect(label, 'Feb 1, 2026');
     });
@@ -78,9 +80,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: DocumentTitleField(controller: controller),
-          ),
+          home: Scaffold(body: DocumentTitleField(controller: controller)),
         ),
       );
 

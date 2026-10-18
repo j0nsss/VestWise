@@ -26,8 +26,9 @@ Future<void> _pump(
 
 void main() {
   for (final VWButtonVariant variant in VWButtonVariant.values) {
-    testWidgets('${variant.name} meets the 48px tap target (P5-T3)',
-        (WidgetTester tester) async {
+    testWidgets('${variant.name} meets the 48px tap target (P5-T3)', (
+      WidgetTester tester,
+    ) async {
       await _pump(tester, variant: variant);
 
       expect(

@@ -30,6 +30,16 @@ abstract final class AppMotion {
   /// allowed past [maxDuration]. Nothing may exceed this.
   static const Duration signature = Duration(milliseconds: 320);
 
+  /// One full pass of a skeleton's shimmer sweep (P11-T1).
+  ///
+  /// Not a transition and deliberately outside [maxDuration]: a transition
+  /// moves on a decision, a loading sweep loops until the data arrives, and a
+  /// 250ms loop reads as flicker rather than as patience. It is still a token
+  /// rather than a widget-local number so the one place that decides how fast
+  /// "still working" looks is this file — and so the shimmer stops entirely
+  /// under reduced motion, like everything else.
+  static const Duration skeletonSweep = Duration(milliseconds: 1200);
+
   /// Per-index delay for [VWStaggeredList]'s entrance, and the number of rows
   /// that may be staggered. Together they keep the whole cascade inside
   /// [signature]: `listItemEnter + staggerMaxItems × staggerStep` = 180 + 120 =
