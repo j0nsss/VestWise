@@ -3,6 +3,7 @@ import 'package:vestwise/core/database/isar_provider.dart';
 import 'package:vestwise/features/finance/data/models/category_model.dart';
 import 'package:vestwise/features/finance/data/models/transaction_model.dart';
 import 'package:vestwise/features/finance/data/repositories/finance_repository_impl.dart';
+import 'package:vestwise/features/finance/domain/models/daily_net.dart';
 import 'package:vestwise/features/finance/domain/repositories/finance_repository.dart';
 
 part 'finance_providers.g.dart';
@@ -32,6 +33,11 @@ Stream<List<TransactionModel>> watchTransactionsInRange(
   DateTime end,
 ) =>
     ref.watch(financeRepositoryProvider).watchTransactionsInRange(start, end);
+
+/// Seven days of daily net for the dashboard sparkline (plan2.md P10-FIN-2).
+@riverpod
+Stream<List<DailyNet>> watchLast7DaysNet(Ref ref) =>
+    ref.watch(financeRepositoryProvider).watchLast7DaysNet();
 
 @riverpod
 Future<double> balance(Ref ref) async {

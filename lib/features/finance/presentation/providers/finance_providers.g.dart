@@ -260,6 +260,50 @@ final class WatchTransactionsInRangeFamily extends $Family
   String toString() => r'watchTransactionsInRangeProvider';
 }
 
+/// Seven days of daily net for the dashboard sparkline (plan2.md P10-FIN-2).
+
+@ProviderFor(watchLast7DaysNet)
+final watchLast7DaysNetProvider = WatchLast7DaysNetProvider._();
+
+/// Seven days of daily net for the dashboard sparkline (plan2.md P10-FIN-2).
+
+final class WatchLast7DaysNetProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<DailyNet>>,
+          List<DailyNet>,
+          Stream<List<DailyNet>>
+        >
+    with $FutureModifier<List<DailyNet>>, $StreamProvider<List<DailyNet>> {
+  /// Seven days of daily net for the dashboard sparkline (plan2.md P10-FIN-2).
+  WatchLast7DaysNetProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'watchLast7DaysNetProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$watchLast7DaysNetHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<List<DailyNet>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<DailyNet>> create(Ref ref) {
+    return watchLast7DaysNet(ref);
+  }
+}
+
+String _$watchLast7DaysNetHash() => r'f1d4599a012e7b06b7223fe18331995d37b0f906';
+
 @ProviderFor(balance)
 final balanceProvider = BalanceProvider._();
 

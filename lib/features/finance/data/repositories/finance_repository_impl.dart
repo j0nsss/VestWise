@@ -5,7 +5,11 @@ import 'package:vestwise/core/errors/result.dart';
 import 'package:vestwise/core/errors/result_guard.dart';
 import 'package:vestwise/features/finance/data/models/category_model.dart';
 import 'package:vestwise/features/finance/data/models/transaction_model.dart';
+import 'package:vestwise/features/finance/domain/models/daily_net.dart';
 import 'package:vestwise/features/finance/domain/repositories/finance_repository.dart';
+
+/// How many days the dashboard sparkline covers (plan2.md P10-FIN-2).
+const int kSparklineDays = 7;
 
 class FinanceRepositoryImpl implements FinanceRepository {
   FinanceRepositoryImpl(this._isar);
@@ -59,6 +63,48 @@ class FinanceRepositoryImpl implements FinanceRepository {
       transactions.map((TransactionModel t) => t.category.load()),
     );
     return transactions;
+  }
+
+  @override
+  Stream<List<DailyNet>> watchLast7DaysNet() {
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime start = today.subtract(const Duration(days: 6));
+
+    return _transactions
+        .where()
+        // Half-open [start, tomorrow): today's transactions count, and nothing
+        // from a future date sneaks in. Indexed on `date`, so this reads at
+        // most a week of rows.
+        .dateBetween(start, today.add(const Duration(days: 1)))
+        .watch(fireImmediately: true)
+        .map((List<TransactionModel> transactions) => _dailyNet(transactions, start));
+  }
+
+  /// Buckets [transactions] into seven days starting at [start], oldest first.
+  static List<DailyNet> _dailyNet(
+    List<TransactionModel> transactions,
+    DateTime start,
+  ) {
+    final List<double> buckets = List<double>.filled(kSparklineDays, 0);
+
+    for (final TransactionModel transaction in transactions) {
+      final DateTime date = transaction.date;
+      final DateTime day = DateTime(date.year, date.month, date.day);
+      final int index = day.difference(start).inDays;
+      // Rows outside the window can only appear through clock/timezone drift;
+      // dropping them is better than throwing in a stream.
+      if (index < 0 || index >= kSparklineDays) {
+        continue;
+      }
+      buckets[index] +=
+          transaction.type == TransactionType.income ? transaction.amount : -transaction.amount;
+    }
+
+    return <DailyNet>[
+      for (int i = 0; i < kSparklineDays; i++)
+        DailyNet(day: start.add(Duration(days: i)), net: buckets[i]),
+    ];
   }
 
   @override

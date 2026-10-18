@@ -5,6 +5,7 @@ import 'package:vestwise/core/errors/result.dart';
 import 'package:vestwise/features/finance/data/models/category_model.dart';
 import 'package:vestwise/features/finance/data/models/transaction_model.dart';
 import 'package:vestwise/features/finance/data/repositories/finance_repository_impl.dart';
+import 'package:vestwise/features/finance/domain/models/daily_net.dart';
 import 'package:vestwise/features/finance/domain/repositories/finance_repository.dart';
 
 import '../../../helpers/isar_test_harness.dart';
@@ -95,6 +96,86 @@ void main() {
     // Newest first: 1 Jan + 4 days, then the day before.
     expect(recent.first.amount, 14);
     expect(recent.last.amount, 13);
+  });
+
+  group('watchLast7DaysNet (P10-FIN-2)', () {
+    /// Local midnight, `daysAgo` days before today.
+    DateTime todayMinus(int daysAgo) {
+      final DateTime now = DateTime.now();
+      return DateTime(now.year, now.month, now.day)
+          .subtract(Duration(days: daysAgo));
+    }
+
+    test('always returns seven days, oldest first, including empty ones',
+        () async {
+      final List<DailyNet> week = await repo.watchLast7DaysNet().first;
+
+      expect(week, hasLength(7));
+      expect(week.first.day, todayMinus(6));
+      expect(week.last.day, todayMinus(0));
+      for (final DailyNet day in week) {
+        expect(day.net, 0, reason: 'a day with no activity is a zero, not a gap');
+      }
+    });
+
+    test('nets income against expense per day', () async {
+      await repo.createTransaction(
+        _txn(300, TransactionType.income, date: todayMinus(0)),
+      );
+      await repo.createTransaction(
+        _txn(50, TransactionType.expense, date: todayMinus(0)),
+      );
+      await repo.createTransaction(
+        _txn(20, TransactionType.expense, date: todayMinus(3)),
+      );
+      await repo.createTransaction(
+        _txn(500, TransactionType.income, date: todayMinus(6)),
+      );
+
+      final List<DailyNet> week = await repo.watchLast7DaysNet().first;
+
+      expect(week.last.net, 250);
+      expect(week[3].net, -20);
+      expect(week.first.net, 500);
+      expect(
+        week.where((DailyNet d) => d.net == 0),
+        hasLength(4),
+      );
+    });
+
+    test('ignores anything older than the window', () async {
+      await repo.createTransaction(
+        _txn(999, TransactionType.income, date: todayMinus(30)),
+      );
+      await repo.createTransaction(
+        _txn(11, TransactionType.income, date: todayMinus(7)),
+      );
+      await repo.createTransaction(
+        _txn(12, TransactionType.income, date: todayMinus(6)),
+      );
+
+      final List<DailyNet> week = await repo.watchLast7DaysNet().first;
+
+      expect(week, hasLength(7));
+      expect(week.first.net, 12);
+      expect(
+        week.fold<double>(0, (double sum, DailyNet d) => sum + d.net),
+        12,
+        reason: 'day -7 and day -30 must not leak in',
+      );
+    });
+
+    test('re-emits when a transaction lands in the window', () async {
+      final List<DailyNet> week = await repo.watchLast7DaysNet().first;
+      expect(week.last.net, 0);
+
+      await repo.createTransaction(
+        _txn(75, TransactionType.income, date: todayMinus(0)),
+      );
+
+      final List<DailyNet> updated = await repo.watchLast7DaysNet().first;
+      expect(updated.last.net, 75);
+    });
   });
 
   test('watchAllTransactions emits linked transactions without error', () async {
