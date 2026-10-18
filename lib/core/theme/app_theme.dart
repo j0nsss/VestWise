@@ -43,7 +43,12 @@ abstract final class AppTheme {
 
     return base.copyWith(
       scaffoldBackgroundColor: scheme.surface,
+      // `copyWith(textTheme:)` *replaces* the scale rather than merging it, so
+      // the family has to be re-applied here — otherwise the bundled Inter
+      // never reaches the widgets and everything silently falls back to the
+      // platform font (asserted by `app_text_styles_test.dart`).
       textTheme: AppTextStyles.textTheme.apply(
+        fontFamily: AppTextStyles.fontFamily,
         bodyColor: scheme.onSurface,
         displayColor: scheme.onSurface,
       ),
