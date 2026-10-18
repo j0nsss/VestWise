@@ -117,6 +117,17 @@ delegates to it.)
 | The swipe does not fight the completion morph | PASS | `confirmDismiss` returns false in both directions, so the row snaps back and leaves when the stream says so — the P9-T4 morph is not cut short, and Flutter's "a dismissed Dismissible is still part of the tree" assertion is never reachable from a stream-driven list. |
 | Swipe gestures on device | MANUAL — todo | Swipe a task right (expect the tick + strike-through, then a move to Completed), then swipe another one left and cancel, then delete. Confirm the horizontal drags do not fight the vertical list scroll or the Android back gesture. |
 
+### Calendar & Navigation (P10-CAL-1..2, P10-NAV-1)
+
+| Check | Status | How to verify |
+|-------|--------|---------------|
+| The month header is flat | PASS | `HeaderStyle` now gets an empty `BoxDecoration`, an `onSurfaceVariant` chevron pair and a `titleMedium` label from the theme instead of the package's hard-coded 17px style — `flutter test test/features/calendar/presentation/calendar_screen_test.dart`. |
+| Today and the selected day stay distinguishable | PASS | Today is drawn as a `primary` *ring*, the selected day as a filled `primary` circle, and each carries its own paired text colour (`primary` / `onPrimary`). Two different shapes, so the two states do not collide on the day that is both. |
+| Day text is legible in both themes | PASS | Weekday, weekend, outside, disabled and marker colours all come from `ColorScheme` (`onSurface`, `onSurfaceVariant`, `outline`, `primary`) — the stock red weekend tint is gone, and the assertion runs in light *and* dark. |
+| Month navigation still works | PASS | The chevrons are stock `CustomIconButton`s that were only recoloured; the test taps next and back and asserts the header label follows — a restyle, not a rebuild. |
+| The header/today formats did not gain or lose a control | PASS | `formatButtonVisible` is false, but the format button only ever renders when more than one calendar format is offered and this app uses the month grid only, so no reachable control was removed. |
+| "Today" and "selected" markers on device | MANUAL — todo | Check the ring/today marker and the filled selected marker in both light and dark mode on the Redmi Note 8, including the day that is both. |
+
 ## Re-running the automated part
 
 ```sh

@@ -60,19 +60,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               });
             },
             onPageChanged: (DateTime focusedDay) => _focusedDay = focusedDay,
-            calendarStyle: CalendarStyle(
-              selectedDecoration: BoxDecoration(
-                color: theme.colorScheme.primary,
-                shape: BoxShape.circle,
-              ),
-              todayDecoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              markersMaxCount: 3,
-            ),
+            headerStyle: _headerStyle(theme),
+            daysOfWeekStyle: _daysOfWeekStyle(theme),
+            calendarStyle: _calendarStyle(theme),
           ),
-          const Divider(height: 1),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
@@ -104,6 +95,80 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Flat month header (plan P10-CAL-1): no card, no divider, quiet chevrons
+  /// and a month label that lines up with the day list's gutter below it.
+  ///
+  /// The stock header hard-codes a 17px `TextStyle` and grey icons, so every
+  /// value here comes from a token instead. `formatButtonVisible` is off
+  /// deliberately: the format button only renders when more than one calendar
+  /// format is offered, and this app only ever uses the month grid — the flag
+  /// documents that rather than removing a control.
+  HeaderStyle _headerStyle(ThemeData theme) {
+    return HeaderStyle(
+      titleCentered: false,
+      formatButtonVisible: false,
+      headerPadding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.xs,
+      ),
+      titleTextStyle: theme.textTheme.titleMedium!,
+      leftChevronIcon: Icon(
+        Icons.chevron_left,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+      rightChevronIcon: Icon(
+        Icons.chevron_right,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+
+  /// Weekend days are not a special colour: the stock style tints them red,
+  /// which fights every other colour on this screen.
+  DaysOfWeekStyle _daysOfWeekStyle(ThemeData theme) {
+    final TextStyle weekday = theme.textTheme.labelSmall!.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    return DaysOfWeekStyle(weekdayStyle: weekday, weekendStyle: weekday);
+  }
+
+  /// Today is a ring, the selected day is a filled circle. Two different
+  /// shapes, so "today" and "selected" stay distinguishable even when they are
+  /// the same day, and both text colours are the pair that goes with the fill.
+  CalendarStyle _calendarStyle(ThemeData theme) {
+    final ColorScheme scheme = theme.colorScheme;
+    final TextStyle neighbourhood = theme.textTheme.bodyMedium!.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
+
+    return CalendarStyle(
+      selectedDecoration: BoxDecoration(
+        color: scheme.primary,
+        shape: BoxShape.circle,
+      ),
+      selectedTextStyle: neighbourhood.copyWith(color: scheme.onPrimary),
+      todayDecoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: scheme.primary),
+      ),
+      todayTextStyle: neighbourhood.copyWith(color: scheme.primary),
+      defaultTextStyle: neighbourhood.copyWith(color: scheme.onSurface),
+      outsideTextStyle: neighbourhood,
+      disabledTextStyle: theme.textTheme.bodyMedium!.copyWith(
+        color: scheme.outline,
+      ),
+      weekendTextStyle: neighbourhood.copyWith(color: scheme.onSurface),
+      markerDecoration: BoxDecoration(
+        color: scheme.primary,
+        shape: BoxShape.circle,
+      ),
+      markersMaxCount: 3,
     );
   }
 
