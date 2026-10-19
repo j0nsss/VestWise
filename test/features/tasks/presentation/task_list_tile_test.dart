@@ -88,7 +88,8 @@ void main() {
       );
 
       expect(find.text('Buy milk'), findsOneWidget);
-      expect(find.text('Medium'), findsOneWidget);
+      // Phase 13 restyle renders the priority as an uppercase micro-tag.
+      expect(find.text('MEDIUM'), findsOneWidget);
 
       await tester.tap(find.byType(Checkbox));
       expect(toggles, 1);

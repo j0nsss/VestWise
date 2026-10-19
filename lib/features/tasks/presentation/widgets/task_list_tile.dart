@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_motion.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
@@ -31,59 +32,134 @@ class TaskListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final Color muted = theme.colorScheme.onSurfaceVariant;
+    final ColorScheme scheme = theme.colorScheme;
+    final Color muted = scheme.onSurfaceVariant;
     final bool done = task.isCompleted || morphing;
     final int doneCount = task.subTasks.where((SubTask s) => s.isDone).length;
+    final AppTagColor pill = AppColors.tagFor(_priorityTag(task.priority), theme.brightness);
 
-    return ListTile(
-      onTap: onTap,
-      leading: _TaskCheckbox(
-        done: task.isCompleted,
-        morphing: morphing,
-        onToggle: onToggle,
+    return Padding(
+      // Card separated from its neighbours and from the screen edges; the
+      // outside of the card belongs to this widget, the swipes wrap it whole.
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.sm,
       ),
-      title: AnimatedDefaultTextStyle(
-        // Completing a task eases the muted colour in rather than snapping
-        // (P5-T1); the strikethrough itself sweeps via _StrikeThroughText.
-        duration: motionDuration(context, AppMotion.stateChange),
-        curve: AppMotion.standardCurve,
-        style: theme.textTheme.bodyLarge!.copyWith(
-          color: done ? muted : theme.colorScheme.onSurface,
-        ),
-        child: _StrikeThroughText(text: task.title, struck: done, color: muted),
-      ),
-      subtitle: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: AppSpacing.sm,
-        children: <Widget>[
-          if (task.subTasks.isNotEmpty)
-            Text(
-              '$doneCount/${task.subTasks.length}',
-              style: theme.textTheme.labelSmall?.copyWith(color: muted),
-            ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: taskPriorityColor(task.priority),
-                  shape: BoxShape.circle,
+      child: Material(
+        color: scheme.surfaceContainer,
+        borderRadius: AppRadii.card,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadii.card,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                _TaskCheckbox(
+                  done: task.isCompleted,
+                  morphing: morphing,
+                  onToggle: onToggle,
                 ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                taskPriorityLabel(task.priority),
-                style: theme.textTheme.labelSmall?.copyWith(color: muted),
-              ),
-            ],
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          // Priority as an uppercase micro-tag, tinted by hue.
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: pill.background,
+                              borderRadius: AppRadii.chip,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              child: Text(
+                                taskPriorityLabel(task.priority).toUpperCase(),
+                                style: theme.textTheme.labelSmall!.copyWith(
+                                  color: pill.foreground,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          if (task.dueDate != null)
+                            _DueChip(date: task.dueDate!, isDone: done),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      AnimatedDefaultTextStyle(
+                        // Completing a task eases the muted colour in rather
+                        // than snapping (P5-T1); the strikethrough itself
+                        // sweeps via _StrikeThroughText.
+                        duration: motionDuration(context, AppMotion.stateChange),
+                        curve: AppMotion.standardCurve,
+                        style: theme.textTheme.titleMedium!.copyWith(
+                          color: done ? muted : scheme.onSurface,
+                        ),
+                        child: _StrikeThroughText(
+                          text: task.title,
+                          struck: done,
+                          color: muted,
+                        ),
+                      ),
+                      if (task.subTasks.isNotEmpty) ...<Widget>[
+                        const SizedBox(height: AppSpacing.xs),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerLow,
+                            borderRadius: AppRadii.chip,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.checklist,
+                                  size: 12,
+                                  color: muted,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$doneCount/${task.subTasks.length} subtasks',
+                                  style: theme.textTheme.labelSmall!.copyWith(
+                                    color: muted,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          if (task.dueDate != null) _DueChip(date: task.dueDate!, isDone: done),
-        ],
+        ),
       ),
     );
   }
+
+  static AppTag _priorityTag(TaskPriority priority) => switch (priority) {
+    TaskPriority.high => AppTag.red,
+    TaskPriority.medium => AppTag.yellow,
+    TaskPriority.low => AppTag.blue,
+  };
 }
 
 /// The completion checkbox, with a short "pop" when it fills (P9-T4).
@@ -162,9 +238,21 @@ class _TaskCheckboxState extends State<_TaskCheckbox>
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+
     final Widget checkbox = Checkbox(
       value: widget.done || widget.morphing,
       onChanged: (_) => widget.onToggle(),
+      // The mockup's tactile box: rounded 6px, silent grey while empty, mint
+      // with a soft bloom when completed.
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      side: BorderSide(color: scheme.outlineVariant, width: 1.5),
+      fillColor: WidgetStateProperty.resolveWith(
+        (Set<WidgetState> states) => states.contains(WidgetState.selected)
+            ? scheme.secondary
+            : scheme.surfaceContainerHighest,
+      ),
+      checkColor: scheme.onSecondary,
     );
 
     if (prefersReducedMotion(context)) {

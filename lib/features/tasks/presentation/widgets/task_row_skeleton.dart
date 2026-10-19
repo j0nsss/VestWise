@@ -1,38 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/widgets/vw_skeleton.dart';
 
-/// A loading stand-in for one `TaskListTile` (plan2.md P11-T1).
+/// A loading stand-in for one `TaskListTile` (plan2.md P11-T1, retargeted
+/// Phase 13).
 ///
-/// Built as the same two-line [ListTile] the real row uses, with the checkbox's
-/// footprint, the title line and the priority/due row in their real slots. Each
-/// bar is the line height of the type role it replaces — `bodyLarge` (16 × 1.4
-/// ≈ 22) for the title, `labelSmall` (11 × 1.25 ≈ 14) for the meta row — so the
-/// row is the height it will be, and the list does not jump when data lands.
+/// Mirrors the real card exactly — same margins, same radius tier, same inner
+/// padding, checkbox square, tag pill, title line and subtask pill in their
+/// real slots — so the row is the height it will be and the list does not jump
+/// when data lands.
 class TaskRowSkeleton extends StatelessWidget {
   const TaskRowSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const ListTile(
-      // A checkbox is 48px of tap target around a 24px box; both numbers are
-      // mirrored so the row's own height maths comes out the same.
-      leading: SizedBox(
-        width: 48,
-        height: 48,
-        child: Center(child: VWSkeleton(width: 24, height: 24)),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.sm,
       ),
-      title: FractionallySizedBox(
-        alignment: Alignment.centerLeft,
-        widthFactor: 0.55,
-        child: VWSkeleton(height: 22),
-      ),
-      subtitle: Row(
-        children: <Widget>[
-          VWSkeleton(width: 40, height: 14),
-          SizedBox(width: AppSpacing.sm),
-          VWSkeleton(width: 64, height: 14),
-        ],
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          // One hair darker than the real `surfaceContainer` card, so the
+          // placeholder reads as the list "breathing" while it loads.
+          color: AppColors.surfaceContainerHighestFor(
+            Theme.of(context).brightness,
+          ),
+          borderRadius: AppRadii.card,
+        ),
+        child: const Padding(
+          padding: EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              // The checkbox square, in its slot.
+              VWSkeleton(width: 24, height: 24, radius: 6),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    // Priority pill + due text.
+                    Row(
+                      children: <Widget>[
+                        VWSkeleton(width: 56, height: 18, radius: 9),
+                        Spacer(),
+                        VWSkeleton(width: 88, height: 14),
+                      ],
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    // The title line.
+                    FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: 0.72,
+                      child: VWSkeleton(height: 24),
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    // The subtask pill.
+                    VWSkeleton(width: 96, height: 20, radius: 10),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
