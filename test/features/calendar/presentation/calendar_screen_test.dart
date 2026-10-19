@@ -87,16 +87,21 @@ void main() {
 
       // Different shapes, not just different colours, so the two stay
       // distinguishable on the day that is both today and selected.
+      // Phase 13: the selected day is a filled primary-container circle with
+      // the violet glow, and the markers pick up the mint accent.
       final BoxDecoration today = style.todayDecoration as BoxDecoration;
       final BoxDecoration selected = style.selectedDecoration as BoxDecoration;
       expect(today.color, isNull);
       expect(today.border?.top.color, scheme.primary);
-      expect(selected.color, scheme.primary);
+      expect(selected.color, scheme.primaryContainer);
       expect(selected.shape, BoxShape.circle);
       // Each text colour is the pair that belongs to its fill.
       expect(style.todayTextStyle.color, scheme.primary);
-      expect(style.selectedTextStyle.color, scheme.onPrimary);
-      expect((style.markerDecoration as BoxDecoration).color, scheme.primary);
+      expect(style.selectedTextStyle.color, scheme.onPrimaryContainer);
+      expect(
+        (style.markerDecoration as BoxDecoration).color,
+        scheme.secondary,
+      );
     });
 
     testWidgets('day text colours come from the scheme in both themes', (
@@ -108,7 +113,7 @@ void main() {
         final CalendarStyle style = _calendar(tester).calendarStyle;
         final ColorScheme scheme = _theme(tester).colorScheme;
 
-        expect(style.selectedTextStyle.color, scheme.onPrimary);
+        expect(style.selectedTextStyle.color, scheme.onPrimaryContainer);
         expect(style.todayTextStyle.color, scheme.primary);
         expect(style.defaultTextStyle.color, scheme.onSurface);
         expect(style.outsideTextStyle.color, scheme.onSurfaceVariant);
