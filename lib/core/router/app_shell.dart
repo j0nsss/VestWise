@@ -1,20 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_motion.dart';
+import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
+import 'package:vestwise/core/widgets/vw_luminous.dart';
 
 /// The key on the shell's branch-settle fade (P9-T3), so a test can target it
 /// instead of guessing among every other `FadeTransition` in the app.
 @visibleForTesting
 const Key appShellSettleKey = Key('app-shell-settle');
 
+/// Key on the floating dock, so tests and integration runners switch tabs by
+/// key instead of by Material internals.
+@visibleForTesting
+const Key appShellDockKey = Key('app-shell-dock');
+
 /// Persistent bottom-navigation shell hosting the five top-level destinations
-/// (plan P1-T5). Each branch keeps its own navigation stack.
+/// (plan P1-T5, restyled Phase 13). Each branch keeps its own navigation stack.
+///
+/// Phase 13 replaces the pinned Material bar with the design's *floating
+/// dock*: a detached, pill-shaped glass panel hanging 16px above the bottom
+/// edge, so content scrolls beneath it and short pages keep their bottom
+/// margin. The active destination is carried by violet icon + label, exactly
+/// as the mockups do.
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
+
+  static const List<VWDockItemSpec> items = <VWDockItemSpec>[
+    VWDockItemSpec(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard),
+    VWDockItemSpec(
+      icon: Icons.account_balance_wallet_outlined,
+      activeIcon: Icons.account_balance_wallet,
+    ),
+    VWDockItemSpec(
+      icon: Icons.sticky_note_2_outlined,
+      activeIcon: Icons.sticky_note_2,
+    ),
+    VWDockItemSpec(
+      icon: Icons.check_circle_outline,
+      activeIcon: Icons.check_circle,
+    ),
+    VWDockItemSpec(
+      icon: Icons.calendar_today_outlined,
+      activeIcon: Icons.calendar_today,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -24,49 +56,33 @@ class AppShell extends StatelessWidget {
       // (plan2.md P9-T3). A short opacity settle is the cheapest honest fix: it
       // is a fade of the *same* subtree, so no branch loses its state and no
       // navigation stack is rebuilt.
-      body: _BranchSettle(
-        index: navigationShell.currentIndex,
-        child: navigationShell,
-      ),
-      // The bar is flat by theme (P10-NAV-1); this hairline is the only thing
-      // separating it from the page, matching how every card is separated.
-      bottomNavigationBar: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(color: AppColors.borderSubtle(context)),
+      body: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: _BranchSettle(
+              index: navigationShell.currentIndex,
+              child: navigationShell,
+            ),
           ),
-        ),
-        child: NavigationBar(
-          selectedIndex: navigationShell.currentIndex,
-          onDestinationSelected: _onDestinationSelected,
-          destinations: const <NavigationDestination>[
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_outlined),
-              selectedIcon: Icon(Icons.dashboard),
-              label: AppStrings.dashboard,
+          Positioned(
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            bottom: AppSpacing.lg,
+            child: VWDock(
+              key: appShellDockKey,
+              selectedIndex: navigationShell.currentIndex,
+              items: items,
+              labels: const <String>[
+                'Home',
+                AppStrings.finance,
+                AppStrings.notes,
+                AppStrings.tasks,
+                AppStrings.calendar,
+              ],
+              onSelected: _onDestinationSelected,
             ),
-            NavigationDestination(
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              selectedIcon: Icon(Icons.account_balance_wallet),
-              label: AppStrings.finance,
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.sticky_note_2_outlined),
-              selectedIcon: Icon(Icons.sticky_note_2),
-              label: AppStrings.notes,
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.check_circle_outline),
-              selectedIcon: Icon(Icons.check_circle),
-              label: AppStrings.tasks,
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.calendar_today_outlined),
-              selectedIcon: Icon(Icons.calendar_today),
-              label: AppStrings.calendar,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -76,6 +92,113 @@ class AppShell extends StatelessWidget {
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+}
+
+/// One dock destination's icon pair.
+class VWDockItemSpec {
+  const VWDockItemSpec({required this.icon, required this.activeIcon});
+
+  final IconData icon;
+  final IconData activeIcon;
+}
+
+/// The floating glass dock. `justify-around` items in 48px slots; the active
+/// one lights up violet and slightly bolder than the silent ones.
+class VWDock extends StatelessWidget {
+  const VWDock({
+    required this.selectedIndex,
+    required this.items,
+    required this.labels,
+    required this.onSelected,
+    super.key,
+  });
+
+  final int selectedIndex;
+  final List<VWDockItemSpec> items;
+  final List<String> labels;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    return VWGlass(
+      shadow: <BoxShadow>[
+        BoxShadow(
+          color: Colors.black.withValues(
+            alpha:
+                theme.brightness == Brightness.dark ? 0.45 : 0.10,
+          ),
+          blurRadius: 24,
+          offset: const Offset(0, 8),
+        ),
+      ],
+      child: SizedBox(
+        height: 64,
+        child: Row(
+          children: <Widget>[
+            for (int i = 0; i < items.length; i++)
+              Expanded(child: _DockItem(index: i, dock: this)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DockItem extends StatelessWidget {
+  const _DockItem({required this.index, required this.dock});
+
+  final int index;
+  final VWDock dock;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final bool selected = index == dock.selectedIndex;
+    final VWDockItemSpec spec = dock.items[index];
+
+    final Color color = selected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurfaceVariant;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: dock.labels[index],
+      child: InkWell(
+        onTap: () => dock.onSelected(index),
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          height: 64,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              AnimatedSwitcher(
+                duration: motionDuration(context, AppMotion.stateChange),
+                child: Icon(
+                  selected ? spec.activeIcon : spec.icon,
+                  key: ValueKey<bool>(selected),
+                  size: 22,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                dock.labels[index],
+                style: theme.textTheme.labelSmall!.copyWith(
+                  letterSpacing: 0,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
