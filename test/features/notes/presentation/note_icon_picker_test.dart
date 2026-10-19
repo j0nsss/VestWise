@@ -141,7 +141,10 @@ void main() {
         ),
       );
 
-      expect(tester.widget<ListTile>(find.byType(ListTile)).leading, isNull);
+      // Phase 13: the tile is a card rather than a ListTile — with no icon
+      // chosen, the only icon drawn on the row is the pin affordance.
+      expect(find.byType(Icon), findsOneWidget);
+      expect(tester.widget<Icon>(find.byType(Icon)).icon, Icons.push_pin_outlined);
     });
 
     testWidgets('shows the chosen icon when there is one', (

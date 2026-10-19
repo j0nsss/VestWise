@@ -8,10 +8,11 @@ import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/storage/file_storage_service.dart';
 import 'package:vestwise/core/utils/byte_format.dart';
 import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
-import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_delayed.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
 import 'package:vestwise/core/widgets/vw_fade_through.dart';
+import 'package:vestwise/core/widgets/vw_fab.dart';
+import 'package:vestwise/core/widgets/vw_screen_header.dart';
 import 'package:vestwise/core/widgets/vw_skeleton.dart';
 import 'package:vestwise/core/widgets/vw_inline_spinner.dart';
 import 'package:vestwise/core/widgets/vw_loading_indicator.dart';
@@ -41,32 +42,41 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: VWAppBar(
-          title: AppStrings.notes,
-          actions: <Widget>[
-            IconButton(
-              icon: _importing
-                  ? const VWInlineSpinner(dimension: 20)
-                  : const Icon(Icons.upload_file),
-              tooltip: 'Import document',
-              onPressed: _importing ? null : _importDocument,
-            ),
-          ],
-          bottom: const TabBar(
-            tabs: <Widget>[
-              Tab(text: 'Notes'),
-              Tab(text: 'Documents'),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: VWFab(
           tooltip: 'New note',
           onPressed: () =>
               context.go(RoutePaths.noteEditorFor(RoutePaths.newId)),
           child: const Icon(Icons.add),
         ),
-        body: const TabBarView(
-          children: <Widget>[_NotesTab(), _DocumentsTab()],
+        // One comfortable gap over the floating dock (Phase 13).
+        floatingActionButtonLocation: const VWFabLocation(),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: <Widget>[
+              VWScreenHeader(
+                title: AppStrings.notes,
+                actions: <Widget>[
+                  IconButton(
+                    icon: _importing
+                        ? const VWInlineSpinner(dimension: 20)
+                        : const Icon(Icons.upload_file),
+                    tooltip: 'Import document',
+                    onPressed: _importing ? null : _importDocument,
+                  ),
+                ],
+              ),
+              const TabBar(
+                tabs: <Widget>[
+                  Tab(text: 'Notes'),
+                  Tab(text: 'Documents'),
+                ],
+              ),
+              const Expanded(
+                child: TabBarView(children: <Widget>[_NotesTab(), _DocumentsTab()]),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -196,6 +206,10 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
                   searching: _query.isNotEmpty,
                 );
                 return ListView.builder(
+                  padding: const EdgeInsets.only(
+                    top: AppSpacing.sm,
+                    bottom: 96,
+                  ),
                   itemCount: rows.length,
                   itemBuilder: (BuildContext context, int index) {
                     final NotesRow row = rows[index];
@@ -293,7 +307,7 @@ class _DocumentsTab extends ConsumerWidget {
                 },
               ),
             ),
-            const Divider(height: 1),
+            const SizedBox(height: 96),
             _StorageReadout(documentCount: documents.length),
           ],
         );
