@@ -46,6 +46,10 @@ abstract final class AppColors {
   static Color expenseFor(Brightness brightness) =>
       brightness == Brightness.dark ? expenseRedDark : expenseRedLight;
 
+  /// The mint "live" accent — the mockups' `secondary` — adaptive so the
+  /// retained light mode keeps a mint that reads on the pale canvas.
+  static Color accentMintFor(Brightness brightness) => incomeFor(brightness);
+
   // ---------------------------------------------------------------------------
   // Obsidian surface scale (Phase 13). Dark values are verbatim from the
   // Stitch design system; light values adapt the same violet undertone for the

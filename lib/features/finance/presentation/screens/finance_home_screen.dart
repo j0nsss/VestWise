@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/router/route_paths.dart';
 import 'package:vestwise/core/widgets/vw_animated_list_item.dart';
-import 'package:vestwise/core/widgets/vw_app_bar.dart';
 import 'package:vestwise/core/widgets/vw_button.dart';
-import 'package:vestwise/core/widgets/vw_card.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
 import 'package:vestwise/core/widgets/vw_delayed.dart';
 import 'package:vestwise/core/widgets/vw_fade_through.dart';
+import 'package:vestwise/core/widgets/vw_fab.dart';
+import 'package:vestwise/core/widgets/vw_luminous.dart';
+import 'package:vestwise/core/widgets/vw_screen_header.dart';
 import 'package:vestwise/core/widgets/vw_skeleton.dart';
 import 'package:vestwise/features/finance/data/models/transaction_model.dart';
 import 'package:vestwise/features/finance/presentation/providers/finance_providers.dart';
@@ -40,38 +42,46 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
     );
 
     return Scaffold(
-      appBar: VWAppBar(
-        title: AppStrings.finance,
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.bar_chart),
-            tooltip: 'Summary',
-            onPressed: () => context.go(RoutePaths.financeSummary),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: VWFab(
         tooltip: 'Add transaction',
         onPressed: () => context.go(RoutePaths.financeAdd),
         child: const Icon(Icons.add),
       ),
-      body: VWFadeThrough(
-        child: transactionsAsync.when(
-          loading: () => const VWDelayed(
-            key: ValueKey<String>('transactions-loading'),
-            child: VWSkeletonList(row: TransactionRowSkeleton()),
-          ),
-          error: (Object error, StackTrace stack) => VWEmptyState(
-            key: const ValueKey<String>('transactions-error'),
-            icon: Icons.error_outline,
-            title: 'Could not load your transactions',
-            message: 'Something went wrong reading your finance data.',
-            actionLabel: 'Retry',
-            onAction: () =>
-                ref.invalidate(watchRecentTransactionsProvider(_visibleCount)),
-          ),
-          data: (List<TransactionModel> transactions) =>
-              _buildBody(context, transactions),
+      // One comfortable gap over the floating dock (Phase 13).
+      floatingActionButtonLocation: const VWFabLocation(),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: <Widget>[
+            const VWScreenHeader(
+              title: AppStrings.finance,
+              actions: <Widget>[
+                _HeaderSummaryAction(),
+              ],
+            ),
+            Expanded(
+              child: VWFadeThrough(
+                child: transactionsAsync.when(
+                  loading: () => const VWDelayed(
+                    key: ValueKey<String>('transactions-loading'),
+                    child: VWSkeletonList(row: TransactionRowSkeleton()),
+                  ),
+                  error: (Object error, StackTrace stack) => VWEmptyState(
+                    key: const ValueKey<String>('transactions-error'),
+                    icon: Icons.error_outline,
+                    title: 'Could not load your transactions',
+                    message: 'Something went wrong reading your finance data.',
+                    actionLabel: 'Retry',
+                    onAction: () => ref.invalidate(
+                      watchRecentTransactionsProvider(_visibleCount),
+                    ),
+                  ),
+                  data: (List<TransactionModel> transactions) =>
+                      _buildBody(context, transactions),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -162,7 +172,7 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
           ),
         );
       }
-      slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 88)));
+      slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 96)));
     }
 
     return CustomScrollView(slivers: slivers);
@@ -186,6 +196,28 @@ class _FinanceHomeScreenState extends ConsumerState<FinanceHomeScreen> {
   }
 }
 
+/// The finance hero card (Phase 13 mockup) — the sheet-gradient surface and
+/// ambient orb bloom, holding the balance our data actually has: the sum of
+/// the stored transactions.
+///
+/// The mockup's month-over-month delta and privacy eye are deliberately
+/// absent: there is no month history projection and no hide-amounts setting
+/// yet, and the card does not invent numbers it cannot back.
+/// The mockup's summary entry point: the bar-chart icon that used to live in
+/// the app bar, now one of the header's trailing actions.
+class _HeaderSummaryAction extends StatelessWidget {
+  const _HeaderSummaryAction();
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.bar_chart),
+      tooltip: 'Summary',
+      onPressed: () => context.go(RoutePaths.financeSummary),
+    );
+  }
+}
+
 class _BalanceCard extends ConsumerWidget {
   const _BalanceCard();
 
@@ -194,29 +226,76 @@ class _BalanceCard extends ConsumerWidget {
     final ThemeData theme = Theme.of(context);
     final AsyncValue<double> balance = ref.watch(balanceProvider);
 
-    return VWCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Current balance',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          balance.when(
-            loading: () => Text('—', style: theme.textTheme.headlineMedium),
-            error: (Object error, StackTrace stack) =>
-                Text('—', style: theme.textTheme.headlineMedium),
-            data: (double value) => Text(
-              formatMoney(value),
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
+    return DecoratedBox(
+      decoration: vwHeroCardDecoration(context),
+      child: ClipRRect(
+        borderRadius: AppRadii.card,
+        child: Stack(
+          children: <Widget>[
+            // Ambient bloom, purely decorative.
+            const Positioned(
+              right: -48,
+              top: -48,
+              child: VWGlowOrb(
+                color: AppColors.accentViolet,
+                size: 176,
+                opacity: 0.2,
+                alignment: Alignment.center,
               ),
             ),
-          ),
-        ],
+            Positioned(
+              left: -40,
+              bottom: -40,
+              child: VWGlowOrb(
+                color: AppColors.accentMintFor(theme.brightness),
+                size: 144,
+                opacity: 0.15,
+                alignment: Alignment.center,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.accentMintFor(theme.brightness),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'NET LIQUID ASSETS',
+                        style: theme.textTheme.labelSmall!.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  balance.when(
+                    loading: () =>
+                        Text('—', style: theme.textTheme.displaySmall),
+                    error: (Object error, StackTrace stack) =>
+                        Text('—', style: theme.textTheme.displaySmall),
+                    data: (double value) => Text(
+                      formatMoney(value),
+                      style: theme.textTheme.displaySmall!.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

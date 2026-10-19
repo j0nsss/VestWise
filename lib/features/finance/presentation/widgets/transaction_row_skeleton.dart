@@ -1,35 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:vestwise/core/constants/app_colors.dart';
+import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/widgets/vw_skeleton.dart';
 
-/// A loading stand-in for one `TransactionListTile` (plan2.md P11-T1).
+/// A loading stand-in for one `TransactionListTile` (plan2.md P11-T1,
+/// retargeted Phase 13).
 ///
-/// Same [ListTile] shape as the real row: the category chip, the note line, the
-/// category line and the trailing amount. Bars are the line heights of the roles
-/// they stand in for (`bodyLarge` ≈ 22, `bodyMedium` ≈ 20, `titleMedium` ≈ 21),
-/// and the chip's 30×18 pill is copied from `VWCategoryChip`'s dense icon-only
-/// form so the amounts arrive in the column they were already showing.
-///
-/// The real row drops its category line when the note and the category would
-/// say the same thing, so a one-line row is one line shorter than its skeleton.
-/// That is the only difference, and it is bounded by a single body-medium line.
+/// Mirrors the real card — same margins, same radius tier, same inner padding,
+/// category badge square, title line, category line and amount in their real
+/// slots — so the row is the height it will be and the list does not jump when
+/// data lands.
 class TransactionRowSkeleton extends StatelessWidget {
   const TransactionRowSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const ListTile(
-      leading: VWSkeleton(width: 30, height: 18, radius: 9),
-      title: FractionallySizedBox(
-        alignment: Alignment.centerLeft,
-        widthFactor: 0.45,
-        child: VWSkeleton(height: 22),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.sm,
       ),
-      subtitle: FractionallySizedBox(
-        alignment: Alignment.centerLeft,
-        widthFactor: 0.3,
-        child: VWSkeleton(height: 20),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          // One hair darker than the real `surfaceContainer` card, so the
+          // placeholder reads as the list "breathing" while it loads.
+          color: AppColors.surfaceContainerHighestFor(
+            Theme.of(context).brightness,
+          ),
+          borderRadius: AppRadii.card,
+        ),
+        child: const Padding(
+          padding: EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            children: <Widget>[
+              // The category badge square.
+              VWSkeleton(width: 40, height: 40, radius: 12),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    // The note (title) line.
+                    FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: 0.5,
+                      child: VWSkeleton(height: 20),
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    // The category line, skipped by the real row when the note
+                    // and category say the same thing — bounded by one line.
+                    FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: 0.3,
+                      child: VWSkeleton(height: 16),
+                    ),
+                  ],
+                ),
+              ),
+              // The amount.
+              VWSkeleton(width: 72, height: 20),
+            ],
+          ),
+        ),
       ),
-      trailing: VWSkeleton(width: 64, height: 21),
     );
   }
 }
