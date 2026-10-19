@@ -14,7 +14,7 @@ abstract final class AppSpacing {
 abstract final class AppRadii {
   static const double cardValue = 16;
   static const double inputValue = 12;
-  static const double sheetValue = 20;
+  static const double sheetValue = 24;
 
   static const BorderRadius card = BorderRadius.all(Radius.circular(cardValue));
   static const BorderRadius input = BorderRadius.all(
