@@ -219,6 +219,25 @@ delegates to it.)
 | Reduced motion collapses every Phase 9–11 animation | MANUAL — todo | Android "Remove animations" on: task morph, swipe reveal, tab settle, list entrance, skeleton sweep, card/button press. All should become instant rather than merely faster. |
 | TalkBack pass over the new controls | MANUAL — todo | Quick-add row, swipe actions, icon picker, collapsible section headers, category/priority chips, the skeleton→content handover. Label, role and state announced for each; closes the open P5-T3 row above. |
 
+## Phase 13 — Visual redesign (Obsidian Lumina / Stitch)
+
+Screens restyled against the Stitch design system `Obsidian Lumina`: canvas
+`#131318`, container `#1F1F24`, primary `#C0C1FF`, mint secondary `#4EDEA3`,
+coral tertiary `#FFB2B7`, Plus Jakarta Sans, pill controls, floating glass dock.
+
+| Check | Status | How to verify |
+| --- | --- | --- |
+| The analyzer is silent after the redesign | PASS | `dart analyze lib test integration_test` → `No issues found!` — warnings count here, so unused imports left behind by a restyle would have failed it. |
+| The whole suite is green on the new visual contract | PASS | `flutter test -j 1` → `All tests passed!` — **301 tests**, the same count as before the redesign: no coverage was dropped to make the restyle pass. |
+| Legacy visual contracts were updated, not deleted | PASS | 14 expectations that pinned the Phase 8 look were rewritten to the Phase 13 look in the same commit as the change: cards are **borderless** (`shape.side.width == 0`, no hairline; `theme.cardTheme.color == surfaceContainer`) in `app_shape_test.dart` and `vw_widgets_test.dart`; the sheet radius moves 20 → 24; the family is `PlusJakartaSans` and the scale is deliberately non-monotonic (`displaySmall 36 > titleLarge 26 > headlineMedium 24`); the dashboard hero replaced the old soft `VWCard`; `test/widget_test.dart` now drives the floating dock instead of the `NavigationBar`. |
+| The boot/navigation contract still holds | PASS | The dock walks all five destinations and proves the switch by which branch is hit-testable (an `IndexedStack` keeps the others alive, so `findsOneWidget` alone would prove nothing); Settings is still a pushed route with a `BackButton` above the shell. |
+| Colour tokens are the design system's, in both modes | PASS | The palette lives only in `app_colors.dart` and is asserted there, light and dark, including the WCAG contrast audit in `app_colors_test.dart`; screens read the theme rather than hard-coding hexes. |
+| No new runtime dependency paid for the look | PASS | The only addition is the Plus Jakarta Sans family as bundled assets (`pubspec.yaml` `fonts:`) — no package, no generated imagery; glow orbs and glass are code-drawn (`vw_luminous.dart`). |
+| Honest UI where the mockup assumed data we do not have | CHANGED | The mockup's month delta and privacy-eye on the Finance hero, the global search on the Dashboard, and the notification centre are **not** implemented. Each would render a control with nothing behind it; the `_HeaderSummaryAction` reuses the existing summary route instead. Deviation is intentional and recorded here rather than silently stubbed. |
+| Screens match the mockups on a real panel | MANUAL — todo | Redmi Note 8: walk Dashboard, Tasks, Finance, Calendar, Notes and compare against the Stitch renders — spacing rhythm, type scale, glow orbs, dock clearance over the last row. Emulator renders are not accepted as evidence. |
+| Glass dock and glow blur read correctly on device | MANUAL — todo | Confirm the dock's backdrop blur and the hero glow orbs do not banding/ghost on the Redmi Note 8's panel, in light and dark. |
+| Reduced motion still holds after the restyle | MANUAL — todo | Android "Remove animations" on: the new dock selection, hero pulse dot and orb animations should become instant, and no new animation should ignore the pref. |
+
 ## Re-running the automated part
 
 ```sh

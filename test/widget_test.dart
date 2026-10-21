@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vestwise/app.dart';
-import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/notifications/notification_provider.dart';
 import 'package:vestwise/core/router/app_shell.dart';
@@ -14,6 +13,7 @@ import 'package:vestwise/features/dashboard/presentation/providers/dashboard_pro
 import 'package:vestwise/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:vestwise/features/finance/data/models/transaction_model.dart';
 import 'package:vestwise/features/finance/presentation/providers/finance_providers.dart';
+import 'package:vestwise/features/finance/presentation/screens/finance_home_screen.dart';
 import 'package:vestwise/features/notes/data/models/imported_document_model.dart';
 import 'package:vestwise/features/notes/data/models/note_model.dart';
 import 'package:vestwise/features/notes/presentation/providers/notes_providers.dart';
@@ -73,7 +73,7 @@ void main() {
 
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.byType(DashboardScreen), findsOneWidget);
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byKey(appShellDockKey), findsOneWidget);
   });
 
   testWidgets('bottom navigation switches between tabs', (
@@ -91,9 +91,11 @@ void main() {
     expect(find.byType(CalendarScreen), findsOneWidget);
   });
 
-  group('bottom bar (P10-NAV-1)', () {
-    NavigationBar bar(WidgetTester tester) =>
-        tester.widget<NavigationBar>(find.byType(NavigationBar));
+  group('floating dock (P13)', () {
+    Finder dockLabel(String label) => find.descendant(
+      of: find.byKey(appShellDockKey),
+      matching: find.text(label),
+    );
 
     testWidgets('all five destinations still navigate', (
       WidgetTester tester,
@@ -102,97 +104,81 @@ void main() {
       await tester.pumpAndSettle();
 
       // `IndexedStack` keeps visited branches alive, so what proves the switch
-      // is the selected index plus which branch is actually hit-testable — a
-      // bare `findsOneWidget` would pass for a tab that is no longer visible.
-      final List<(String, int)> tabs = <(String, int)>[
-        ('Finance', 1),
-        ('Notes', 2),
-        ('Tasks', 3),
-        ('Calendar', 4),
-        ('Dashboard', 0),
+      // is which branch is actually hit-testable — a bare `findsOneWidget`
+      // would pass for a tab that is no longer visible.
+      final List<(String, Type)> tabs = <(String, Type)>[
+        ('Finance', FinanceHomeScreen),
+        ('Notes', NotesListScreen),
+        ('Tasks', TasksListScreen),
+        ('Calendar', CalendarScreen),
+        ('Home', DashboardScreen),
       ];
 
-      for (final (String label, int index) in tabs) {
-        await tester.tap(
-          find.descendant(
-            of: find.byType(NavigationBar),
-            matching: find.text(label),
-          ),
-        );
+      for (final (String label, Type screen) in tabs) {
+        await tester.tap(dockLabel(label));
         await tester.pumpAndSettle();
 
-        expect(bar(tester).selectedIndex, index, reason: '$label tab');
+        expect(
+          find.byType(screen).hitTestable(),
+          findsOneWidget,
+          reason: '$label tab',
+        );
       }
 
-      expect(find.byType(DashboardScreen).hitTestable(), findsOneWidget);
       expect(find.byType(TasksListScreen).hitTestable(), findsNothing);
       expect(find.byType(NotesListScreen).hitTestable(), findsNothing);
     });
 
-    testWidgets('the bar is flat and takes its colours from the theme', (
+    testWidgets('the dock is blurred glass and lights the active item', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
-      final ThemeData theme = Theme.of(
-        tester.element(find.byType(NavigationBar)),
+      final BuildContext context = tester.element(
+        find.byKey(appShellDockKey),
       );
-      final NavigationBarThemeData navTheme = theme.navigationBarTheme;
+      final ColorScheme scheme = Theme.of(context).colorScheme;
 
-      expect(navTheme.backgroundColor, theme.colorScheme.surface);
-      expect(navTheme.elevation, AppElevation.flat);
-      expect(navTheme.surfaceTintColor, Colors.transparent);
+      expect(tester.getSize(find.byKey(appShellDockKey)).height, 64);
       expect(
-        navTheme.indicatorColor,
-        theme.colorScheme.primary.withValues(alpha: 0.12),
+        find.descendant(
+          of: find.byKey(appShellDockKey),
+          matching: find.byType(BackdropFilter),
+        ),
+        findsOneWidget,
       );
-      expect(tester.getSize(find.byType(NavigationBar)).height, 64);
 
-      final IconThemeData? selected = navTheme.iconTheme!.resolve(<WidgetState>{
-        WidgetState.selected,
-      });
-      final IconThemeData? unselected = navTheme.iconTheme!.resolve(
-        const <WidgetState>{},
-      );
-      expect(selected?.color, theme.colorScheme.primary);
-      expect(unselected?.color, theme.colorScheme.onSurfaceVariant);
-
-      final TextStyle? selectedLabel = navTheme.labelTextStyle!.resolve(
-        <WidgetState>{WidgetState.selected},
-      );
-      final TextStyle? unselectedLabel = navTheme.labelTextStyle!.resolve(
-        const <WidgetState>{},
-      );
-      expect(selectedLabel?.color, theme.colorScheme.primary);
-      expect(selectedLabel?.fontWeight, FontWeight.w600);
-      expect(unselectedLabel?.color, theme.colorScheme.onSurfaceVariant);
+      final TextStyle active = tester.widget<Text>(
+        dockLabel('Home'),
+      ).style!;
+      final TextStyle idle = tester.widget<Text>(
+        dockLabel('Tasks'),
+      ).style!;
+      expect(active.color, scheme.primary);
+      expect(active.fontWeight, FontWeight.w700);
+      expect(idle.color, scheme.onSurfaceVariant);
+      expect(idle.fontWeight, FontWeight.w500);
     });
 
-    testWidgets('the bar is separated from the page by a hairline', (
+    testWidgets('the dock floats clear of the page edges', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
-      final BuildContext context = tester.element(find.byType(NavigationBar));
-      final DecoratedBox wrapper = tester.widget<DecoratedBox>(
+      final Positioned host = tester.widget<Positioned>(
         find
             .ancestor(
-              of: find.byType(NavigationBar),
-              matching: find.byType(DecoratedBox),
+              of: find.byKey(appShellDockKey),
+              matching: find.byType(Positioned),
             )
             .first,
       );
-      final BoxDecoration decoration = wrapper.decoration as BoxDecoration;
 
-      expect(decoration.border?.top.color, AppColors.borderSubtle(context));
-      expect(decoration.border?.top.width, 1);
-      expect(
-        decoration.color,
-        isNull,
-        reason: 'the bar paints its own surface colour',
-      );
+      expect(host.left, AppSpacing.lg);
+      expect(host.right, AppSpacing.lg);
+      expect(host.bottom, AppSpacing.lg);
     });
   });
 
@@ -210,7 +196,7 @@ void main() {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Settings'));
+      await tester.tap(find.byIcon(Icons.settings_outlined));
       await tester.pumpAndSettle();
       expect(find.text('Appearance'), findsOneWidget);
 
@@ -223,7 +209,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(DashboardScreen), findsOneWidget);
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byKey(appShellDockKey), findsOneWidget);
     });
   });
 

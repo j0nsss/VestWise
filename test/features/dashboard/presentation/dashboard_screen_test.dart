@@ -63,7 +63,9 @@ void main() {
 
       final ThemeData theme = AppTheme.light;
       expect(find.text(formatMoney(1250.5)), findsOneWidget);
-      expect(find.text('This week'), findsOneWidget);
+      // Phase 13's hero card labels the metric and carries the week's delta
+      // as a small status pill.
+      expect(find.text('TOTAL NET BALANCE'), findsOneWidget);
       // Locale-safe: asserted through the app's own formatter, never a literal.
       expect(find.text('-${formatMoney(40)}'), findsWidgets);
       expect(find.byIcon(Icons.trending_down), findsOneWidget);
@@ -95,16 +97,21 @@ void main() {
       expect(find.text('+${formatMoney(25)}'), findsWidgets);
     });
 
-    testWidgets('the card is the soft variant', (WidgetTester tester) async {
+    testWidgets('the card is the Phase 13 hero card', (
+      WidgetTester tester,
+    ) async {
       await _pump(tester, const DashboardState.empty());
 
+      // The hero balance panel replaced the old soft VWCard: a bordered
+      // surface-tier card would fight the mockup's edge-to-edge sheet.
+      expect(find.text('TOTAL NET BALANCE'), findsOneWidget);
       final Iterable<VWCard> cards = tester.widgetList<VWCard>(
         find.byType(VWCard),
       );
-
       expect(
-        cards.where((VWCard card) => card.variant == VWCardVariant.soft),
-        hasLength(1),
+        cards.where((VWCard card) => card.variant == VWCardVariant.elevated),
+        isEmpty,
+        reason: 'the hero card is not a floating VWCard',
       );
     });
 

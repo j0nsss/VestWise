@@ -72,26 +72,35 @@ void main() {
     const TextTheme t = AppTextStyles.textTheme;
 
     expect(t.titleMedium!.fontWeight, FontWeight.w600);
-    expect(t.titleLarge!.fontWeight, FontWeight.w600);
+    expect(t.titleLarge!.fontWeight, FontWeight.w700);
     expect(t.bodyMedium!.fontWeight, FontWeight.w400);
-    expect(t.labelLarge!.fontWeight, FontWeight.w500);
-    expect(t.displaySmall!.fontWeight, FontWeight.w700);
+    expect(t.labelLarge!.fontWeight, FontWeight.w600);
+    expect(t.displaySmall!.fontWeight, FontWeight.w800);
   });
 
   test('sizes step down in a readable order', () {
     const TextTheme t = AppTextStyles.textTheme;
 
-    expect(t.displaySmall!.fontSize, greaterThan(t.headlineMedium!.fontSize!));
-    expect(t.headlineMedium!.fontSize, greaterThan(t.titleLarge!.fontSize!));
-    expect(t.titleLarge!.fontSize, greaterThan(t.titleMedium!.fontSize!));
+    // Phase 13's scale follows the design system rather than strict Material
+    // ordering: titleLarge carries the mobile headline slot (26), so it sits
+    // above headlineMedium (24) and below displaySmall (36).
+    expect(t.displaySmall!.fontSize, greaterThan(t.titleLarge!.fontSize!));
+    expect(t.titleLarge!.fontSize, greaterThan(t.headlineMedium!.fontSize!));
+    expect(t.headlineMedium!.fontSize, greaterThan(t.titleMedium!.fontSize!));
     expect(t.titleMedium!.fontSize, greaterThan(t.titleSmall!.fontSize!));
     expect(t.bodyLarge!.fontSize, greaterThan(t.bodyMedium!.fontSize!));
     expect(t.bodyMedium!.fontSize, greaterThan(t.bodySmall!.fontSize!));
     expect(t.labelLarge!.fontSize, greaterThan(t.labelMedium!.fontSize!));
   });
 
-  test('the theme keeps the Inter family', () {
-    expect(AppTheme.light.textTheme.bodyMedium!.fontFamily, 'Inter');
-    expect(AppTheme.dark.textTheme.bodyMedium!.fontFamily, 'Inter');
+  test('the theme keeps the Plus Jakarta Sans family', () {
+    expect(
+      AppTheme.light.textTheme.bodyMedium!.fontFamily,
+      'PlusJakartaSans',
+    );
+    expect(
+      AppTheme.dark.textTheme.bodyMedium!.fontFamily,
+      'PlusJakartaSans',
+    );
   });
 }

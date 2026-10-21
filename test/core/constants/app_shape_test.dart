@@ -18,7 +18,7 @@ void main() {
     test(
       'sheet rounds only the top, so it sits flush with the bottom edge',
       () {
-        expect(AppRadii.sheetValue, 20);
+        expect(AppRadii.sheetValue, 24);
         expect(AppRadii.sheet.topLeft.x, AppRadii.sheetValue);
         expect(AppRadii.sheet.topRight.x, AppRadii.sheetValue);
         expect(AppRadii.sheet.bottomLeft, Radius.zero);
@@ -47,19 +47,23 @@ void main() {
   group('the theme wires the shape tokens in (P8-T2)', () {
     for (final ThemeData theme in <ThemeData>[AppTheme.light, AppTheme.dark]) {
       test(
-        '${theme.brightness.name}: cards are flat with a hairline border',
+        '${theme.brightness.name}: cards are flat and borderless',
         () {
           expect(theme.cardTheme.elevation, AppElevation.flat);
           expect(theme.appBarTheme.elevation, AppElevation.flat);
           expect(theme.appBarTheme.scrolledUnderElevation, AppElevation.flat);
 
+          // Phase 13: the card is a filled surface tier, not an outlined one —
+          // separation comes from tone (surface vs surfaceContainer), so the
+          // hairline is gone.
           final ShapeBorder? shape = theme.cardTheme.shape;
           expect(shape, isA<RoundedRectangleBorder>());
           expect(
             (shape! as RoundedRectangleBorder).borderRadius,
             AppRadii.card,
           );
-          expect((shape as RoundedRectangleBorder).side.width, 1);
+          expect((shape as RoundedRectangleBorder).side.width, 0);
+          expect(theme.cardTheme.color, theme.colorScheme.surfaceContainer);
         },
       );
 

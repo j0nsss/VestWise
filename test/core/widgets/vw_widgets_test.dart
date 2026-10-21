@@ -39,8 +39,9 @@ void main() {
       expect(theme.elevation, AppElevation.flat);
       expect(
         (theme.shape! as RoundedRectangleBorder).side.width,
-        1,
-        reason: 'flat cards are separated by a hairline border',
+        0,
+        reason:
+            'Phase 13 cards separate by surface tone, not by a hairline border',
       );
     });
 
