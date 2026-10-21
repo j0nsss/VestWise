@@ -238,6 +238,30 @@ coral tertiary `#FFB2B7`, Plus Jakarta Sans, pill controls, floating glass dock.
 | Glass dock and glow blur read correctly on device | MANUAL — todo | Confirm the dock's backdrop blur and the hero glow orbs do not banding/ghost on the Redmi Note 8's panel, in light and dark. |
 | Reduced motion still holds after the restyle | MANUAL — todo | Android "Remove animations" on: the new dock selection, hero pulse dot and orb animations should become instant, and no new animation should ignore the pref. |
 
+## Phase 14 — Visual redesign (Omotive Style / Stitch)
+
+Screens re-skinned against the Stitch system `Omotive Style`, which **replaces**
+Obsidian Lumina outright: canvas `#131315` (container `#1F1F21`, container-high
+`#2A2A2C`, container-highest `#353437`, lowest `#0E0E10`), a near-white primary
+`#F8FFDD` carrying a pistachio container `#D4E79E`, amber secondary `#EAC162`,
+coral tertiary `#FFD5D1`, Plus Jakarta Sans. Tactile cards sit at radius 28 with
+a lift tinted by their own fill, list rows at 24, and the dock is icon-only with
+an amber circle for the active destination. The mockups are dark-only; light
+mode is derived by hand and still passes the contrast audit.
+
+| Check | Status | How to verify |
+| --- | --- | --- |
+| The analyzer is silent after the redesign | PASS | `dart analyze lib test integration_test` → `No issues found!` — warnings count, so imports left behind by the sweep would have failed it. |
+| The whole suite is green on the new visual contract | PASS | `flutter test -j 1` → `All tests passed!` — **302 tests**, one more than before the redesign (the new elevation-policy test); no coverage was dropped. |
+| Legacy visual contracts were updated, not deleted | PASS | `app_shape_test.dart`: `cardTheme` is now `surfaceContainerHigh` at `AppRadii.row` (24) and the elevation policy test names the tactile/dock lifts; `app_text_styles_test.dart`: the Omotive body is `w500` and `labelLarge` `w700`; `calendar_screen_test.dart`: selected day is amber, today is an amber ring, markers are pistachio; `widget_test.dart`: the dock is driven through its semantics labels and asserted as an amber disc, since it no longer paints text; the task-grouping test scrolls a list that is now taller than the fold. |
+| No new dependency, no new imagery | PASS | The bundled Plus Jakarta Sans family is unchanged and nothing was added to `pubspec.yaml`: the restyle only deletes `vw_luminous.dart` and adds `vw_omotive.dart` — cards, glass, capsules and tiles are all drawn in code. |
+| Two real defects the restyle surfaced are fixed | FIXED | (1) the dashboard's `_StatTiles` used `Row(crossAxisAlignment: stretch)` inside a vertically unbounded `ListView` → "BoxConstraints forces an infinite height" plus nine cascading layout exceptions; wrapped in `IntrinsicHeight`. (2) light `textTertiary` was 4.29:1 on `surfaceContainerHighest`; re-tuned `#63665A` → `#5A5D51` (4.9:1) so the AA audit passes on every surface it can land on. |
+| Colour tokens are the design system's, in both modes | PASS | The palette lives only in `app_colors.dart` and `app_colors_test.dart` audits income/expense, the neutral scale and the retinted tag palette against the page, soft and raised surfaces; screens read the theme rather than hard-coding hexes. |
+| Honest UI where the mockups assumed data we do not have | CHANGED | Not implemented: the Finance month delta and privacy eye, the Dashboard global search, the notification centre, and the "Outflow Cap"/auto-stash footer (there is no budget or burn-rate model). Notes and Documents had no mockup and are derived from the same language. Detail/editor/settings routes keep `VWAppBar`, and list screens keep a FAB although three mockups have none. Deviation is intentional and recorded here rather than silently stubbed. |
+| Screens match the mockups on a real panel | MANUAL — todo | Redmi Note 8: walk Dashboard, Tasks, Finance, Calendar, Notes and compare against the Stitch renders — spacing rhythm, the tactile card lift, capsule strips, dock clearance over the last row. Emulator renders are not accepted as evidence. |
+| Tactile lifts and dock blur read correctly on device | MANUAL — todo | Confirm the fill-tinted card shadows and the dock's backdrop blur do not band or ghost on the Redmi Note 8's panel, in light and dark. |
+| Reduced motion still holds after the restyle | MANUAL — todo | Android "Remove animations" on: dock selection, capsule/tab changes, card press and skeleton sweep should become instant, and no new animation should ignore the pref. |
+
 ## Re-running the automated part
 
 ```sh
