@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -67,6 +69,13 @@ void main() {
     child: const VestWiseApp(),
   );
 
+  // Phase 14's dock paints no labels — the destination names survive only as
+  // semantics, so the tests tap and assert through that.
+  Finder dockItem(String label) => find.descendant(
+    of: find.byKey(appShellDockKey),
+    matching: find.bySemanticsLabel(label),
+  );
+
   testWidgets('app boots to the Dashboard tab', (WidgetTester tester) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
@@ -79,27 +88,28 @@ void main() {
   testWidgets('bottom navigation switches between tabs', (
     WidgetTester tester,
   ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Tasks'));
+    await tester.tap(dockItem('Tasks'));
     await tester.pumpAndSettle();
     expect(find.byType(TasksListScreen), findsOneWidget);
 
-    await tester.tap(find.text('Calendar'));
+    await tester.tap(dockItem('Calendar'));
     await tester.pumpAndSettle();
     expect(find.byType(CalendarScreen), findsOneWidget);
+
+    handle.dispose();
   });
 
-  group('floating dock (P13)', () {
-    Finder dockLabel(String label) => find.descendant(
-      of: find.byKey(appShellDockKey),
-      matching: find.text(label),
-    );
-
+  group('floating dock (P14)', () {
     testWidgets('all five destinations still navigate', (
       WidgetTester tester,
     ) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
@@ -115,7 +125,7 @@ void main() {
       ];
 
       for (final (String label, Type screen) in tabs) {
-        await tester.tap(dockLabel(label));
+        await tester.tap(dockItem(label));
         await tester.pumpAndSettle();
 
         expect(
@@ -127,18 +137,21 @@ void main() {
 
       expect(find.byType(TasksListScreen).hitTestable(), findsNothing);
       expect(find.byType(NotesListScreen).hitTestable(), findsNothing);
+
+      handle.dispose();
     });
 
     testWidgets('the dock is blurred glass and lights the active item', (
       WidgetTester tester,
     ) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
 
-      final BuildContext context = tester.element(
-        find.byKey(appShellDockKey),
-      );
-      final ColorScheme scheme = Theme.of(context).colorScheme;
+      final ColorScheme scheme = Theme.of(
+        tester.element(find.byKey(appShellDockKey)),
+      ).colorScheme;
 
       expect(tester.getSize(find.byKey(appShellDockKey)).height, 64);
       expect(
@@ -149,16 +162,33 @@ void main() {
         findsOneWidget,
       );
 
-      final TextStyle active = tester.widget<Text>(
-        dockLabel('Home'),
-      ).style!;
-      final TextStyle idle = tester.widget<Text>(
-        dockLabel('Tasks'),
-      ).style!;
-      expect(active.color, scheme.primary);
-      expect(active.fontWeight, FontWeight.w700);
-      expect(idle.color, scheme.onSurfaceVariant);
-      expect(idle.fontWeight, FontWeight.w500);
+      // The active destination is an amber filled circle behind its icon; the
+      // idle ones are transparent discs of the same size.
+      BoxDecoration discOf(String label) {
+        final Container box = tester.widget<Container>(
+          find.descendant(
+            of: dockItem(label),
+            matching: find.byType(Container),
+          ),
+        );
+
+        return box.decoration! as BoxDecoration;
+      }
+
+      expect(discOf('Home').color, scheme.secondary);
+      expect(discOf('Tasks').color, Colors.transparent);
+
+      // And the state is announced, not only painted.
+      expect(
+        tester.getSemantics(dockItem('Home')).flagsCollection.isSelected,
+        Tristate.isTrue,
+      );
+      expect(
+        tester.getSemantics(dockItem('Tasks')).flagsCollection.isSelected,
+        Tristate.isFalse,
+      );
+
+      handle.dispose();
     });
 
     testWidgets('the dock floats clear of the page edges', (
@@ -226,11 +256,13 @@ void main() {
     testWidgets('switching tabs settles in rather than hard-cutting', (
       WidgetTester tester,
     ) async {
+      final SemanticsHandle handle = tester.ensureSemantics();
+
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
       expect(settleOpacity(tester), 1);
 
-      await tester.tap(find.text('Tasks'));
+      await tester.tap(dockItem('Tasks'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 40));
       expect(settleOpacity(tester), lessThan(1));
@@ -238,6 +270,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(settleOpacity(tester), 1);
       expect(find.byType(TasksListScreen), findsOneWidget);
+
+      handle.dispose();
     });
 
     testWidgets('reduced motion drops the settle altogether', (
@@ -248,18 +282,20 @@ void main() {
       addTearDown(
         tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
       );
+      final SemanticsHandle handle = tester.ensureSemantics();
 
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
       expect(settleOpacity(tester), isNull);
 
-      await tester.tap(find.text('Tasks'));
+      await tester.tap(dockItem('Tasks'));
       await tester.pump();
 
       expect(settleOpacity(tester), isNull);
       expect(find.byType(TasksListScreen), findsOneWidget);
 
       await tester.pumpAndSettle();
+      handle.dispose();
     });
   });
 }

@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vestwise/core/constants/app_motion.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
-import 'package:vestwise/core/widgets/vw_luminous.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 
 /// The key on the shell's branch-settle fade (P9-T3), so a test can target it
 /// instead of guessing among every other `FadeTransition` in the app.
@@ -16,13 +16,14 @@ const Key appShellSettleKey = Key('app-shell-settle');
 const Key appShellDockKey = Key('app-shell-dock');
 
 /// Persistent bottom-navigation shell hosting the five top-level destinations
-/// (plan P1-T5, restyled Phase 13). Each branch keeps its own navigation stack.
+/// (plan P1-T5, restyled Phase 14 "Omotive Style"). Each branch keeps its own
+/// navigation stack.
 ///
-/// Phase 13 replaces the pinned Material bar with the design's *floating
-/// dock*: a detached, pill-shaped glass panel hanging 16px above the bottom
-/// edge, so content scrolls beneath it and short pages keep their bottom
-/// margin. The active destination is carried by violet icon + label, exactly
-/// as the mockups do.
+/// Phase 13 replaced the pinned Material bar with the design's *floating dock*:
+/// a detached, pill-shaped glass panel hanging 16px above the bottom edge, so
+/// content scrolls beneath it and short pages keep their bottom margin.
+/// Phase 14 makes it the Omotive dock: icon-only slots, the active destination
+/// carried by an amber filled circle (the labels survive as semantics only).
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
 
@@ -68,18 +69,23 @@ class AppShell extends StatelessWidget {
             left: AppSpacing.lg,
             right: AppSpacing.lg,
             bottom: AppSpacing.lg,
-            child: VWDock(
-              key: appShellDockKey,
-              selectedIndex: navigationShell.currentIndex,
-              items: items,
-              labels: const <String>[
-                'Home',
-                AppStrings.finance,
-                AppStrings.notes,
-                AppStrings.tasks,
-                AppStrings.calendar,
-              ],
-              onSelected: _onDestinationSelected,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 384),
+                child: VWDock(
+                  key: appShellDockKey,
+                  selectedIndex: navigationShell.currentIndex,
+                  items: items,
+                  labels: const <String>[
+                    'Home',
+                    AppStrings.finance,
+                    AppStrings.notes,
+                    AppStrings.tasks,
+                    AppStrings.calendar,
+                  ],
+                  onSelected: _onDestinationSelected,
+                ),
+              ),
             ),
           ),
         ],
@@ -104,8 +110,8 @@ class VWDockItemSpec {
   final IconData activeIcon;
 }
 
-/// The floating glass dock. `justify-around` items in 48px slots; the active
-/// one lights up violet and slightly bolder than the silent ones.
+/// The floating glass dock, Omotive style: icon-only 48px slots inside a
+/// 64px capsule, the active one carried by an amber filled circle.
 class VWDock extends StatelessWidget {
   const VWDock({
     required this.selectedIndex,
@@ -117,30 +123,21 @@ class VWDock extends StatelessWidget {
 
   final int selectedIndex;
   final List<VWDockItemSpec> items;
+
+  /// Kept for semantics only — the Omotive dock paints no labels.
   final List<String> labels;
   final ValueChanged<int> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
     return VWGlass(
-      shadow: <BoxShadow>[
-        BoxShadow(
-          color: Colors.black.withValues(
-            alpha:
-                theme.brightness == Brightness.dark ? 0.45 : 0.10,
-          ),
-          blurRadius: 24,
-          offset: const Offset(0, 8),
-        ),
-      ],
       child: SizedBox(
         height: 64,
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             for (int i = 0; i < items.length; i++)
-              Expanded(child: _DockItem(index: i, dock: this)),
+              _DockItem(index: i, dock: this),
           ],
         ),
       ),
@@ -157,12 +154,9 @@ class _DockItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
     final bool selected = index == dock.selectedIndex;
     final VWDockItemSpec spec = dock.items[index];
-
-    final Color color = selected
-        ? theme.colorScheme.primary
-        : theme.colorScheme.onSurfaceVariant;
 
     return Semantics(
       button: true,
@@ -171,31 +165,21 @@ class _DockItem extends StatelessWidget {
       child: InkWell(
         onTap: () => dock.onSelected(index),
         customBorder: const CircleBorder(),
-        child: SizedBox(
-          height: 64,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              AnimatedSwitcher(
-                duration: motionDuration(context, AppMotion.stateChange),
-                child: Icon(
-                  selected ? spec.activeIcon : spec.icon,
-                  key: ValueKey<bool>(selected),
-                  size: 22,
-                  color: color,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                dock.labels[index],
-                style: theme.textTheme.labelSmall!.copyWith(
-                  letterSpacing: 0,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: color,
-                ),
-              ),
-            ],
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: selected ? scheme.secondary : Colors.transparent,
+          ),
+          child: AnimatedSwitcher(
+            duration: motionDuration(context, AppMotion.stateChange),
+            child: Icon(
+              selected ? spec.activeIcon : spec.icon,
+              key: ValueKey<bool>(selected),
+              size: 22,
+              color: selected ? scheme.onSecondary : scheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),

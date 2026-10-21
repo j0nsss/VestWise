@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vestwise/core/constants/app_motion.dart';
+import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/constants/app_strings.dart';
 import 'package:vestwise/core/notifications/notification_provider.dart';
 import 'package:vestwise/core/notifications/notification_service.dart';
@@ -14,6 +15,7 @@ import 'package:vestwise/core/widgets/vw_delayed.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
 import 'package:vestwise/core/widgets/vw_fade_through.dart';
 import 'package:vestwise/core/widgets/vw_fab.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 import 'package:vestwise/core/widgets/vw_section_disclosure.dart';
 import 'package:vestwise/core/widgets/vw_screen_header.dart';
 import 'package:vestwise/core/widgets/vw_skeleton.dart';
@@ -136,7 +138,11 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
         bottom: false,
         child: Column(
           children: <Widget>[
-            const VWScreenHeader(title: AppStrings.tasks),
+            VWScreenHeader(
+              title: AppStrings.tasks,
+              onCreate: () =>
+                  context.go(RoutePaths.taskDetailFor(RoutePaths.newId)),
+            ),
             const VWNotificationBanner(),
             // Pinned above the list rather than scrolled with it: adding a task
             // is the screen's primary action, and hiding it behind a scroll
@@ -183,6 +189,17 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
                     return CustomScrollView(
                       key: const ValueKey<String>('tasks-list'),
                       slivers: <Widget>[
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              vwPageMargin,
+                              0,
+                              vwPageMargin,
+                              AppSpacing.md,
+                            ),
+                            child: _TaskMomentumCard(tasks: tasks),
+                          ),
+                        ),
                         SliverList.builder(
                           itemCount: rows.length,
                           itemBuilder: (BuildContext context, int index) {
@@ -207,7 +224,9 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
                             );
                           },
                         ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 96)),
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: vwDockClearance),
+                        ),
                       ],
                     );
                   },
@@ -226,6 +245,86 @@ class _TasksListScreenState extends ConsumerState<TasksListScreen> {
         _collapsed.add(group);
       }
     });
+  }
+}
+
+/// The amber momentum card the Omotive mockup opens the list with: how much of
+/// the backlog is done, over a ring. Counted from the rows on screen — the same
+/// list the sections below render, not a second query.
+class _TaskMomentumCard extends StatelessWidget {
+  const _TaskMomentumCard({required this.tasks});
+
+  final List<TaskModel> tasks;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final VWTactilePalette palette = vwTactilePalette(
+      context,
+      VWTactileTone.amber,
+    );
+    final int total = tasks.length;
+    final int done = tasks.where((TaskModel t) => t.isCompleted).length;
+    final double ratio = total == 0 ? 0 : done / total;
+
+    return VWTactileCard(
+      tone: VWTactileTone.amber,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          VWTactileKicker(
+            label: 'Task momentum',
+            ink: palette.ink,
+            trailing: SizedBox(
+              width: 44,
+              height: 44,
+              child: Stack(
+                children: <Widget>[
+                  CircularProgressIndicator(
+                    value: ratio.clamp(0.0, 1.0),
+                    strokeWidth: 3.5,
+                    strokeCap: StrokeCap.round,
+                    color: palette.ink,
+                    backgroundColor: Colors.black.withValues(alpha: 0.12),
+                  ),
+                  Center(
+                    child: Text(
+                      '${(ratio * 100).round()}%',
+                      style: theme.textTheme.labelSmall!.copyWith(
+                        color: palette.ink,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            '$done of $total tasks completed',
+            style: theme.textTheme.headlineMedium!.copyWith(color: palette.ink),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          VWCardShelf(
+            leading: Text(
+              '${total - done} still open',
+              style: theme.textTheme.bodySmall!.copyWith(
+                color: palette.softInk,
+              ),
+            ),
+            trailing: VWPill(
+              label: 'Plan',
+              icon: Icons.view_agenda,
+              background: Colors.black.withValues(alpha: 0.10),
+              foreground: palette.ink,
+              onTap: () =>
+                  context.go(RoutePaths.taskDetailFor(RoutePaths.newId)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
 import 'package:vestwise/core/router/route_paths.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 
-/// The shared screen header from the Phase 13 mockups: the brand lockup on
-/// the left (logo tile + "VESTWISE" overline + screen title), and the
-/// settings action on the right, for every tab that does not need more.
+/// The shared screen header from the Phase 14 (Omotive) mockups: "VESTWISE"
+/// overline over the screen title on the left, then an amber **Create** pill,
+/// the settings action and the avatar disc on the right.
 ///
 /// The header is translucent on purpose (screens tint it `surface` at 80% and
 /// blur whatever scrolls beneath); this widget only composes the content,
@@ -14,70 +15,132 @@ class VWScreenHeader extends StatelessWidget {
   const VWScreenHeader({
     required this.title,
     this.actions = const <Widget>[],
+    this.onCreate,
+    this.createLabel = 'Create',
+    this.showAvatar = true,
     super.key,
   });
 
   final String title;
+
+  /// Extra actions, inserted before the settings button.
   final List<Widget> actions;
+
+  /// When non-null, the header grows the amber Create pill.
+  final VoidCallback? onCreate;
+
+  final String createLabel;
+
+  /// The mockups' avatar disc, decorative (there is no account system).
+  final bool showAvatar;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
     return SizedBox(
-      height: 64,
+      height: vwHeaderHeight,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        padding: const EdgeInsets.symmetric(horizontal: vwPageMargin),
         child: Row(
           children: <Widget>[
-            // Brand lockup. The logo is the app's own adaptive-icon artwork.
-            ExcludeSemantics(
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: const DecorationImage(
-                    image: AssetImage('assets/app_icon.png'),
-                    fit: BoxFit.cover,
-                  ),
-                  border: Border.all(
-                    color: theme.colorScheme.outlineVariant.withValues(
-                      alpha: 0.6,
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'VESTWISE',
+                    style: theme.textTheme.labelSmall!.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      letterSpacing: 1.1,
                     ),
                   ),
-                ),
+                  Text(
+                    title,
+                    style: theme.textTheme.headlineLarge,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'VESTWISE',
-                  style: theme.textTheme.labelSmall!.copyWith(
-                    color: theme.colorScheme.primary,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                Text(
-                  title,
-                  style: theme.textTheme.titleMedium!.copyWith(
-                    height: 1.15,
-                    letterSpacing: -0.15,
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
             ...actions,
+            if (onCreate != null) ...<Widget>[
+              const SizedBox(width: AppSpacing.sm),
+              _CreatePill(label: createLabel, onPressed: onCreate!),
+            ],
             _HeaderIconButton(
               tooltip: 'Settings',
               icon: Icons.settings_outlined,
               onPressed: () => context.push(RoutePaths.settings),
             ),
+            if (showAvatar) ...<Widget>[
+              const SizedBox(width: AppSpacing.xs),
+              ExcludeSemantics(
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: theme.colorScheme.primaryContainer,
+                  ),
+                  child: Icon(
+                    Icons.person,
+                    size: 18,
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+            ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The amber "Create" capsule. Paints 40px of content inside a 48px tap
+/// target, so the design's tighter header never costs an accessible target.
+class _CreatePill extends StatelessWidget {
+  const _CreatePill({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    return Semantics(
+      button: true,
+      label: label,
+      child: Material(
+        color: theme.colorScheme.secondary,
+        borderRadius: AppRadii.chip,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: AppRadii.chip,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: 13,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(Icons.add, size: 18, color: theme.colorScheme.onSecondary),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  label,
+                  style: theme.textTheme.labelMedium!.copyWith(
+                    color: theme.colorScheme.onSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

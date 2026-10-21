@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:vestwise/core/widgets/vw_luminous.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 import 'package:vestwise/core/constants/app_motion.dart';
 
 /// The design's primary quick action: a 56px full circle in `primary-container`
-/// with the violet ambient bloom beneath it. Every screen's `FloatingActionButton`
-/// becomes one of these; the semantics and tap behaviour stay Material's.
+/// (pistachio) lifting off a shadow tinted by its own fill. Every screen's
+/// `FloatingActionButton` becomes one of these; the semantics and tap behaviour
+/// stay Material's.
 class VWFab extends StatefulWidget {
   const VWFab({required this.child, this.onPressed, this.tooltip, super.key});
 
@@ -26,8 +27,9 @@ class _VWFabState extends State<VWFab> {
     final Widget fab = DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        boxShadow: vwGlowShadow(
-          alpha: theme.brightness == Brightness.dark ? 0.45 : 0.25,
+        boxShadow: vwTactileShadow(
+          theme.colorScheme.primaryContainer,
+          theme.brightness,
         ),
       ),
       child: FloatingActionButton(

@@ -287,16 +287,21 @@ void main() {
       expect(find.text('Today · 1'), findsOneWidget);
       expect(find.text('Upcoming · 1'), findsOneWidget);
       expect(find.text('No due date · 1'), findsOneWidget);
-      expect(find.text('Completed · 1'), findsOneWidget);
       // Nothing is hidden behind a group heading.
-      for (final String title in <String>[
-        'Due today',
-        'Due later',
-        'No date',
-        'Done',
-      ]) {
+      for (final String title in <String>['Due today', 'Due later', 'No date']) {
         expect(find.text(title), findsOneWidget);
       }
+
+      // Phase 14 puts the momentum card above the groups, so the tail of the
+      // list starts below the fold — the sliver builds lazily, so scroll the
+      // last group in before asserting it.
+      await tester.drag(
+        find.byKey(const ValueKey<String>('tasks-list')),
+        const Offset(0, -400),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Completed · 1'), findsOneWidget);
+      expect(find.text('Done'), findsOneWidget);
     });
 
     testWidgets('groups collapse and re-open on tap, independently', (

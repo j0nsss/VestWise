@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 import 'package:vestwise/core/widgets/vw_skeleton.dart';
 
 /// A loading stand-in for one `TaskListTile` (plan2.md P11-T1, retargeted
-/// Phase 13).
+/// Phase 14).
 ///
 /// Mirrors the real card exactly — same margins, same radius tier, same inner
 /// padding, checkbox square, tag pill, title line and subtask pill in their
@@ -17,9 +18,9 @@ class TaskRowSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
+        vwPageMargin,
         0,
-        AppSpacing.lg,
+        vwPageMargin,
         AppSpacing.sm,
       ),
       child: DecoratedBox(
@@ -29,10 +30,13 @@ class TaskRowSkeleton extends StatelessWidget {
           color: AppColors.surfaceContainerHighestFor(
             Theme.of(context).brightness,
           ),
-          borderRadius: AppRadii.card,
+          borderRadius: AppRadii.row,
         ),
         child: const Padding(
-          padding: EdgeInsets.all(AppSpacing.md),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[

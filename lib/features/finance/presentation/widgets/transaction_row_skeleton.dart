@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 import 'package:vestwise/core/widgets/vw_skeleton.dart';
 
 /// A loading stand-in for one `TransactionListTile` (plan2.md P11-T1,
-/// retargeted Phase 13).
+/// retargeted Phase 14).
 ///
 /// Mirrors the real card — same margins, same radius tier, same inner padding,
 /// category badge square, title line, category line and amount in their real
@@ -17,22 +18,25 @@ class TransactionRowSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
+        vwPageMargin,
         0,
-        AppSpacing.lg,
+        vwPageMargin,
         AppSpacing.sm,
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          // One hair darker than the real `surfaceContainer` card, so the
+          // One hair darker than the real `surfaceContainerHigh` row, so the
           // placeholder reads as the list "breathing" while it loads.
           color: AppColors.surfaceContainerHighestFor(
             Theme.of(context).brightness,
           ),
-          borderRadius: AppRadii.card,
+          borderRadius: AppRadii.row,
         ),
         child: const Padding(
-          padding: EdgeInsets.all(AppSpacing.md),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
           child: Row(
             children: <Widget>[
               // The category badge square.

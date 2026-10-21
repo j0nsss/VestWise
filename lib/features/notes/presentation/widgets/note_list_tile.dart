@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 import 'package:vestwise/features/notes/data/models/note_model.dart';
 import 'package:vestwise/features/notes/presentation/widgets/note_icon_picker.dart';
 
-/// One row in the notes list (plan P3-NOTES-1), restyled as a Phase 13 card:
-/// surface-container panel with the title, plain-text preview, updated time
-/// and the pin affordance.
+/// One row in the notes list (plan P3-NOTES-1), restyled as a Phase 14 Omotive
+/// row: a rounded container-high panel with the title, plain-text preview,
+/// updated time and the pin affordance.
 ///
 /// The icon stays opt-in — a default icon on every row would be decoration,
 /// not information (P10-NOTES-2).
@@ -34,19 +35,22 @@ class NoteListTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
+        vwPageMargin,
         0,
-        AppSpacing.lg,
+        vwPageMargin,
         AppSpacing.sm,
       ),
       child: Material(
-        color: scheme.surfaceContainer,
-        borderRadius: AppRadii.card,
+        color: scheme.surfaceContainerHigh,
+        borderRadius: AppRadii.row,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppRadii.card,
+          borderRadius: AppRadii.row,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[

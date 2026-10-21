@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 import 'package:vestwise/core/utils/byte_format.dart';
 import 'package:vestwise/features/notes/data/models/imported_document_model.dart';
 
 /// One row in the imported-documents list (plan P3-NOTES-1), restyled as a
-/// Phase 13 card: file-type badge, name, size + import date, delete action.
+/// Phase 14 Omotive row: file-type badge, name, size + import date, delete
+/// action.
 class DocumentListTile extends StatelessWidget {
   const DocumentListTile({
     required this.document,
@@ -26,25 +28,27 @@ class DocumentListTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
+        vwPageMargin,
         0,
-        AppSpacing.lg,
+        vwPageMargin,
         AppSpacing.sm,
       ),
       child: Material(
-        color: scheme.surfaceContainer,
-        borderRadius: AppRadii.card,
+        color: scheme.surfaceContainerHigh,
+        borderRadius: AppRadii.row,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppRadii.card,
+          borderRadius: AppRadii.row,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             child: Row(
               children: <Widget>[
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: scheme.surfaceContainerHighest,
-                  child: Icon(_iconFor(document.fileExtension), color: muted),
+                VWIconTile(
+                  icon: _iconFor(document.fileExtension),
+                  color: muted,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(

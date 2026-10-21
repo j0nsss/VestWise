@@ -71,10 +71,14 @@ void main() {
   test('weight contrast carries the hierarchy', () {
     const TextTheme t = AppTextStyles.textTheme;
 
+    // Phase 14 (Omotive) revised the weights: rows and body read a step
+    // heavier than Material's defaults (title-sm 600, body 500) and the
+    // pill/button and micro-tag inks are 700, while nothing is lighter than
+    // 500 — the design has no thin tier.
     expect(t.titleMedium!.fontWeight, FontWeight.w600);
     expect(t.titleLarge!.fontWeight, FontWeight.w700);
-    expect(t.bodyMedium!.fontWeight, FontWeight.w400);
-    expect(t.labelLarge!.fontWeight, FontWeight.w600);
+    expect(t.bodyMedium!.fontWeight, FontWeight.w500);
+    expect(t.labelLarge!.fontWeight, FontWeight.w700);
     expect(t.displaySmall!.fontWeight, FontWeight.w800);
   });
 

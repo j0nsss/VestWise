@@ -47,7 +47,7 @@ void main() {
       final HeaderStyle header = _calendar(tester).headerStyle;
       final ThemeData theme = _theme(tester);
 
-      expect(header.titleTextStyle, theme.textTheme.titleMedium);
+      expect(header.titleTextStyle, theme.textTheme.headlineMedium);
       expect(
         header.decoration,
         const BoxDecoration(),
@@ -87,20 +87,20 @@ void main() {
 
       // Different shapes, not just different colours, so the two stay
       // distinguishable on the day that is both today and selected.
-      // Phase 13: the selected day is a filled primary-container circle with
-      // the violet glow, and the markers pick up the mint accent.
+      // Phase 14 (Omotive): the selected day is a filled amber circle, today
+      // is an amber ring, and the markers pick up the pistachio accent.
       final BoxDecoration today = style.todayDecoration as BoxDecoration;
       final BoxDecoration selected = style.selectedDecoration as BoxDecoration;
       expect(today.color, isNull);
-      expect(today.border?.top.color, scheme.primary);
-      expect(selected.color, scheme.primaryContainer);
+      expect(today.border?.top.color, scheme.secondary);
+      expect(selected.color, scheme.secondary);
       expect(selected.shape, BoxShape.circle);
       // Each text colour is the pair that belongs to its fill.
-      expect(style.todayTextStyle.color, scheme.primary);
-      expect(style.selectedTextStyle.color, scheme.onPrimaryContainer);
+      expect(style.todayTextStyle.color, scheme.onSurface);
+      expect(style.selectedTextStyle.color, scheme.onSecondary);
       expect(
         (style.markerDecoration as BoxDecoration).color,
-        scheme.secondary,
+        scheme.primaryContainer,
       );
     });
 
@@ -113,8 +113,8 @@ void main() {
         final CalendarStyle style = _calendar(tester).calendarStyle;
         final ColorScheme scheme = _theme(tester).colorScheme;
 
-        expect(style.selectedTextStyle.color, scheme.onPrimaryContainer);
-        expect(style.todayTextStyle.color, scheme.primary);
+        expect(style.selectedTextStyle.color, scheme.onSecondary);
+        expect(style.todayTextStyle.color, scheme.onSurface);
         expect(style.defaultTextStyle.color, scheme.onSurface);
         expect(style.outsideTextStyle.color, scheme.onSurfaceVariant);
         expect(style.disabledTextStyle.color, scheme.outline);

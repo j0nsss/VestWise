@@ -3,11 +3,13 @@ import 'package:intl/intl.dart';
 import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_motion.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 import 'package:vestwise/features/tasks/data/models/task_model.dart';
 import 'package:vestwise/features/tasks/presentation/widgets/task_priority_style.dart';
 
-/// One row in the task list: completion checkbox, title, priority dot, optional
-/// sub-task progress and due-date chip (plan P3-TASK-1).
+/// One row in the task list, as a Phase 14 Omotive row: completion checkbox,
+/// title, priority micro-tag, optional sub-task progress and due-date chip
+/// (plan P3-TASK-1).
 class TaskListTile extends StatelessWidget {
   const TaskListTile({
     required this.task,
@@ -36,25 +38,31 @@ class TaskListTile extends StatelessWidget {
     final Color muted = scheme.onSurfaceVariant;
     final bool done = task.isCompleted || morphing;
     final int doneCount = task.subTasks.where((SubTask s) => s.isDone).length;
-    final AppTagColor pill = AppColors.tagFor(_priorityTag(task.priority), theme.brightness);
+    final AppTagColor pill = AppColors.tagFor(
+      _priorityTag(task.priority),
+      theme.brightness,
+    );
 
     return Padding(
       // Card separated from its neighbours and from the screen edges; the
       // outside of the card belongs to this widget, the swipes wrap it whole.
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
+        vwPageMargin,
         0,
-        AppSpacing.lg,
+        vwPageMargin,
         AppSpacing.sm,
       ),
       child: Material(
-        color: scheme.surfaceContainer,
-        borderRadius: AppRadii.card,
+        color: scheme.surfaceContainerHigh,
+        borderRadius: AppRadii.row,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppRadii.card,
+          borderRadius: AppRadii.row,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -100,7 +108,10 @@ class TaskListTile extends StatelessWidget {
                         // Completing a task eases the muted colour in rather
                         // than snapping (P5-T1); the strikethrough itself
                         // sweeps via _StrikeThroughText.
-                        duration: motionDuration(context, AppMotion.stateChange),
+                        duration: motionDuration(
+                          context,
+                          AppMotion.stateChange,
+                        ),
                         curve: AppMotion.standardCurve,
                         style: theme.textTheme.titleMedium!.copyWith(
                           color: done ? muted : scheme.onSurface,
@@ -126,11 +137,7 @@ class TaskListTile extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
-                                Icon(
-                                  Icons.checklist,
-                                  size: 12,
-                                  color: muted,
-                                ),
+                                Icon(Icons.checklist, size: 12, color: muted),
                                 const SizedBox(width: 4),
                                 Text(
                                   '$doneCount/${task.subTasks.length} subtasks',
@@ -243,8 +250,8 @@ class _TaskCheckboxState extends State<_TaskCheckbox>
     final Widget checkbox = Checkbox(
       value: widget.done || widget.morphing,
       onChanged: (_) => widget.onToggle(),
-      // The mockup's tactile box: rounded 6px, silent grey while empty, mint
-      // with a soft bloom when completed.
+      // The mockup's tactile box: rounded 6px, silent grey while empty, amber
+      // once completed.
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       side: BorderSide(color: scheme.outlineVariant, width: 1.5),
       fillColor: WidgetStateProperty.resolveWith(

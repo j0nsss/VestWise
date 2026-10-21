@@ -12,6 +12,7 @@ import 'package:vestwise/core/widgets/vw_delayed.dart';
 import 'package:vestwise/core/widgets/vw_empty_state.dart';
 import 'package:vestwise/core/widgets/vw_fade_through.dart';
 import 'package:vestwise/core/widgets/vw_fab.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 import 'package:vestwise/core/widgets/vw_screen_header.dart';
 import 'package:vestwise/core/widgets/vw_skeleton.dart';
 import 'package:vestwise/core/widgets/vw_inline_spinner.dart';
@@ -56,6 +57,8 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
             children: <Widget>[
               VWScreenHeader(
                 title: AppStrings.notes,
+                onCreate: () =>
+                    context.go(RoutePaths.noteEditorFor(RoutePaths.newId)),
                 actions: <Widget>[
                   IconButton(
                     icon: _importing
@@ -66,14 +69,22 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                   ),
                 ],
               ),
-              const TabBar(
-                tabs: <Widget>[
+              TabBar(
+                indicatorColor: Theme.of(context).colorScheme.secondary,
+                indicatorWeight: 3,
+                labelColor: Theme.of(context).colorScheme.onSurface,
+                unselectedLabelColor: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant,
+                tabs: const <Widget>[
                   Tab(text: 'Notes'),
                   Tab(text: 'Documents'),
                 ],
               ),
               const Expanded(
-                child: TabBarView(children: <Widget>[_NotesTab(), _DocumentsTab()]),
+                child: TabBarView(
+                  children: <Widget>[_NotesTab(), _DocumentsTab()],
+                ),
               ),
             ],
           ),
@@ -159,7 +170,12 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
     return Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.fromLTRB(
+            vwPageMargin,
+            AppSpacing.sm,
+            vwPageMargin,
+            AppSpacing.sm,
+          ),
           child: VWTextField(
             controller: _searchController,
             hint: 'Search notes',
@@ -208,7 +224,7 @@ class _NotesTabState extends ConsumerState<_NotesTab> {
                 return ListView.builder(
                   padding: const EdgeInsets.only(
                     top: AppSpacing.sm,
-                    bottom: 96,
+                    bottom: vwDockClearance,
                   ),
                   itemCount: rows.length,
                   itemBuilder: (BuildContext context, int index) {
@@ -307,7 +323,7 @@ class _DocumentsTab extends ConsumerWidget {
                 },
               ),
             ),
-            const SizedBox(height: 96),
+            const SizedBox(height: vwDockClearance),
             _StorageReadout(documentCount: documents.length),
           ],
         );
@@ -364,7 +380,7 @@ class _StorageReadout extends ConsumerWidget {
     final String files = documentCount == 1 ? 'file' : 'files';
 
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(vwPageMargin),
       child: Row(
         children: <Widget>[
           Icon(

@@ -33,5 +33,8 @@ class CalendarEventModel {
   /// surfaced on the calendar, rather than a standalone event.
   int? linkedTaskId;
 
-  int colorValue = 0xFF4F46E5;
+  /// Accent for the event's row. Defaults to the Omotive amber, the design's
+  /// only mark colour; stored events from earlier phases keep whatever they
+  /// were given.
+  int colorValue = 0xFFEAC162;
 }

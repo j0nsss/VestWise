@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:vestwise/core/constants/app_colors.dart';
 import 'package:vestwise/core/constants/app_spacing.dart';
+import 'package:vestwise/core/widgets/vw_omotive.dart';
 import 'package:vestwise/features/finance/data/models/category_model.dart';
 import 'package:vestwise/features/finance/data/models/transaction_model.dart';
 import 'package:vestwise/features/finance/presentation/widgets/category_chip.dart';
 import 'package:vestwise/features/finance/presentation/widgets/money.dart';
 
-/// One row in the transaction history, as a Phase 13 card: the category
-/// badge, the note as title, the category name as the muted meta line, and a
-/// signed amount colored green for income / red for expense (plan P3-FIN-2).
+/// One row in the transaction history, as a Phase 14 Omotive row: the category
+/// badge in its own slot, the note as title, the category name as the muted
+/// meta line, and a signed amount coloured green for income / red for expense
+/// (plan P3-FIN-2).
 class TransactionListTile extends StatelessWidget {
   const TransactionListTile({required this.transaction, this.onTap, super.key});
 
@@ -33,22 +35,25 @@ class TransactionListTile extends StatelessWidget {
         : (category?.name ?? 'Transaction');
 
     return Padding(
-      // Card separated from its neighbours and from the screen edges, exactly
+      // Row separated from its neighbours and from the screen edges, exactly
       // like the task list rows.
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
+        vwPageMargin,
         0,
-        AppSpacing.lg,
+        vwPageMargin,
         AppSpacing.sm,
       ),
       child: Material(
-        color: scheme.surfaceContainer,
-        borderRadius: AppRadii.card,
+        color: scheme.surfaceContainerHigh,
+        borderRadius: AppRadii.row,
         child: InkWell(
           onTap: onTap,
-          borderRadius: AppRadii.card,
+          borderRadius: AppRadii.row,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             child: Row(
               children: <Widget>[
                 // The contrast-checked category badge keeps the P10-FIN-1
@@ -76,7 +81,7 @@ class TransactionListTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (category !=null && title != category.name)
+                      if (category != null && title != category.name)
                         Text(
                           category.name,
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -91,7 +96,7 @@ class TransactionListTile extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   '$sign${formatMoney(transaction.amount)}',
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: theme.textTheme.labelLarge?.copyWith(
                     color: amountColor,
                   ),
                 ),

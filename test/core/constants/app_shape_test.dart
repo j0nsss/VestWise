@@ -39,8 +39,20 @@ void main() {
 
     test('the only shadow blur in the app stays at or under 8dp', () {
       // plan2.md §10: "No shadow with blur > 8dp anywhere outside a true
-      // overlay (dialog/bottom sheet)."
+      // overlay (dialog/bottom sheet)." Phase 14 (Omotive) reopened this: the
+      // coloured tactile cards and the floating dock are deliberate lifts, so
+      // the ceiling now applies to overlays and the neutral layers only.
       expect(AppElevation.overlayBlur, lessThanOrEqualTo(8));
+      expect(AppElevation.flat, 0);
+    });
+
+    test('the Omotive lifts are named and ordered', () {
+      // Tactile cards lift softly with a fill-tinted shadow; the dock, which
+      // genuinely hovers over scrolling content, is the deepest layer.
+      expect(AppElevation.tactile, greaterThan(AppElevation.flat));
+      expect(AppElevation.tactileBlur, greaterThan(AppElevation.overlayBlur));
+      expect(AppElevation.dock, greaterThan(AppElevation.tactile));
+      expect(AppElevation.dockBlur, greaterThan(AppElevation.tactileBlur));
     });
   });
 
@@ -53,17 +65,17 @@ void main() {
           expect(theme.appBarTheme.elevation, AppElevation.flat);
           expect(theme.appBarTheme.scrolledUnderElevation, AppElevation.flat);
 
-          // Phase 13: the card is a filled surface tier, not an outlined one —
-          // separation comes from tone (surface vs surfaceContainer), so the
-          // hairline is gone.
+          // Phase 14: the default card is the neutral list-row surface —
+          // filled `surfaceContainerHigh` at the row radius, so a bare `VWCard`
+          // matches a list row. Coloured tactile cards opt into 28 themselves.
           final ShapeBorder? shape = theme.cardTheme.shape;
           expect(shape, isA<RoundedRectangleBorder>());
           expect(
             (shape! as RoundedRectangleBorder).borderRadius,
-            AppRadii.card,
+            AppRadii.row,
           );
           expect((shape as RoundedRectangleBorder).side.width, 0);
-          expect(theme.cardTheme.color, theme.colorScheme.surfaceContainer);
+          expect(theme.cardTheme.color, theme.colorScheme.surfaceContainerHigh);
         },
       );
 
